@@ -2,28 +2,17 @@ package header
 
 import (
 	"bytes"
+	_ "embed"
 	"testing"
+
 	"golang.org/x/net/html"
 )
 
-func TestExtractJSONLD(t *testing.T) {
-	htmlContent := `
-	<html>
-	<head>
-		<script type="application/ld+json">
-		{
-			"@context": "https://schema.org",
-			"@type": "NewsArticle",
-			"headline": "JSON-LD Test Headline",
-			"name": "JSON-LD Test Name"
-		}
-		</script>
-	</head>
-	<body></body>
-	</html>
-	`
+//go:embed testdata/jsonld.html
+var jsonldHTML []byte
 
-	doc, err := html.Parse(bytes.NewReader([]byte(htmlContent)))
+func TestExtractJSONLD(t *testing.T) {
+	doc, err := html.Parse(bytes.NewReader(jsonldHTML))
 	if err != nil {
 		t.Fatalf("Failed to parse HTML: %v", err)
 	}

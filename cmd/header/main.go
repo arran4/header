@@ -1,34 +1,26 @@
 package main
 
 import (
+	"bytes"
+	"embed"
 	"flag"
 	"fmt"
 	"os"
 	"text/template"
 
 	"github.com/arran4/header"
+	"github.com/fatih/color"
 )
 
-const outputTmpl = `URL: {{.URL}}
-Title: {{.Title}}
-{{if .OGType}}OpenGraph Type: {{.OGType}}{{end}}
-{{if .OGDescription}}OpenGraph Description: {{.OGDescription}}{{end}}
-{{if .TwitterCard}}Twitter Card: {{.TwitterCard}}{{end}}
-{{if .TwitterDescription}}Twitter Description: {{.TwitterDescription}}{{end}}
-{{if .YouTubeVideoID}}YouTube Video ID: {{.YouTubeVideoID}}{{end}}
-{{if .YouTubeLengthSeconds}}YouTube Duration: {{.YouTubeDuration}}{{end}}
-{{if .JSONLDType}}JSON-LD Type: {{.JSONLDType}}{{end}}
-{{if .JSONLDName}}JSON-LD Name: {{.JSONLDName}}{{end}}
-{{if .CoverImages}}
-Cover Images:
-{{range .CoverImages}}  - {{.}}
-{{end}}{{end}}`
+//go:embed templates/*
+var templatesFS embed.FS
 
 func main() {
 	// Create a new flag set so we can call main multiple times in tests
 	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")
 	showImage := fs.Bool("show-image", false, "Display the cover image (if available)")
+	style := fs.String("style", "default", "The output style template to use (e.g. default, plain)")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
@@ -49,15 +41,30 @@ func main() {
 		os.Exit(1)
 	}
 
-	tmpl, err := template.New("output").Parse(outputTmpl)
+	tmplContent, err := templatesFS.ReadFile("templates/" + *style + ".tmpl")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading template '%s': %v\n", *style, err)
+		os.Exit(1)
+	}
+
+	funcMap := template.FuncMap{
+		"bold":   color.New(color.Bold).SprintFunc(),
+		"green":  color.New(color.FgGreen).SprintFunc(),
+		"cyan":   color.New(color.FgCyan).SprintFunc(),
+		"yellow": color.New(color.FgYellow).SprintFunc(),
+	}
+
+	tmpl, err := template.New("output").Funcs(funcMap).Parse(string(tmplContent))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing template: %v\n", err)
 		os.Exit(1)
 	}
 
-	if err := tmpl.Execute(os.Stdout, info); err != nil {
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, info); err != nil {
 		fmt.Fprintf(os.Stderr, "Error executing template: %v\n", err)
 	}
+	fmt.Print(buf.String())
 	fmt.Println()
 
 	if *testMode {

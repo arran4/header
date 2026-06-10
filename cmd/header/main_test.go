@@ -6,52 +6,28 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	_ "embed"
 
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
 var ts *httptest.Server
 
+//go:embed testdata/example.html
+var exampleHTML []byte
+
+//go:embed testdata/missing.html
+var missingHTML []byte
+
 func TestMain(m *testing.M) {
 	// Start server that runs for the entire duration of the tests, including child processes!
 	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/example" {
 			w.Header().Set("Content-Type", "text/html")
-			fmt.Fprint(w, `
-				<html>
-				<head>
-					<title>Example Page</title>
-					<meta property="og:type" content="website" />
-					<meta property="og:image" content="http://localhost:8080/image.jpg" />
-					<meta name="twitter:card" content="summary" />
-					<script type="application/ld+json">
-					{
-						"@context": "https://schema.org",
-						"@type": "WebPage",
-						"name": "Example JSON-LD Name"
-					}
-					</script>
-				</head>
-				<body></body>
-				</html>
-			`)
+			_, _ = w.Write(exampleHTML)
 		} else if r.URL.Path == "/missing" {
 			w.Header().Set("Content-Type", "text/html")
-			fmt.Fprint(w, `
-				<html>
-				<head>
-					<title>Missing Page</title>
-					<meta property="og:type" content="website" />
-					<meta property="og:image" content="http://localhost:8080/image.jpg" />
-					<script type="application/ld+json">
-					{
-						"@type": "WebPage"
-					}
-					</script>
-				</head>
-				<body></body>
-				</html>
-			`)
+			_, _ = w.Write(missingHTML)
 		} else if r.URL.Path == "/image.jpg" {
 			w.Header().Set("Content-Type", "image/jpeg")
 			fmt.Fprint(w, "fake image data")
