@@ -26,7 +26,7 @@ Cover Images:
 
 func main() {
 	// Create a new flag set so we can call main multiple times in tests
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")
 	showImage := fs.Bool("show-image", false, "Display the cover image (if available)")
 

@@ -37,7 +37,7 @@ func FetchURL(urlStr string) (*PageInfo, error) {
 		return nil, fmt.Errorf("HTTP %s", resp.Status)
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 2*1024*1024))
 	if err != nil {
 		return nil, err
 	}
