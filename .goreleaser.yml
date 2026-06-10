@@ -1,0 +1,58 @@
+project_name: header
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: header
+    binary: header
+    main: ./cmd/header
+    env:
+      - CGO_ENABLED=0
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: checksums.txt
+
+nfpms:
+  - id: linux-packages
+    package_name: header
+    vendor: Arran4
+    homepage: https://github.com/arran4/header
+    maintainer: Arran Ubels
+    description: Extracts OpenGraph, Twitter and YouTube info from a given URL to display nicely in the terminal.
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+      - archlinux
+    section: default
+    priority: optional
+
+homebrew_casks:
+  -
+    repository:
+      owner: arran4
+      name: homebrew-tap
+      branch: "{{.ProjectName}}-{{.Version}}"
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+      pull_request:
+        enabled: true
+        draft: false
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
