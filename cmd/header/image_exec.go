@@ -42,7 +42,10 @@ func displayImage(urlStr string) {
 	finalName := tmpName
 	if filepath.Ext(tmpName) == "" {
 		finalName = tmpName + ".jpg"
-		os.Rename(tmpName, finalName)
+		if err := os.Rename(tmpName, finalName); err != nil {
+			fmt.Printf("Failed to rename temp file: %v\n", err)
+			return
+		}
 	}
 
 	var cmd *exec.Cmd
