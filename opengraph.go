@@ -1,67 +1,82 @@
 package header
 
 import (
+	"io"
 	"strings"
+
 	"golang.org/x/net/html"
 )
 
-func extractOpenGraph(doc *html.Node, info *PageInfo) {
-	var walk func(*html.Node)
-	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "meta" {
-			var property, name, content string
-			for _, attr := range n.Attr {
-				if attr.Key == "property" {
-					property = attr.Val
-				} else if attr.Key == "name" {
-					name = attr.Val
-				} else if attr.Key == "content" {
-					content = attr.Val
-				}
-			}
+type openGraphExtractor struct{}
 
-			// OpenGraph
-			if strings.HasPrefix(property, "og:") {
-				switch property {
-				case "og:type":
-					info.OGType = content
-				case "og:image":
-					info.OGImage = content
-				case "og:description":
-					info.OGDescription = content
-				case "og:title":
-					if info.Title == "" {
-						info.Title = content
-					}
-				}
-			}
+func (e openGraphExtractor) Name() string { return "OpenGraph" }
 
-			// Twitter Card
-			if strings.HasPrefix(name, "twitter:") {
-				switch name {
-				case "twitter:card":
-					info.TwitterCard = content
-				case "twitter:image":
-					info.TwitterImage = content
-				case "twitter:title":
-					info.TwitterTitle = content
-					if info.Title == "" {
-						info.Title = content
-					}
-				case "twitter:description":
-					info.TwitterDescription = content
-				}
+func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
+	z := html.NewTokenizer(r)
+
+	for {
+		tt := z.Next()
+		if tt == html.ErrorToken {
+			if z.Err() == io.EOF {
+				return nil
 			}
-		} else if n.Type == html.ElementNode && n.Data == "title" && info.Title == "" {
-			if n.FirstChild != nil && n.FirstChild.Type == html.TextNode {
-				info.Title = n.FirstChild.Data
-			}
+			return z.Err()
 		}
 
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			walk(c)
+		if tt == html.StartTagToken || tt == html.SelfClosingTagToken {
+			t := z.Token()
+			if t.Data == "meta" {
+				var property, name, content string
+				for _, attr := range t.Attr {
+					if attr.Key == "property" {
+						property = attr.Val
+					} else if attr.Key == "name" {
+						name = attr.Val
+					} else if attr.Key == "content" {
+						content = attr.Val
+					}
+				}
+
+				// OpenGraph
+				if strings.HasPrefix(property, "og:") {
+					switch property {
+					case "og:type":
+						info.SetOGType(content)
+					case "og:image":
+						info.SetOGImage(content)
+					case "og:description":
+						info.SetOGDescription(content)
+					case "og:title":
+						info.SetTitleIfEmpty(content)
+					}
+				}
+
+				// Twitter Card
+				if strings.HasPrefix(name, "twitter:") {
+					switch name {
+					case "twitter:card":
+						info.SetTwitterCard(content)
+					case "twitter:image":
+						info.SetTwitterImage(content)
+					case "twitter:title":
+						info.SetTwitterTitle(content)
+					case "twitter:description":
+						info.SetTwitterDescription(content)
+					}
+				}
+			} else if t.Data == "title" {
+				tt = z.Next()
+				if tt == html.TextToken {
+					info.SetTitleIfEmpty(z.Token().Data)
+				}
+			} else if t.Data == "body" {
+				// Once we hit body, we can typically stop parsing for metadata
+				return nil
+			}
 		}
 	}
+}
 
-	walk(doc)
+func init() {
+	RegisterExtractor(openGraphExtractor{})
 }

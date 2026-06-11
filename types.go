@@ -1,9 +1,14 @@
 package header
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 // PageInfo represents the extracted information from a URL.
 type PageInfo struct {
+	mu sync.Mutex
+
 	// General Information
 	URL   string
 	Title string

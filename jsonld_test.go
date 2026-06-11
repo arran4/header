@@ -1,24 +1,21 @@
 package header
 
 import (
-	"bytes"
 	_ "embed"
+	"strings"
 	"testing"
-
-	"golang.org/x/net/html"
 )
 
 //go:embed testdata/jsonld.html
 var jsonldHTML []byte
 
 func TestExtractJSONLD(t *testing.T) {
-	doc, err := html.Parse(bytes.NewReader(jsonldHTML))
-	if err != nil {
-		t.Fatalf("Failed to parse HTML: %v", err)
-	}
-
 	info := &PageInfo{}
-	extractJSONLD(doc, info)
+	extractor := jsonldExtractor{}
+	err := extractor.Extract(strings.NewReader(string(jsonldHTML)), info)
+	if err != nil {
+		t.Fatalf("Extractor returned error: %v", err)
+	}
 
 	if info.JSONLDType != "NewsArticle" {
 		t.Errorf("Expected JSONLDType 'NewsArticle', got '%s'", info.JSONLDType)
