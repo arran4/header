@@ -1,22 +1,37 @@
 package header
 
 import (
-	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
-
-	"golang.org/x/net/html"
 )
 
+type FetchOptions struct {
+	UserAgent string
+}
+
+type Extractor interface {
+	Name() string
+	Extract(r io.Reader, info *PageInfo) error
+}
+
+var extractorRegistry []Extractor
+
+func RegisterExtractor(e Extractor) {
+	extractorRegistry = append(extractorRegistry, e)
+}
+
 // FetchURL retrieves a URL and extracts metadata from it.
-func FetchURL(urlStr string) (*PageInfo, error) {
+func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 	urlStr = normaliseURL(urlStr)
 
 	client := &http.Client{
 		Timeout: 20 * time.Second,
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return nil
+		},
 	}
 
 	req, err := http.NewRequest(http.MethodGet, urlStr, nil)
@@ -24,7 +39,11 @@ func FetchURL(urlStr string) (*PageInfo, error) {
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	if opts.UserAgent != "" {
+		req.Header.Set("User-Agent", opts.UserAgent)
+	} else {
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	}
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 
 	resp, err := client.Do(req)
@@ -33,32 +52,61 @@ func FetchURL(urlStr string) (*PageInfo, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("HTTP %s", resp.Status)
-	}
-
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 2*1024*1024))
-	if err != nil {
-		return nil, err
-	}
-
 	info := &PageInfo{
 		URL: urlStr,
 	}
 
-	doc, err := html.Parse(bytes.NewReader(body))
-	if err != nil {
-		return nil, err
+	// Set up multicast reading
+	extractors := extractorRegistry
+	if len(extractors) == 0 {
+		return info, nil
 	}
 
-	extractOpenGraph(doc, info)
-	extractJSONLD(doc, info)
+	writers := make([]*io.PipeWriter, len(extractors))
+	readers := make([]*io.PipeReader, len(extractors))
 
-	// Generic script extraction for YouTube
-	scripts := extractScriptBodies(doc)
-	if isYouTubeURL(urlStr) {
-		extractYouTubeInfo(scripts, info)
+	for i := range extractors {
+		r, w := io.Pipe()
+		readers[i] = r
+		writers[i] = w
 	}
+
+	var wg sync.WaitGroup
+	for i, ext := range extractors {
+		wg.Add(1)
+		go func(e Extractor, r *io.PipeReader) {
+			defer wg.Done()
+			// Extract handles its own reading from the pipe
+			_ = e.Extract(r, info)
+			r.Close() // Ensure the reader is closed when the extractor finishes or errors out
+		}(ext, readers[i])
+	}
+
+	// Read from resp.Body and broadcast to all writers
+	// Use a limited reader so we don't download infinite files
+	limitedBody := io.LimitReader(resp.Body, 2*1024*1024)
+	buf := make([]byte, 32*1024)
+	for {
+		n, err := limitedBody.Read(buf)
+		if n > 0 {
+			for _, w := range writers {
+				// We ignore write errors. A write error just means the specific extractor
+				// closed its reader early (e.g. it found what it needed).
+				_, _ = w.Write(buf[:n])
+			}
+		}
+		if err != nil {
+			break
+		}
+	}
+
+	// Close all writers to signal EOF to the extractors
+	for _, w := range writers {
+		w.Close()
+	}
+
+	// Wait for all extractors to finish
+	wg.Wait()
 
 	return info, nil
 }
@@ -73,38 +121,4 @@ func normaliseURL(input string) string {
 
 func isYouTubeURL(urlStr string) bool {
 	return strings.Contains(urlStr, "youtube.com") || strings.Contains(urlStr, "youtu.be")
-}
-
-func extractScriptBodies(doc *html.Node) []string {
-	var scripts []string
-
-	var walk func(*html.Node)
-	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "script" {
-			var isJSONLD bool
-			for _, attr := range n.Attr {
-				if attr.Key == "type" && attr.Val == "application/ld+json" {
-					isJSONLD = true
-					break
-				}
-			}
-
-			if !isJSONLD {
-				var b strings.Builder
-				for c := n.FirstChild; c != nil; c = c.NextSibling {
-					if c.Type == html.TextNode {
-						b.WriteString(c.Data)
-					}
-				}
-				scripts = append(scripts, b.String())
-			}
-		}
-
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			walk(c)
-		}
-	}
-
-	walk(doc)
-	return scripts
 }

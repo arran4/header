@@ -1,9 +1,8 @@
 package header
 
 import (
-	"bytes"
+	"strings"
 	"testing"
-	"golang.org/x/net/html"
 )
 
 func TestExtractOpenGraph(t *testing.T) {
@@ -20,13 +19,12 @@ func TestExtractOpenGraph(t *testing.T) {
 	</html>
 	`
 
-	doc, err := html.Parse(bytes.NewReader([]byte(htmlContent)))
-	if err != nil {
-		t.Fatalf("Failed to parse HTML: %v", err)
-	}
-
 	info := &PageInfo{}
-	extractOpenGraph(doc, info)
+	extractor := openGraphExtractor{}
+	err := extractor.Extract(strings.NewReader(htmlContent), info)
+	if err != nil {
+		t.Fatalf("Extractor returned error: %v", err)
+	}
 
 	if info.Title != "Test Title" {
 		t.Errorf("Expected title 'Test Title', got '%s'", info.Title)
