@@ -1,0 +1,12 @@
+exec header -style plain $TEST_SERVER_URL/example
+stdout 'Title: Example Page'
+stdout 'OpenGraph Type: website'
+stdout 'Twitter Card: summary'
+stdout 'JSON-LD Type: WebPage'
+
+exec header -test -style plain $TEST_SERVER_URL/missing
+stdout '--- Diagnostics ---'
+stdout 'Missing Twitter Card Data'
+
+exec header -show-image -style plain $TEST_SERVER_URL/example
+stdout 'Displaying image'
