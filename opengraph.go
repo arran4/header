@@ -25,14 +25,16 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 
 		if tt == html.StartTagToken || tt == html.SelfClosingTagToken {
 			t := z.Token()
-			if t.Data == "meta" {
+			switch t.Data {
+			case "meta":
 				var property, name, content string
 				for _, attr := range t.Attr {
-					if attr.Key == "property" {
+					switch attr.Key {
+					case "property":
 						property = attr.Val
-					} else if attr.Key == "name" {
+					case "name":
 						name = attr.Val
-					} else if attr.Key == "content" {
+					case "content":
 						content = attr.Val
 					}
 				}
@@ -64,12 +66,12 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						info.SetTwitterDescription(content)
 					}
 				}
-			} else if t.Data == "title" {
+			case "title":
 				tt = z.Next()
 				if tt == html.TextToken {
 					info.SetTitleIfEmpty(z.Token().Data)
-				}
-			} else if t.Data == "body" {
+			}
+			case "body":
 				// Once we hit body, we can typically stop parsing for metadata
 				return nil
 			}

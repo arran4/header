@@ -1,3 +1,4 @@
+// Package diagnostic provides rules to check for missing metadata.
 package diagnostic
 
 import (

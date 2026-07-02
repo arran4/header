@@ -25,7 +25,7 @@ func displayImage(urlStr string) {
 		fmt.Printf("Failed to download image: %v\n", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Failed to download image: HTTP %s\n", resp.Status)
 		return
@@ -37,7 +37,7 @@ func displayImage(urlStr string) {
 		return
 	}
 	tmpName := tmpFile.Name()
-	defer tmpFile.Close()
+	defer func() { _ = tmpFile.Close() }()
 	// Depending on OS we may need to leave the file around for a moment for the viewer to open it
 
 	_, err = io.Copy(tmpFile, resp.Body)
