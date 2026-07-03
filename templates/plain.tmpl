@@ -1,36 +1,7 @@
 URL: {{.URL}}
 Title: {{.Title}}
-{{- if and .OGType (eq .OGType .TwitterCard)}}
-Twitter and OpenGraph Card: {{.OGType}}
-{{- else}}
-{{- if .OGType}}
-OpenGraph Type: {{.OGType}}
-{{- end}}
-{{- if .TwitterCard}}
-Twitter Card: {{.TwitterCard}}
-{{- end}}
-{{- end}}
-{{- if and .OGDescription (eq .OGDescription .TwitterDescription)}}
-Twitter and OpenGraph Description: {{.OGDescription}}
-{{- else}}
-{{- if .OGDescription}}
-OpenGraph Description: {{.OGDescription}}
-{{- end}}
-{{- if .TwitterDescription}}
-Twitter Description: {{.TwitterDescription}}
-{{- end}}
-{{- end}}
-{{- if .YouTubeVideoID}}
-YouTube Video ID: {{.YouTubeVideoID}}
-{{- end}}
-{{- if .YouTubeLengthSeconds}}
-YouTube Duration: {{.YouTubeDuration}}
-{{- end}}
-{{- if .JSONLDType}}
-JSON-LD Type: {{.JSONLDType}}
-{{- end}}
-{{- if .JSONLDName}}
-JSON-LD Name: {{.JSONLDName}}
+{{- range .GroupedProperties}}
+{{.Label}}: {{.Value}}
 {{- end}}
 {{- if .CoverImages}}
 Cover Images:

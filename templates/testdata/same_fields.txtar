@@ -12,5 +12,5 @@ Fields that have the same value are compressed into a single line
 -- expected.txt --
 URL: https://example.com
 Title: Test Title
-Twitter and OpenGraph Card: summary
-Twitter and OpenGraph Description: This is a bio.
+OpenGraph and Twitter Type/Card: summary
+OpenGraph and Twitter Description: This is a bio.

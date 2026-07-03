@@ -1,36 +1,7 @@
 {{bold "URL:"}} {{cyan .URL}}
 {{bold "Title:"}} {{green .Title}}
-{{- if and .OGType (eq .OGType .TwitterCard)}}
-{{bold "Twitter and OpenGraph Card:"}} {{.OGType}}
-{{- else}}
-{{- if .OGType}}
-{{bold "OpenGraph Type:"}} {{.OGType}}
-{{- end}}
-{{- if .TwitterCard}}
-{{bold "Twitter Card:"}} {{.TwitterCard}}
-{{- end}}
-{{- end}}
-{{- if and .OGDescription (eq .OGDescription .TwitterDescription)}}
-{{bold "Twitter and OpenGraph Description:"}} {{.OGDescription}}
-{{- else}}
-{{- if .OGDescription}}
-{{bold "OpenGraph Description:"}} {{.OGDescription}}
-{{- end}}
-{{- if .TwitterDescription}}
-{{bold "Twitter Description:"}} {{.TwitterDescription}}
-{{- end}}
-{{- end}}
-{{- if .YouTubeVideoID}}
-{{bold "YouTube Video ID:"}} {{.YouTubeVideoID}}
-{{- end}}
-{{- if .YouTubeLengthSeconds}}
-{{bold "YouTube Duration:"}} {{.YouTubeDuration}}
-{{- end}}
-{{- if .JSONLDType}}
-{{bold "JSON-LD Type:"}} {{.JSONLDType}}
-{{- end}}
-{{- if .JSONLDName}}
-{{bold "JSON-LD Name:"}} {{.JSONLDName}}
+{{- range .GroupedProperties}}
+{{bold .Label}}{{bold ":"}} {{.Value}}
 {{- end}}
 {{- if .CoverImages}}
 {{bold "Cover Images:"}}
