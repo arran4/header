@@ -1,3 +1,4 @@
+// Package main provides the header CLI tool for extracting URL metadata.
 package main
 
 import (

@@ -1,0 +1,10 @@
+-- description --
+Only URL and Title populated
+-- input.json --
+{
+  "URL": "https://example.com",
+  "Title": "Test Title"
+}
+-- expected.txt --
+URL: https://example.com
+Title: Test Title
