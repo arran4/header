@@ -1,16 +1,24 @@
 URL: {{.URL}}
 Title: {{.Title}}
+{{- if and .OGType (eq .OGType .TwitterCard)}}
+Twitter and OpenGraph Card: {{.OGType}}
+{{- else}}
 {{- if .OGType}}
 OpenGraph Type: {{.OGType}}
-{{- end}}
-{{- if .OGDescription}}
-OpenGraph Description: {{.OGDescription}}
 {{- end}}
 {{- if .TwitterCard}}
 Twitter Card: {{.TwitterCard}}
 {{- end}}
+{{- end}}
+{{- if and .OGDescription (eq .OGDescription .TwitterDescription)}}
+Twitter and OpenGraph Description: {{.OGDescription}}
+{{- else}}
+{{- if .OGDescription}}
+OpenGraph Description: {{.OGDescription}}
+{{- end}}
 {{- if .TwitterDescription}}
 Twitter Description: {{.TwitterDescription}}
+{{- end}}
 {{- end}}
 {{- if .YouTubeVideoID}}
 YouTube Video ID: {{.YouTubeVideoID}}
