@@ -22,16 +22,17 @@ var missingHTML []byte
 func TestMain(m *testing.M) {
 	// Start server that runs for the entire duration of the tests, including child processes!
 	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/example" {
+		switch r.URL.Path {
+		case "/example":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(exampleHTML)
-		} else if r.URL.Path == "/missing" {
+		case "/missing":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(missingHTML)
-		} else if r.URL.Path == "/image.jpg" {
+		case "/image.jpg":
 			w.Header().Set("Content-Type", "image/jpeg")
-			fmt.Fprint(w, "fake image data")
-		} else {
+			_, _ = fmt.Fprint(w, "fake image data")
+		default:
 			http.NotFound(w, r)
 		}
 	}))

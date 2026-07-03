@@ -1,14 +1,32 @@
 {{bold "URL:"}} {{cyan .URL}}
 {{bold "Title:"}} {{green .Title}}
-{{if .OGType}}{{bold "OpenGraph Type:"}} {{.OGType}}{{end}}
-{{if .OGDescription}}{{bold "OpenGraph Description:"}} {{.OGDescription}}{{end}}
-{{if .TwitterCard}}{{bold "Twitter Card:"}} {{.TwitterCard}}{{end}}
-{{if .TwitterDescription}}{{bold "Twitter Description:"}} {{.TwitterDescription}}{{end}}
-{{if .YouTubeVideoID}}{{bold "YouTube Video ID:"}} {{.YouTubeVideoID}}{{end}}
-{{if .YouTubeLengthSeconds}}{{bold "YouTube Duration:"}} {{.YouTubeDuration}}{{end}}
-{{if .JSONLDType}}{{bold "JSON-LD Type:"}} {{.JSONLDType}}{{end}}
-{{if .JSONLDName}}{{bold "JSON-LD Name:"}} {{.JSONLDName}}{{end}}
-{{if .CoverImages}}
+{{- if .OGType}}
+{{bold "OpenGraph Type:"}} {{.OGType}}
+{{- end}}
+{{- if .OGDescription}}
+{{bold "OpenGraph Description:"}} {{.OGDescription}}
+{{- end}}
+{{- if .TwitterCard}}
+{{bold "Twitter Card:"}} {{.TwitterCard}}
+{{- end}}
+{{- if .TwitterDescription}}
+{{bold "Twitter Description:"}} {{.TwitterDescription}}
+{{- end}}
+{{- if .YouTubeVideoID}}
+{{bold "YouTube Video ID:"}} {{.YouTubeVideoID}}
+{{- end}}
+{{- if .YouTubeLengthSeconds}}
+{{bold "YouTube Duration:"}} {{.YouTubeDuration}}
+{{- end}}
+{{- if .JSONLDType}}
+{{bold "JSON-LD Type:"}} {{.JSONLDType}}
+{{- end}}
+{{- if .JSONLDName}}
+{{bold "JSON-LD Name:"}} {{.JSONLDName}}
+{{- end}}
+{{- if .CoverImages}}
 {{bold "Cover Images:"}}
-{{range .CoverImages}}  - {{yellow .}}
-{{end}}{{end}}
+{{- range .CoverImages}}
+  - {{yellow .}}
+{{- end}}
+{{- end}}

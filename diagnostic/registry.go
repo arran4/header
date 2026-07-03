@@ -5,19 +5,25 @@ import (
 	"github.com/arran4/header"
 )
 
+// Severity indicates the level of a diagnostic result.
 type Severity int
 
 const (
+	// SeverityInfo is an informational diagnostic.
 	SeverityInfo Severity = iota
+	// SeverityWarning is a warning diagnostic.
 	SeverityWarning
+	// SeverityError is an error diagnostic.
 	SeverityError
 )
 
+// Result is a single diagnostic result.
 type Result struct {
 	Severity Severity
 	Message  string
 }
 
+// Rule is an interface for checking a PageInfo for issues.
 type Rule interface {
 	Name() string
 	Check(info *header.PageInfo) []Result
@@ -25,10 +31,12 @@ type Rule interface {
 
 var registry []Rule
 
+// Register adds a rule to the diagnostic registry.
 func Register(rule Rule) {
 	registry = append(registry, rule)
 }
 
+// Run executes all registered diagnostic rules against the given PageInfo.
 func Run(info *header.PageInfo) {
 	fmt.Println("--- Diagnostics ---")
 

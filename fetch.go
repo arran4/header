@@ -8,10 +8,12 @@ import (
 	"time"
 )
 
+// FetchOptions contains configuration for fetching a URL.
 type FetchOptions struct {
 	UserAgent string
 }
 
+// Extractor is an interface for extracting metadata from an HTML document.
 type Extractor interface {
 	Name() string
 	Extract(r io.Reader, info *PageInfo) error
@@ -19,6 +21,7 @@ type Extractor interface {
 
 var extractorRegistry []Extractor
 
+// RegisterExtractor adds an extractor to the list of extractors used when fetching a URL.
 func RegisterExtractor(e Extractor) {
 	extractorRegistry = append(extractorRegistry, e)
 }
@@ -50,7 +53,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	info := &PageInfo{
 		URL: urlStr,
@@ -78,7 +81,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 			defer wg.Done()
 			// Extract handles its own reading from the pipe
 			_ = e.Extract(r, info)
-			r.Close() // Ensure the reader is closed when the extractor finishes or errors out
+			_ = r.Close() // Ensure the reader is closed when the extractor finishes or errors out
 		}(ext, readers[i])
 	}
 
@@ -102,7 +105,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 
 	// Close all writers to signal EOF to the extractors
 	for _, w := range writers {
-		w.Close()
+		_ = w.Close()
 	}
 
 	// Wait for all extractors to finish
