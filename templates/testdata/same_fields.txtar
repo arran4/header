@@ -1,0 +1,16 @@
+-- description --
+Fields that have the same value are compressed into a single line
+-- input.json --
+{
+  "URL": "https://example.com",
+  "Title": "Test Title",
+  "OGType": "summary",
+  "OGDescription": "This is a bio.",
+  "TwitterCard": "summary",
+  "TwitterDescription": "This is a bio."
+}
+-- expected.txt --
+URL: https://example.com
+Title: Test Title
+OpenGraph and Twitter Type/Card: summary
+OpenGraph and Twitter Description: This is a bio.

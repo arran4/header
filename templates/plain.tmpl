@@ -1,28 +1,7 @@
 URL: {{.URL}}
 Title: {{.Title}}
-{{- if .OGType}}
-OpenGraph Type: {{.OGType}}
-{{- end}}
-{{- if .OGDescription}}
-OpenGraph Description: {{.OGDescription}}
-{{- end}}
-{{- if .TwitterCard}}
-Twitter Card: {{.TwitterCard}}
-{{- end}}
-{{- if .TwitterDescription}}
-Twitter Description: {{.TwitterDescription}}
-{{- end}}
-{{- if .YouTubeVideoID}}
-YouTube Video ID: {{.YouTubeVideoID}}
-{{- end}}
-{{- if .YouTubeLengthSeconds}}
-YouTube Duration: {{.YouTubeDuration}}
-{{- end}}
-{{- if .JSONLDType}}
-JSON-LD Type: {{.JSONLDType}}
-{{- end}}
-{{- if .JSONLDName}}
-JSON-LD Name: {{.JSONLDName}}
+{{- range .GroupedProperties}}
+{{.Label}}: {{.Value}}
 {{- end}}
 {{- if .CoverImages}}
 Cover Images:
