@@ -8,7 +8,7 @@ require (
 	golang.org/x/exp/shiny v0.0.0-20240222234643-814bf88cf225
 	golang.org/x/image v0.38.0
 	golang.org/x/mobile v0.0.0-20231127183840-76ac6878050a
-	golang.org/x/net v0.38.0
+	golang.org/x/net v0.55.0
 )
 
 require (
@@ -17,6 +17,6 @@ require (
 	github.com/jezek/xgb v1.1.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/tools v0.19.0 // indirect
 )
