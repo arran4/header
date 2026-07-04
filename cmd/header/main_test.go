@@ -19,6 +19,9 @@ var exampleHTML []byte
 //go:embed testdata/missing.html
 var missingHTML []byte
 
+//go:embed testdata/issue.html
+var issueHTML []byte
+
 func TestMain(m *testing.M) {
 	// Start server that runs for the entire duration of the tests, including child processes!
 	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +32,9 @@ func TestMain(m *testing.M) {
 		case "/missing":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(missingHTML)
+		case "/issue":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write(issueHTML)
 		case "/image.jpg":
 			w.Header().Set("Content-Type", "image/jpeg")
 			_, _ = fmt.Fprint(w, "fake image data")
