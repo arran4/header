@@ -13,9 +13,11 @@ func TestExtractOpenGraph(t *testing.T) {
 		<meta property="og:title" content="Test OG Title" />
 		<meta property="og:type" content="article" />
 		<meta property="og:image" content="http://example.com/image.jpg" />
+		<meta property="og:image:alt" content="A test image alt text" />
 		<meta name="twitter:title" content="Test Twitter Title" />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:image" content="http://example.com/twitter.jpg" />
+		<meta name="twitter:image:alt" content="A test twitter image alt text" />
 	</head>
 	<body></body>
 	</html>
@@ -48,5 +50,11 @@ func TestExtractOpenGraph(t *testing.T) {
 	}
 	if info.TwitterImage != "http://example.com/twitter.jpg" {
 		t.Errorf("Expected TwitterImage 'http://example.com/twitter.jpg', got '%s'", info.TwitterImage)
+	}
+	if info.OGImageAlt != "A test image alt text" {
+		t.Errorf("Expected OGImageAlt 'A test image alt text', got '%s'", info.OGImageAlt)
+	}
+	if info.TwitterImageAlt != "A test twitter image alt text" {
+		t.Errorf("Expected TwitterImageAlt 'A test twitter image alt text', got '%s'", info.TwitterImageAlt)
 	}
 }
