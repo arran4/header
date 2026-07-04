@@ -17,6 +17,7 @@ type PageInfo struct {
 	Title string
 
 	// OpenGraph
+	OGTitle       string
 	OGType        string
 	OGImage       string
 	OGDescription string
@@ -83,8 +84,10 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 		order++
 	}
 
+	add("OpenGraph", "Title", "Title", p.OGTitle)
 	add("OpenGraph", "Type", "Type", p.OGType)
 	add("OpenGraph", "Description", "Description", p.OGDescription)
+	add("Twitter", "Title", "Title", p.TwitterTitle)
 	add("Twitter", "Card", "Type", p.TwitterCard)
 	add("Twitter", "Description", "Description", p.TwitterDescription)
 	add("YouTube", "Video ID", "VideoID", p.YouTubeVideoID)

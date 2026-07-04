@@ -4,6 +4,7 @@ All fields populated
 {
   "URL": "https://example.com",
   "Title": "Test Title",
+  "OGTitle": "OG Title",
   "OGType": "article",
   "OGImage": "http://example.com/og.jpg",
   "OGDescription": "Test OG Description",
@@ -20,8 +21,10 @@ All fields populated
 -- expected.txt --
 URL: https://example.com
 Title: Test Title
+OpenGraph Title: OG Title
 OpenGraph Type: article
 OpenGraph Description: Test OG Description
+Twitter Title: Twitter Title
 Twitter Card: summary_large_image
 Twitter Description: Twitter Desc
 YouTube Video ID: dQw4w9WgXcQ
