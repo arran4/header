@@ -49,7 +49,7 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					case "og:description":
 						info.SetOGDescription(content)
 					case "og:title":
-						info.SetTitleIfEmpty(content)
+						info.SetOGTitle(content)
 					}
 				}
 
