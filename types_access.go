@@ -37,6 +37,13 @@ func (p *PageInfo) SetOGImage(img string) {
 	p.OGImage = img
 }
 
+// SetOGImageAlt adds an OpenGraph image alt text.
+func (p *PageInfo) SetOGImageAlt(alt string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGImageAlt = alt
+}
+
 // SetOGDescription sets the OpenGraph description.
 func (p *PageInfo) SetOGDescription(desc string) {
 	p.mu.Lock()
@@ -56,6 +63,13 @@ func (p *PageInfo) SetTwitterImage(img string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.TwitterImage = img
+}
+
+// SetTwitterImageAlt adds a Twitter image alt text.
+func (p *PageInfo) SetTwitterImageAlt(alt string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.TwitterImageAlt = alt
 }
 
 // SetTwitterTitle sets the Twitter title.
