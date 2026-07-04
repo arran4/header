@@ -46,6 +46,8 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						info.SetOGType(content)
 					case "og:image":
 						info.SetOGImage(content)
+					case "og:image:alt":
+						info.SetOGImageAlt(content)
 					case "og:description":
 						info.SetOGDescription(content)
 					case "og:title":
@@ -60,6 +62,8 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						info.SetTwitterCard(content)
 					case "twitter:image":
 						info.SetTwitterImage(content)
+					case "twitter:image:alt":
+						info.SetTwitterImageAlt(content)
 					case "twitter:title":
 						info.SetTwitterTitle(content)
 					case "twitter:description":
