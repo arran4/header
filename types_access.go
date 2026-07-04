@@ -16,11 +16,11 @@ func (p *PageInfo) SetTitleIfEmpty(title string) {
 // SetOGTitle sets the OpenGraph title.
 func (p *PageInfo) SetOGTitle(title string) {
 	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.OGTitle = title
 	if p.Title == "" {
 		p.Title = title
 	}
-	p.mu.Unlock()
 }
 
 // SetOGType sets the OpenGraph type.
