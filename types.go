@@ -89,6 +89,12 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 		order++
 	}
 
+	// We only show Canonical Link if it differs from the requested URL.
+	// Otherwise, we don't add it as a separate property.
+	if p.CanonicalLink != "" && p.CanonicalLink != p.URL {
+		add("HTML", "Canonical Link", "CanonicalLink", p.CanonicalLink)
+	}
+
 	add("OpenGraph", "Title", "Title", p.OGTitle)
 	add("OpenGraph", "Type", "Type", p.OGType)
 	add("OpenGraph", "Description", "Description", p.OGDescription)
@@ -101,7 +107,6 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	if p.YouTubeDuration > 0 {
 		add("YouTube", "Duration", "Duration", p.YouTubeDuration)
 	}
-	add("HTML", "Canonical Link", "CanonicalLink", p.CanonicalLink)
 	add("JSON-LD", "Type", "Type", p.JSONLDType)
 	add("JSON-LD", "Name", "Name", p.JSONLDName)
 
