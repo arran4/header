@@ -89,6 +89,13 @@ func (p *PageInfo) SetTwitterDescription(desc string) {
 	p.TwitterDescription = desc
 }
 
+// SetCanonicalLink sets the canonical link.
+func (p *PageInfo) SetCanonicalLink(link string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.CanonicalLink = link
+}
+
 // SetJSONLDTypeIfEmpty sets the JSON-LD type if it is not already set.
 func (p *PageInfo) SetJSONLDTypeIfEmpty(t string) {
 	p.mu.Lock()

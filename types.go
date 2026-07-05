@@ -38,6 +38,9 @@ type PageInfo struct {
 	// JSON-LD (First found entity or merged data)
 	JSONLDType string
 	JSONLDName string
+
+	// HTML Links
+	CanonicalLink string
 }
 
 // CoverImages returns a list of potential image URLs.
@@ -98,6 +101,7 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	if p.YouTubeDuration > 0 {
 		add("YouTube", "Duration", "Duration", p.YouTubeDuration)
 	}
+	add("HTML", "Canonical Link", "CanonicalLink", p.CanonicalLink)
 	add("JSON-LD", "Type", "Type", p.JSONLDType)
 	add("JSON-LD", "Name", "Name", p.JSONLDName)
 

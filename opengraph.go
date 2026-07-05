@@ -75,6 +75,19 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 				if tt == html.TextToken {
 					info.SetTitleIfEmpty(z.Token().Data)
 			}
+			case "link":
+				var rel, href string
+				for _, attr := range t.Attr {
+					switch attr.Key {
+					case "rel":
+						rel = attr.Val
+					case "href":
+						href = attr.Val
+					}
+				}
+				if rel == "canonical" {
+					info.SetCanonicalLink(href)
+				}
 			case "body":
 				// Once we hit body, we can typically stop parsing for metadata
 				return nil
