@@ -1,9 +1,16 @@
 exec header -style plain $TEST_SERVER_URL/example
+stdout 'URL: http'
 stdout 'Title: Example Page'
 stdout 'OpenGraph Type: website'
 stdout 'Twitter Card: summary'
 stdout 'HTML Canonical Link: https://example.com/canonical-url'
 stdout 'JSON-LD Type: WebPage'
+
+exec header -style default $TEST_SERVER_URL/example
+stdout 'URL:'
+stdout 'Title:'
+stdout 'HTML Canonical Link:'
+stdout 'https://example.com/canonical-url'
 
 exec header -test -style plain $TEST_SERVER_URL/missing
 stdout '--- Diagnostics ---'
@@ -17,3 +24,8 @@ stdout 'URL \(canonical\):'
 stdout 'Title: arran4 - Overview'
 stdout 'OpenGraph Title: arran4 - Overview'
 stdout 'OpenGraph Type: profile'
+
+exec header -style default $TEST_SERVER_URL/issue
+stdout 'URL \(canonical\):'
+stdout 'Title:'
+stdout 'OpenGraph Title:'
