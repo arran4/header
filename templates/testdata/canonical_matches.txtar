@@ -1,0 +1,11 @@
+-- description --
+Canonical Link matches URL
+-- input.json --
+{
+  "URL": "https://example.com",
+  "Title": "Test Title",
+  "CanonicalLink": "https://example.com"
+}
+-- expected.txt --
+URL (canonical): https://example.com
+Title: Test Title
