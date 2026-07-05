@@ -85,7 +85,7 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						href = attr.Val
 					}
 				}
-				if rel == "canonical" {
+				if strings.EqualFold(rel, "canonical") && href != "" {
 					info.SetCanonicalLink(href)
 				}
 			case "body":
