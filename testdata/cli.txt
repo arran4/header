@@ -2,6 +2,7 @@ exec header -style plain $TEST_SERVER_URL/example
 stdout 'Title: Example Page'
 stdout 'OpenGraph Type: website'
 stdout 'Twitter Card: summary'
+stdout 'HTML Canonical Link: https://example.com/canonical-url'
 stdout 'JSON-LD Type: WebPage'
 
 exec header -test -style plain $TEST_SERVER_URL/missing
@@ -12,6 +13,7 @@ exec header -show-image -style plain $TEST_SERVER_URL/example
 stdout 'Displaying image'
 
 exec header -style plain $TEST_SERVER_URL/issue
+stdout 'URL \(canonical\):'
 stdout 'Title: arran4 - Overview'
 stdout 'OpenGraph Title: arran4 - Overview'
 stdout 'OpenGraph Type: profile'
