@@ -41,6 +41,7 @@ type PageInfo struct {
 
 	// HTML Links
 	CanonicalLink string
+	Icon          string
 }
 
 // CoverImages returns a list of potential image URLs.
@@ -93,6 +94,9 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	// Otherwise, we don't add it as a separate property.
 	if p.CanonicalLink != "" && p.CanonicalLink != p.URL {
 		add("HTML", "Canonical Link", "CanonicalLink", p.CanonicalLink)
+	}
+	if p.Icon != "" {
+		add("HTML", "Icon", "Icon", p.Icon)
 	}
 
 	add("OpenGraph", "Title", "Title", p.OGTitle)

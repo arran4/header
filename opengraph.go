@@ -88,6 +88,9 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 				if strings.EqualFold(rel, "canonical") && href != "" {
 					info.SetCanonicalLink(href)
 				}
+				if strings.Contains(strings.ToLower(rel), "icon") && href != "" {
+					info.SetIconIfEmpty(href)
+				}
 			case "body":
 				// Once we hit body, we can typically stop parsing for metadata
 				return nil
