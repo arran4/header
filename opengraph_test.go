@@ -18,6 +18,7 @@ func TestExtractOpenGraph(t *testing.T) {
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:image" content="http://example.com/twitter.jpg" />
 		<meta name="twitter:image:alt" content="A test twitter image alt text" />
+		<link rel="canonical" href="https://example.com/canonical" />
 	</head>
 	<body></body>
 	</html>
@@ -56,5 +57,8 @@ func TestExtractOpenGraph(t *testing.T) {
 	}
 	if info.TwitterImageAlt != "A test twitter image alt text" {
 		t.Errorf("Expected TwitterImageAlt 'A test twitter image alt text', got '%s'", info.TwitterImageAlt)
+	}
+	if info.CanonicalLink != "https://example.com/canonical" {
+		t.Errorf("Expected CanonicalLink 'https://example.com/canonical', got '%s'", info.CanonicalLink)
 	}
 }

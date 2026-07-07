@@ -1,4 +1,8 @@
+{{- if and .CanonicalLink (eq .URL .CanonicalLink) -}}
+{{bold "URL (canonical):"}} {{cyan .URL}}
+{{- else -}}
 {{bold "URL:"}} {{cyan .URL}}
+{{- end}}
 {{bold "Title:"}} {{green .Title}}
 {{- range .GroupedProperties}}
 {{bold .Label}}{{bold ":"}} {{.Value}}
