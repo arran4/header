@@ -38,6 +38,9 @@ type PageInfo struct {
 	// JSON-LD (First found entity or merged data)
 	JSONLDType string
 	JSONLDName string
+
+	// HTML Links
+	CanonicalLink string
 }
 
 // CoverImages returns a list of potential image URLs.
@@ -84,6 +87,12 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 		}
 		fields = append(fields, field{source, label, groupKey, value, order})
 		order++
+	}
+
+	// We only show Canonical Link if it differs from the requested URL.
+	// Otherwise, we don't add it as a separate property.
+	if p.CanonicalLink != "" && p.CanonicalLink != p.URL {
+		add("HTML", "Canonical Link", "CanonicalLink", p.CanonicalLink)
 	}
 
 	add("OpenGraph", "Title", "Title", p.OGTitle)

@@ -1,0 +1,12 @@
+-- description --
+Canonical Link differs from URL
+-- input.json --
+{
+  "URL": "https://example.com/some-page?utm_source=test",
+  "Title": "Test Title",
+  "CanonicalLink": "https://example.com/some-page"
+}
+-- expected.txt --
+URL: https://example.com/some-page?utm_source=test
+Title: Test Title
+HTML Canonical Link: https://example.com/some-page

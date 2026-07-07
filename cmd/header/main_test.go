@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	_ "embed"
 
@@ -34,7 +35,11 @@ func TestMain(m *testing.M) {
 			_, _ = w.Write(missingHTML)
 		case "/issue":
 			w.Header().Set("Content-Type", "text/html")
-			_, _ = w.Write(issueHTML)
+			// We need to inject the actual URL into the HTML so they match
+			html := string(issueHTML)
+			// Find "http://127.0.0.1:0/issue" and replace with actual server URL
+			html = strings.Replace(html, "http://127.0.0.1:0/issue", ts.URL+"/issue", 1)
+			_, _ = w.Write([]byte(html))
 		case "/image.jpg":
 			w.Header().Set("Content-Type", "image/jpeg")
 			_, _ = fmt.Fprint(w, "fake image data")
