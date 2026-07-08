@@ -96,13 +96,11 @@ func (p *PageInfo) SetCanonicalLink(link string) {
 	p.CanonicalLink = link
 }
 
-// SetIconIfEmpty sets the icon if it is not already set.
-func (p *PageInfo) SetIconIfEmpty(icon string) {
+// AddIcon adds an icon.
+func (p *PageInfo) AddIcon(icon string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.Icon == "" {
-		p.Icon = icon
-	}
+	p.Icons = append(p.Icons, icon)
 }
 
 // SetJSONLDTypeIfEmpty sets the JSON-LD type if it is not already set.
