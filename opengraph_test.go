@@ -20,6 +20,9 @@ func TestExtractOpenGraph(t *testing.T) {
 		<meta name="twitter:image:alt" content="A test twitter image alt text" />
 		<link rel="canonical" href="https://example.com/canonical" />
 		<link rel="shortcut icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico" type="image/x-icon">
+		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png" sizes="32x32">
+		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png" sizes="48x48">
+		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png" sizes="144x144">
 	</head>
 	<body></body>
 	</html>
@@ -62,7 +65,13 @@ func TestExtractOpenGraph(t *testing.T) {
 	if info.CanonicalLink != "https://example.com/canonical" {
 		t.Errorf("Expected CanonicalLink 'https://example.com/canonical', got '%s'", info.CanonicalLink)
 	}
-	if info.Icon != "https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico" {
-		t.Errorf("Expected Icon 'https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico', got '%s'", info.Icon)
+	if len(info.Icons) != 4 {
+		t.Fatalf("Expected 4 Icons, got %d", len(info.Icons))
+	}
+	expectedIcons := []string{"https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico", "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png", "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png", "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png"}
+	for i, expected := range expectedIcons {
+		if info.Icons[i] != expected {
+			t.Errorf("Expected Icon[%d] '%s', got '%s'", i, expected, info.Icons[i])
+		}
 	}
 }
