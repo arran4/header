@@ -88,7 +88,7 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 				if strings.EqualFold(rel, "canonical") && href != "" {
 					info.SetCanonicalLink(href)
 				}
-				if strings.Contains(strings.ToLower(rel), "icon") && href != "" {
+				if href != "" && strings.Contains(strings.ToLower(rel), "icon") {
 					info.SetIconIfEmpty(href)
 				}
 			case "body":
