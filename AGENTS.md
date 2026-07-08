@@ -1,0 +1,1 @@
+- Ensure output formats and templates are updated for new properties.
