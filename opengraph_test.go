@@ -19,6 +19,7 @@ func TestExtractOpenGraph(t *testing.T) {
 		<meta name="twitter:image" content="http://example.com/twitter.jpg" />
 		<meta name="twitter:image:alt" content="A test twitter image alt text" />
 		<link rel="canonical" href="https://example.com/canonical" />
+		<link rel="shortcut icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico" type="image/x-icon">
 	</head>
 	<body></body>
 	</html>
@@ -60,5 +61,8 @@ func TestExtractOpenGraph(t *testing.T) {
 	}
 	if info.CanonicalLink != "https://example.com/canonical" {
 		t.Errorf("Expected CanonicalLink 'https://example.com/canonical', got '%s'", info.CanonicalLink)
+	}
+	if info.Icon != "https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico" {
+		t.Errorf("Expected Icon 'https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico', got '%s'", info.Icon)
 	}
 }
