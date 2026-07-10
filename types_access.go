@@ -96,11 +96,11 @@ func (p *PageInfo) SetCanonicalLink(link string) {
 	p.CanonicalLink = link
 }
 
-// SetAlternateLink sets the alternate link.
-func (p *PageInfo) SetAlternateLink(link string) {
+// SetAlternateHandheldLink sets the alternate handheld link.
+func (p *PageInfo) SetAlternateHandheldLink(link string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.AlternateLink = link
+	p.AlternateHandheldLink = link
 }
 
 // AddIcon adds an icon.
