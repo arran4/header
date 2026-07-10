@@ -19,12 +19,16 @@ All fields populated
   "YouTubeDuration": 212000000000,
   "JSONLDType": "VideoObject",
   "JSONLDName": "Rick Astley",
-  "Icons": [ { "URL": "https://example.com/favicon.ico" } ]
+  "Icons": [
+    { "URL": "https://example.com/favicon.ico" },
+    { "URL": "https://example.com/favicon_32x32.png", "Sizes": "32x32" }
+  ]
 }
 -- expected.txt --
 URL: https://example.com
 Title: Test Title
 HTML Icon: https://example.com/favicon.ico
+HTML Icon: https://example.com/favicon_32x32.png (32x32)
 OpenGraph Title: OG Title
 OpenGraph Type: article
 OpenGraph Description: Test OG Description
