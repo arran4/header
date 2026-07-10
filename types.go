@@ -13,8 +13,9 @@ type PageInfo struct {
 	mu sync.Mutex
 
 	// General Information
-	URL   string
-	Title string
+	URL      string
+	Title    string
+	Keywords string
 
 	// OpenGraph
 	OGTitle       string
@@ -114,6 +115,7 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 		add("HTML", "Icon", "Icon", val)
 	}
 
+	add("HTML", "Keywords", "Keywords", p.Keywords)
 	add("OpenGraph", "Title", "Title", p.OGTitle)
 	add("OpenGraph", "Type", "Type", p.OGType)
 	add("OpenGraph", "Description", "Description", p.OGDescription)
