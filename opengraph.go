@@ -76,7 +76,7 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					info.SetTitleIfEmpty(z.Token().Data)
 			}
 			case "link":
-				var rel, href, sizes string
+				var rel, href, sizes, media string
 				for _, attr := range t.Attr {
 					switch attr.Key {
 					case "rel":
@@ -85,10 +85,15 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						href = attr.Val
 					case "sizes":
 						sizes = attr.Val
+					case "media":
+						media = attr.Val
 					}
 				}
 				if strings.EqualFold(rel, "canonical") && href != "" {
 					info.SetCanonicalLink(href)
+				}
+				if strings.EqualFold(rel, "alternate") && strings.EqualFold(media, "handheld") && href != "" {
+					info.SetAlternateHandheldLink(href)
 				}
 				if href != "" && strings.Contains(strings.ToLower(rel), "icon") {
 					info.AddIcon(href, sizes)
