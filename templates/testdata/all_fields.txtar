@@ -19,7 +19,7 @@ All fields populated
   "YouTubeDuration": 212000000000,
   "JSONLDType": "VideoObject",
   "JSONLDName": "Rick Astley",
-  "Icons": [ "https://example.com/favicon.ico" ]
+  "Icons": [ { "URL": "https://example.com/favicon.ico" } ]
 }
 -- expected.txt --
 URL: https://example.com
