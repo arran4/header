@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 
 func TestCLI(t *testing.T) {
 	testscript.Run(t, testscript.Params{
-		Dir: "../../testdata",
+		Dir: "../../testdata/cli",
 		Setup: func(env *testscript.Env) error {
 			// Replace localhost placeholders with actual server URL
 			env.Setenv("TEST_SERVER_URL", ts.URL)
