@@ -10,7 +10,7 @@ import (
 	"github.com/rogpeppe/go-internal/txtar"
 )
 
-//go:embed testdata/extractor/*.txt
+//go:embed testdata/extractor/*.txtar
 var testDataFS embed.FS
 
 func TestExtractOpenGraph(t *testing.T) {
@@ -18,7 +18,7 @@ func TestExtractOpenGraph(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || !strings.HasSuffix(path, ".txt") {
+		if d.IsDir() || !strings.HasSuffix(path, ".txtar") {
 			return nil
 		}
 
