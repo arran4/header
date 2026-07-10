@@ -1,4 +1,3 @@
--- description --
 Extract OpenGraph and other standard HTML metadata
 -- example.html --
 <html>
