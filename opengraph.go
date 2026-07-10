@@ -40,7 +40,7 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 				}
 
 				// Standard Metadata
-				if name == "keywords" {
+				if strings.EqualFold(name, "keywords") {
 					info.SetKeywords(content)
 				}
 

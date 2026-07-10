@@ -1,34 +1,16 @@
 package header
 
 import (
+	_ "embed"
 	"strings"
 	"testing"
 )
 
+//go:embed testdata/opengraph.html
+var openGraphData []byte
+
 func TestExtractOpenGraph(t *testing.T) {
-	htmlContent := `
-	<html>
-	<head>
-		<title>Test Title</title>
-		<meta name="keywords" content="video, sharing, camera phone, video phone, free, upload" />
-		<meta property="og:title" content="Test OG Title" />
-		<meta property="og:type" content="article" />
-		<meta property="og:image" content="http://example.com/image.jpg" />
-		<meta property="og:image:alt" content="A test image alt text" />
-		<meta name="twitter:title" content="Test Twitter Title" />
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:image" content="http://example.com/twitter.jpg" />
-		<meta name="twitter:image:alt" content="A test twitter image alt text" />
-		<link rel="canonical" href="https://example.com/canonical" />
-		<link rel="shortcut icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico" type="image/x-icon">
-		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png" sizes="32x32">
-		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png" sizes="48x48">
-		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png" sizes="144x144">
-		<link rel="alternate" media="handheld" href="https://m.youtube.com/">
-	</head>
-	<body></body>
-	</html>
-	`
+	htmlContent := string(openGraphData)
 
 	info := &PageInfo{}
 	extractor := openGraphExtractor{}
