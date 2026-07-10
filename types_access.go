@@ -98,8 +98,16 @@ func (p *PageInfo) SetCanonicalLink(link string) {
 
 // AddIcon adds an icon.
 func (p *PageInfo) AddIcon(icon string) {
+	if icon == "" {
+		return
+	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	for _, existing := range p.Icons {
+		if existing == icon {
+			return
+		}
+	}
 	p.Icons = append(p.Icons, icon)
 }
 
