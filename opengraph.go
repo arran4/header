@@ -93,7 +93,7 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					info.SetCanonicalLink(href)
 				}
 				if strings.EqualFold(rel, "alternate") && strings.EqualFold(media, "handheld") && href != "" {
-					info.SetAlternateLink(href)
+					info.SetAlternateHandheldLink(href)
 				}
 				if href != "" && strings.Contains(strings.ToLower(rel), "icon") {
 					info.AddIcon(href, sizes)
