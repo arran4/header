@@ -10,6 +10,7 @@ func TestExtractOpenGraph(t *testing.T) {
 	<html>
 	<head>
 		<title>Test Title</title>
+		<meta name="keywords" content="video, sharing, camera phone, video phone, free, upload" />
 		<meta property="og:title" content="Test OG Title" />
 		<meta property="og:type" content="article" />
 		<meta property="og:image" content="http://example.com/image.jpg" />
@@ -38,6 +39,9 @@ func TestExtractOpenGraph(t *testing.T) {
 
 	if info.Title != "Test Title" {
 		t.Errorf("Expected title 'Test Title', got '%s'", info.Title)
+	}
+	if info.Keywords != "video, sharing, camera phone, video phone, free, upload" {
+		t.Errorf("Expected keywords 'video, sharing, camera phone, video phone, free, upload', got '%s'", info.Keywords)
 	}
 	if info.OGTitle != "Test OG Title" {
 		t.Errorf("Expected OGTitle 'Test OG Title', got '%s'", info.OGTitle)
