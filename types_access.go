@@ -96,6 +96,13 @@ func (p *PageInfo) SetCanonicalLink(link string) {
 	p.CanonicalLink = link
 }
 
+// SetAlternateLink sets the alternate link.
+func (p *PageInfo) SetAlternateLink(link string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.AlternateLink = link
+}
+
 // AddIcon adds an icon.
 func (p *PageInfo) AddIcon(url, sizes string) {
 	if url == "" {

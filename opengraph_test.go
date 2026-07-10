@@ -23,6 +23,7 @@ func TestExtractOpenGraph(t *testing.T) {
 		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png" sizes="32x32">
 		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png" sizes="48x48">
 		<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png" sizes="144x144">
+		<link rel="alternate" media="handheld" href="https://m.youtube.com/">
 	</head>
 	<body></body>
 	</html>
@@ -64,6 +65,9 @@ func TestExtractOpenGraph(t *testing.T) {
 	}
 	if info.CanonicalLink != "https://example.com/canonical" {
 		t.Errorf("Expected CanonicalLink 'https://example.com/canonical', got '%s'", info.CanonicalLink)
+	}
+	if info.AlternateLink != "https://m.youtube.com/" {
+		t.Errorf("Expected AlternateLink 'https://m.youtube.com/', got '%s'", info.AlternateLink)
 	}
 	if len(info.Icons) != 4 {
 		t.Fatalf("Expected 4 Icons, got %d", len(info.Icons))
