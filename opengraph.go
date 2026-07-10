@@ -39,6 +39,11 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					}
 				}
 
+				// Standard Metadata
+				if strings.EqualFold(name, "keywords") {
+					info.SetKeywords(content)
+				}
+
 				// OpenGraph
 				if strings.HasPrefix(property, "og:") {
 					switch property {

@@ -13,6 +13,13 @@ func (p *PageInfo) SetTitleIfEmpty(title string) {
 	}
 }
 
+// SetKeywords sets the meta keywords.
+func (p *PageInfo) SetKeywords(keywords string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.Keywords = keywords
+}
+
 // SetOGTitle sets the OpenGraph title.
 func (p *PageInfo) SetOGTitle(title string) {
 	p.mu.Lock()

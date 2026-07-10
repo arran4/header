@@ -1,0 +1,64 @@
+Extract OpenGraph and other standard HTML metadata
+-- example.html --
+<html>
+<head>
+	<title>Test Title</title>
+	<meta name="keywords" content="video, sharing, camera phone, video phone, free, upload" />
+	<meta property="og:title" content="Test OG Title" />
+	<meta property="og:type" content="article" />
+	<meta property="og:image" content="http://example.com/image.jpg" />
+	<meta property="og:image:alt" content="A test image alt text" />
+	<meta name="twitter:title" content="Test Twitter Title" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content="http://example.com/twitter.jpg" />
+	<meta name="twitter:image:alt" content="A test twitter image alt text" />
+	<link rel="canonical" href="https://example.com/canonical" />
+	<link rel="shortcut icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico" type="image/x-icon">
+	<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png" sizes="32x32">
+	<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png" sizes="48x48">
+	<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png" sizes="144x144">
+	<link rel="alternate" media="handheld" href="https://m.youtube.com/">
+</head>
+<body></body>
+</html>
+-- expected.json --
+{
+  "URL": "",
+  "Title": "Test Title",
+  "Keywords": "video, sharing, camera phone, video phone, free, upload",
+  "OGTitle": "Test OG Title",
+  "OGType": "article",
+  "OGImage": "http://example.com/image.jpg",
+  "OGDescription": "",
+  "OGImageAlt": "A test image alt text",
+  "TwitterCard": "summary_large_image",
+  "TwitterImage": "http://example.com/twitter.jpg",
+  "TwitterTitle": "Test Twitter Title",
+  "TwitterDescription": "",
+  "TwitterImageAlt": "A test twitter image alt text",
+  "YouTubeVideoID": "",
+  "YouTubeLengthSeconds": 0,
+  "YouTubeDuration": 0,
+  "JSONLDType": "",
+  "JSONLDName": "",
+  "CanonicalLink": "https://example.com/canonical",
+  "AlternateHandheldLink": "https://m.youtube.com/",
+  "Icons": [
+    {
+      "URL": "https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico",
+      "Sizes": ""
+    },
+    {
+      "URL": "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png",
+      "Sizes": "32x32"
+    },
+    {
+      "URL": "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png",
+      "Sizes": "48x48"
+    },
+    {
+      "URL": "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png",
+      "Sizes": "144x144"
+    }
+  ]
+}
