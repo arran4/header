@@ -5,6 +5,7 @@ stdout 'OpenGraph Type: website'
 stdout 'Twitter Card: summary'
 stdout 'HTML Canonical Link: https://example.com/canonical-url'
 stdout 'HTML Icon: https://example.com/favicon.ico'
+stdout 'HTML Icon: https://example.com/favicon_32x32.png \(32x32\)'
 stdout 'JSON-LD Type: WebPage'
 
 exec header -style default $TEST_SERVER_URL/example
@@ -13,6 +14,7 @@ stdout 'Title:'
 stdout 'HTML Canonical Link:'
 stdout 'https://example.com/canonical-url'
 stdout 'HTML Icon: https://example.com/favicon.ico'
+stdout 'HTML Icon: https://example.com/favicon_32x32.png \(32x32\)'
 
 exec header -test -style plain $TEST_SERVER_URL/missing
 stdout '--- Diagnostics ---'
