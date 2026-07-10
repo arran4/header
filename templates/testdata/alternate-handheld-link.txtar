@@ -1,0 +1,12 @@
+-- description --
+Tests that Alternate Handheld Link is rendered correctly in the output.
+-- input.json --
+{
+  "URL": "https://example.com/desktop",
+  "Title": "Example",
+  "AlternateHandheldLink": "https://m.example.com/mobile"
+}
+-- expected.txt --
+URL: https://example.com/desktop
+Title: Example
+HTML Alternate Handheld Link: https://m.example.com/mobile
