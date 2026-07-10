@@ -68,10 +68,15 @@ func TestExtractOpenGraph(t *testing.T) {
 	if len(info.Icons) != 4 {
 		t.Fatalf("Expected 4 Icons, got %d", len(info.Icons))
 	}
-	expectedIcons := []string{"https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico", "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png", "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png", "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png"}
+	expectedIcons := []Icon{
+		{URL: "https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico", Sizes: ""},
+		{URL: "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png", Sizes: "32x32"},
+		{URL: "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png", Sizes: "48x48"},
+		{URL: "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png", Sizes: "144x144"},
+	}
 	for i, expected := range expectedIcons {
 		if info.Icons[i] != expected {
-			t.Errorf("Expected Icon[%d] '%s', got '%s'", i, expected, info.Icons[i])
+			t.Errorf("Expected Icon[%d] '%v', got '%v'", i, expected, info.Icons[i])
 		}
 	}
 }
