@@ -4,7 +4,8 @@ Canonical Link matches URL
 {
   "URL": "https://example.com",
   "Title": "Test Title",
-  "CanonicalLink": "https://example.com"
+  "CanonicalLink": "https://example.com",
+  "ShortLink": ""
 }
 -- expected.txt --
 URL (canonical): https://example.com
