@@ -51,6 +51,14 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						info.SetOGType(content)
 					case "og:image":
 						info.SetOGImage(content)
+					case "og:image:secure_url":
+						info.SetOGImageSecureURL(content)
+					case "og:image:type":
+						info.SetOGImageType(content)
+					case "og:image:width":
+						info.SetOGImageWidth(content)
+					case "og:image:height":
+						info.SetOGImageHeight(content)
 					case "og:image:alt":
 						info.SetOGImageAlt(content)
 					case "og:description":

@@ -18,11 +18,15 @@ type PageInfo struct {
 	Keywords string
 
 	// OpenGraph
-	OGTitle       string
-	OGType        string
-	OGImage       string
-	OGDescription string
-	OGImageAlt    string
+	OGTitle          string
+	OGType           string
+	OGImage          string
+	OGImageSecureURL string
+	OGImageType      string
+	OGImageWidth     string
+	OGImageHeight    string
+	OGDescription    string
+	OGImageAlt       string
 
 	// Twitter
 	TwitterCard        string
@@ -122,6 +126,10 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("HTML", "Keywords", "Keywords", p.Keywords)
 	add("OpenGraph", "Title", "Title", p.OGTitle)
 	add("OpenGraph", "Type", "Type", p.OGType)
+	add("OpenGraph", "Image Secure URL", "ImageSecureURL", p.OGImageSecureURL)
+	add("OpenGraph", "Image Type", "ImageType", p.OGImageType)
+	add("OpenGraph", "Image Width", "ImageWidth", p.OGImageWidth)
+	add("OpenGraph", "Image Height", "ImageHeight", p.OGImageHeight)
 	add("OpenGraph", "Description", "Description", p.OGDescription)
 	add("OpenGraph", "Image Alt", "ImageAlt", p.OGImageAlt)
 	add("Twitter", "Title", "Title", p.TwitterTitle)
