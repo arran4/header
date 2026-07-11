@@ -23,6 +23,9 @@ var missingHTML []byte
 //go:embed testdata/issue.html
 var issueHTML []byte
 
+//go:embed testdata/media.html
+var mediaHTML []byte
+
 func TestMain(m *testing.M) {
 	// Start server that runs for the entire duration of the tests, including child processes!
 	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -40,6 +43,9 @@ func TestMain(m *testing.M) {
 			// Find "http://127.0.0.1:0/issue" and replace with actual server URL
 			html = strings.Replace(html, "http://127.0.0.1:0/issue", ts.URL+"/issue", 1)
 			_, _ = w.Write([]byte(html))
+		case "/media":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write(mediaHTML)
 		case "/image.jpg":
 			w.Header().Set("Content-Type", "image/jpeg")
 			_, _ = fmt.Fprint(w, "fake image data")

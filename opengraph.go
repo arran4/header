@@ -97,8 +97,10 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 				if strings.EqualFold(rel, "canonical") && href != "" {
 					info.SetCanonicalLink(href)
 				}
-				if strings.EqualFold(rel, "alternate") && strings.EqualFold(media, "handheld") && href != "" {
-					info.SetAlternateHandheldLink(href)
+				if strings.EqualFold(rel, "alternate") && href != "" {
+					if strings.EqualFold(media, "handheld") || strings.Contains(strings.ToLower(media), "max-width") {
+						info.SetAlternateHandheldLink(href)
+					}
 				}
 				if href != "" && strings.Contains(strings.ToLower(rel), "icon") {
 					info.AddIcon(href, sizes)

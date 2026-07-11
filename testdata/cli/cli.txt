@@ -33,3 +33,8 @@ exec header -style default $TEST_SERVER_URL/issue
 stdout 'URL \(canonical\):'
 stdout 'Title:'
 stdout 'OpenGraph Title:'
+
+exec header -style plain $TEST_SERVER_URL/media
+stdout 'URL: http'
+stdout 'Title: Media Title'
+stdout 'HTML Alternate Handheld Link: https://m.example.com/mobile'
