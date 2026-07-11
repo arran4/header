@@ -7,6 +7,7 @@ Some fields missing to test whitespace removal
   "TwitterCard": "summary",
   "JSONLDType": "Article"
 }
+
 -- expected.txt --
 URL: https://example.com
 Title: Test Title

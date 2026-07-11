@@ -7,6 +7,7 @@ Canonical Link differs from URL
   "CanonicalLink": "https://example.com/some-page",
   "ShortLink": ""
 }
+
 -- expected.txt --
 URL: https://example.com/some-page?utm_source=test
 Title: Test Title
