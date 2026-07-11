@@ -1,0 +1,12 @@
+-- description --
+Short Link is parsed and displayed
+-- input.json --
+{
+  "URL": "https://example.com/some-page?utm_source=test",
+  "Title": "Test Title",
+  "ShortLink": "https://example.com/sp"
+}
+-- expected.txt --
+URL: https://example.com/some-page?utm_source=test
+Title: Test Title
+HTML Short Link: https://example.com/sp

@@ -13,6 +13,7 @@ Extract OpenGraph and other standard HTML metadata
 	<meta name="twitter:image" content="http://example.com/twitter.jpg" />
 	<meta name="twitter:image:alt" content="A test twitter image alt text" />
 	<link rel="canonical" href="https://example.com/canonical" />
+	<link rel="shortlinkUrl" href="https://youtu.be/GOZ4CMm7704" />
 	<link rel="shortcut icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png" sizes="32x32">
 	<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png" sizes="48x48">
@@ -42,6 +43,7 @@ Extract OpenGraph and other standard HTML metadata
   "JSONLDType": "",
   "JSONLDName": "",
   "CanonicalLink": "https://example.com/canonical",
+  "ShortLink": "https://youtu.be/GOZ4CMm7704",
   "AlternateHandheldLink": "https://m.youtube.com/",
   "Icons": [
     {
