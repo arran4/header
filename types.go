@@ -42,6 +42,7 @@ type PageInfo struct {
 
 	// HTML Links
 	CanonicalLink string
+	ShortLink     string
 	AlternateHandheldLink string
 	Icons         []Icon
 }
@@ -103,6 +104,9 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	// Otherwise, we don't add it as a separate property.
 	if p.CanonicalLink != "" && p.CanonicalLink != p.URL {
 		add("HTML", "Canonical Link", "CanonicalLink", p.CanonicalLink)
+	}
+	if p.ShortLink != "" && p.ShortLink != p.URL {
+		add("HTML", "Short Link", "ShortLink", p.ShortLink)
 	}
 	if p.AlternateHandheldLink != "" && p.AlternateHandheldLink != p.URL {
 		add("HTML", "Alternate Handheld Link", "AlternateHandheldLink", p.AlternateHandheldLink)

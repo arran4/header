@@ -103,6 +103,13 @@ func (p *PageInfo) SetCanonicalLink(link string) {
 	p.CanonicalLink = link
 }
 
+// SetShortLink sets the short link.
+func (p *PageInfo) SetShortLink(link string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.ShortLink = link
+}
+
 // SetAlternateHandheldLink sets the alternate handheld link.
 func (p *PageInfo) SetAlternateHandheldLink(link string) {
 	p.mu.Lock()

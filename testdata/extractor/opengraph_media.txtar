@@ -28,6 +28,7 @@ Extract OpenGraph with alternate link using max-width media query
   "JSONLDType": "",
   "JSONLDName": "",
   "CanonicalLink": "",
+  "ShortLink": "",
   "AlternateHandheldLink": "https://m.youtube.com/watch?v=GOZ4CMm7704",
   "Icons": null
 }
