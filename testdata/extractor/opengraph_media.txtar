@@ -3,7 +3,7 @@ Extract OpenGraph with alternate link using max-width media query
 <html>
 <head>
 	<title>Test Title</title>
-	<link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.youtube.com/watch?v=GOZ4CMm7704">
+	<link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.youtube.com/watch?v=jNQXAC9IVRw">
 </head>
 <body></body>
 </html>
@@ -28,6 +28,7 @@ Extract OpenGraph with alternate link using max-width media query
   "JSONLDType": "",
   "JSONLDName": "",
   "CanonicalLink": "",
-  "AlternateHandheldLink": "https://m.youtube.com/watch?v=GOZ4CMm7704",
+  "ShortLink": "",
+  "AlternateHandheldLink": "https://m.youtube.com/watch?v=jNQXAC9IVRw",
   "Icons": null
 }
