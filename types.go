@@ -61,14 +61,21 @@ type Icon struct {
 // CoverImages returns a list of potential image URLs.
 func (p *PageInfo) CoverImages() []string {
 	var images []string
-	if p.OGImage != "" {
-		images = append(images, p.OGImage)
-	} else if p.OGImageSecureURL != "" {
-		images = append(images, p.OGImageSecureURL)
+	seen := make(map[string]bool)
+
+	add := func(img string) {
+		if img != "" && !seen[img] {
+			seen[img] = true
+			images = append(images, img)
+		}
 	}
-	if p.TwitterImage != "" && p.TwitterImage != p.OGImage && p.TwitterImage != p.OGImageSecureURL {
-		images = append(images, p.TwitterImage)
+
+	add(p.OGImage)
+	if p.OGImage == "" {
+		add(p.OGImageSecureURL)
 	}
+	add(p.TwitterImage)
+
 	return images
 }
 
