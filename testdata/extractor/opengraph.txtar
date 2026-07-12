@@ -21,6 +21,9 @@ Extract OpenGraph and other standard HTML metadata
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:image" content="http://example.com/twitter.jpg" />
 	<meta name="twitter:image:alt" content="A test twitter image alt text" />
+	<meta name="twitter:player" content="https://www.youtube.com/embed/GOZ4CMm7704" />
+	<meta name="twitter:player:width" content="1280" />
+	<meta name="twitter:player:height" content="720" />
 	<link rel="canonical" href="https://example.com/canonical" />
 	<link rel="shortlink" href="https://youtu.be/jNQXAC9IVRw" />
 	<link rel="shortcut icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico" type="image/x-icon">
@@ -56,6 +59,9 @@ Extract OpenGraph and other standard HTML metadata
   "TwitterTitle": "Test Twitter Title",
   "TwitterDescription": "",
   "TwitterImageAlt": "A test twitter image alt text",
+  "TwitterPlayer": "https://www.youtube.com/embed/GOZ4CMm7704",
+  "TwitterPlayerWidth": "1280",
+  "TwitterPlayerHeight": "720",
   "YouTubeVideoID": "",
   "YouTubeLengthSeconds": 0,
   "YouTubeDuration": 0,

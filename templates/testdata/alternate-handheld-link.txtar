@@ -6,7 +6,6 @@ Tests that Alternate Handheld Link is rendered correctly in the output.
   "Title": "Example",
   "AlternateHandheldLink": "https://m.example.com/mobile"
 }
-
 -- expected.txt --
 URL: https://example.com/desktop
 Title: Example
