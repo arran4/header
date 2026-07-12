@@ -32,6 +32,7 @@ type PageInfo struct {
 	OGVideoType      string
 	OGVideoWidth     string
 	OGVideoHeight    string
+	OGVideoAlt       string
 
 	// Twitter
 	TwitterCard        string
@@ -152,6 +153,7 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("OpenGraph", "Video Type", "VideoType", p.OGVideoType)
 	add("OpenGraph", "Video Width", "VideoWidth", p.OGVideoWidth)
 	add("OpenGraph", "Video Height", "VideoHeight", p.OGVideoHeight)
+	add("OpenGraph", "Video Alt", "VideoAlt", p.OGVideoAlt)
 	add("Twitter", "Title", "Title", p.TwitterTitle)
 	add("Twitter", "Card", "Type", p.TwitterCard)
 	add("Twitter", "Description", "Description", p.TwitterDescription)
