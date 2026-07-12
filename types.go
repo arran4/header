@@ -18,11 +18,15 @@ type PageInfo struct {
 	Keywords string
 
 	// OpenGraph
-	OGTitle       string
-	OGType        string
-	OGImage       string
-	OGDescription string
-	OGImageAlt    string
+	OGTitle          string
+	OGType           string
+	OGImage          string
+	OGImageSecureURL string
+	OGImageType      string
+	OGImageWidth     string
+	OGImageHeight    string
+	OGDescription    string
+	OGImageAlt       string
 
 	// Twitter
 	TwitterCard        string
@@ -57,12 +61,21 @@ type Icon struct {
 // CoverImages returns a list of potential image URLs.
 func (p *PageInfo) CoverImages() []string {
 	var images []string
-	if p.OGImage != "" {
-		images = append(images, p.OGImage)
+	seen := make(map[string]bool)
+
+	add := func(img string) {
+		if img != "" && !seen[img] {
+			seen[img] = true
+			images = append(images, img)
+		}
 	}
-	if p.TwitterImage != "" && p.TwitterImage != p.OGImage {
-		images = append(images, p.TwitterImage)
+
+	add(p.OGImage)
+	if p.OGImage == "" {
+		add(p.OGImageSecureURL)
 	}
+	add(p.TwitterImage)
+
 	return images
 }
 
@@ -122,6 +135,11 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("HTML", "Keywords", "Keywords", p.Keywords)
 	add("OpenGraph", "Title", "Title", p.OGTitle)
 	add("OpenGraph", "Type", "Type", p.OGType)
+	add("OpenGraph", "Image", "Image", p.OGImage)
+	add("OpenGraph", "Image Secure URL", "ImageSecureURL", p.OGImageSecureURL)
+	add("OpenGraph", "Image Type", "ImageType", p.OGImageType)
+	add("OpenGraph", "Image Width", "ImageWidth", p.OGImageWidth)
+	add("OpenGraph", "Image Height", "ImageHeight", p.OGImageHeight)
 	add("OpenGraph", "Description", "Description", p.OGDescription)
 	add("OpenGraph", "Image Alt", "ImageAlt", p.OGImageAlt)
 	add("Twitter", "Title", "Title", p.TwitterTitle)

@@ -7,6 +7,10 @@ Extract OpenGraph and other standard HTML metadata
 	<meta property="og:title" content="Test OG Title" />
 	<meta property="og:type" content="article" />
 	<meta property="og:image" content="http://example.com/image.jpg" />
+	<meta property="og:image:secure_url" content="https://example.com/image.jpg" />
+	<meta property="og:image:type" content="image/jpeg" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
 	<meta property="og:image:alt" content="A test image alt text" />
 	<meta name="twitter:title" content="Test Twitter Title" />
 	<meta name="twitter:card" content="summary_large_image" />
@@ -30,6 +34,10 @@ Extract OpenGraph and other standard HTML metadata
   "OGTitle": "Test OG Title",
   "OGType": "article",
   "OGImage": "http://example.com/image.jpg",
+  "OGImageSecureURL": "https://example.com/image.jpg",
+  "OGImageType": "image/jpeg",
+  "OGImageWidth": "1200",
+  "OGImageHeight": "630",
   "OGDescription": "",
   "OGImageAlt": "A test image alt text",
   "TwitterCard": "summary_large_image",
