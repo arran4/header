@@ -190,3 +190,45 @@ func (p *PageInfo) SetYouTubeInfo(id string, title string, lengthSecs int) {
 	p.YouTubeLengthSeconds = lengthSecs
 	p.YouTubeDuration = time.Duration(lengthSecs) * time.Second
 }
+
+// SetOGVideo adds an OpenGraph video.
+func (p *PageInfo) SetOGVideo(vid string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGVideo = vid
+}
+
+// SetOGVideoSecureURL sets the OpenGraph video secure URL.
+func (p *PageInfo) SetOGVideoSecureURL(url string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGVideoSecureURL = url
+}
+
+// SetOGVideoType sets the OpenGraph video type.
+func (p *PageInfo) SetOGVideoType(t string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGVideoType = t
+}
+
+// SetOGVideoWidth sets the OpenGraph video width.
+func (p *PageInfo) SetOGVideoWidth(w string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGVideoWidth = w
+}
+
+// SetOGVideoHeight sets the OpenGraph video height.
+func (p *PageInfo) SetOGVideoHeight(h string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGVideoHeight = h
+}
+
+// SetOGVideoAlt sets the OpenGraph video alt text.
+func (p *PageInfo) SetOGVideoAlt(alt string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGVideoAlt = alt
+}

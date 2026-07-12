@@ -65,6 +65,18 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						info.SetOGDescription(content)
 					case "og:title":
 						info.SetOGTitle(content)
+					case "og:video", "og:video:url":
+						info.SetOGVideo(content)
+					case "og:video:secure_url":
+						info.SetOGVideoSecureURL(content)
+					case "og:video:type":
+						info.SetOGVideoType(content)
+					case "og:video:width":
+						info.SetOGVideoWidth(content)
+					case "og:video:height":
+						info.SetOGVideoHeight(content)
+					case "og:video:alt":
+						info.SetOGVideoAlt(content)
 					}
 				}
 
