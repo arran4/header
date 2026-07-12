@@ -75,6 +75,8 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						info.SetOGVideoWidth(content)
 					case "og:video:height":
 						info.SetOGVideoHeight(content)
+					case "og:video:alt":
+						info.SetOGVideoAlt(content)
 					}
 				}
 

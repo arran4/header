@@ -50,6 +50,7 @@ Extract OpenGraph and other standard HTML metadata
   "OGVideoType": "text/html",
   "OGVideoWidth": "1280",
   "OGVideoHeight": "720",
+  "OGVideoAlt": "",
   "TwitterCard": "summary_large_image",
   "TwitterImage": "http://example.com/twitter.jpg",
   "TwitterTitle": "Test Twitter Title",

@@ -26,6 +26,7 @@ Extract OpenGraph with alternate link using max-width media query
   "OGVideoType": "",
   "OGVideoWidth": "",
   "OGVideoHeight": "",
+  "OGVideoAlt": "",
   "TwitterCard": "",
   "TwitterImage": "",
   "TwitterTitle": "",

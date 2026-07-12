@@ -225,3 +225,10 @@ func (p *PageInfo) SetOGVideoHeight(h string) {
 	defer p.mu.Unlock()
 	p.OGVideoHeight = h
 }
+
+// SetOGVideoAlt sets the OpenGraph video alt text.
+func (p *PageInfo) SetOGVideoAlt(alt string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGVideoAlt = alt
+}
