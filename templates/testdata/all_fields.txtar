@@ -41,6 +41,7 @@ HTML Icon: https://example.com/favicon.ico
 HTML Icon: https://example.com/favicon_32x32.png (32x32)
 OpenGraph Title: OG Title
 OpenGraph Type: article
+OpenGraph Image: http://example.com/og.jpg
 OpenGraph Description: Test OG Description
 OpenGraph Image Alt: OG Image Alt Text
 Twitter Title: Twitter Title

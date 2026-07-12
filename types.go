@@ -63,8 +63,10 @@ func (p *PageInfo) CoverImages() []string {
 	var images []string
 	if p.OGImage != "" {
 		images = append(images, p.OGImage)
+	} else if p.OGImageSecureURL != "" {
+		images = append(images, p.OGImageSecureURL)
 	}
-	if p.TwitterImage != "" && p.TwitterImage != p.OGImage {
+	if p.TwitterImage != "" && p.TwitterImage != p.OGImage && p.TwitterImage != p.OGImageSecureURL {
 		images = append(images, p.TwitterImage)
 	}
 	return images
@@ -126,6 +128,7 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("HTML", "Keywords", "Keywords", p.Keywords)
 	add("OpenGraph", "Title", "Title", p.OGTitle)
 	add("OpenGraph", "Type", "Type", p.OGType)
+	add("OpenGraph", "Image", "Image", p.OGImage)
 	add("OpenGraph", "Image Secure URL", "ImageSecureURL", p.OGImageSecureURL)
 	add("OpenGraph", "Image Type", "ImageType", p.OGImageType)
 	add("OpenGraph", "Image Width", "ImageWidth", p.OGImageWidth)
