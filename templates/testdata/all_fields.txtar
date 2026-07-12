@@ -7,6 +7,10 @@ All fields populated
   "OGTitle": "OG Title",
   "OGType": "article",
   "OGImage": "http://example.com/og.jpg",
+  "OGImageSecureURL": "",
+  "OGImageType": "",
+  "OGImageWidth": "",
+  "OGImageHeight": "",
   "OGImageAlt": "OG Image Alt Text",
   "OGDescription": "Test OG Description",
   "TwitterCard": "summary_large_image",
@@ -20,10 +24,16 @@ All fields populated
   "JSONLDType": "VideoObject",
   "JSONLDName": "Rick Astley",
   "Icons": [
-    { "URL": "https://example.com/favicon.ico" },
-    { "URL": "https://example.com/favicon_32x32.png", "Sizes": "32x32" }
+    {
+      "URL": "https://example.com/favicon.ico"
+    },
+    {
+      "URL": "https://example.com/favicon_32x32.png",
+      "Sizes": "32x32"
+    }
   ]
 }
+
 -- expected.txt --
 URL: https://example.com
 Title: Test Title
@@ -31,6 +41,7 @@ HTML Icon: https://example.com/favicon.ico
 HTML Icon: https://example.com/favicon_32x32.png (32x32)
 OpenGraph Title: OG Title
 OpenGraph Type: article
+OpenGraph Image: http://example.com/og.jpg
 OpenGraph Description: Test OG Description
 OpenGraph Image Alt: OG Image Alt Text
 Twitter Title: Twitter Title

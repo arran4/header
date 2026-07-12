@@ -44,6 +44,34 @@ func (p *PageInfo) SetOGImage(img string) {
 	p.OGImage = img
 }
 
+// SetOGImageSecureURL sets the OpenGraph image secure URL.
+func (p *PageInfo) SetOGImageSecureURL(url string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGImageSecureURL = url
+}
+
+// SetOGImageType sets the OpenGraph image type.
+func (p *PageInfo) SetOGImageType(t string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGImageType = t
+}
+
+// SetOGImageWidth sets the OpenGraph image width.
+func (p *PageInfo) SetOGImageWidth(w string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGImageWidth = w
+}
+
+// SetOGImageHeight sets the OpenGraph image height.
+func (p *PageInfo) SetOGImageHeight(h string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.OGImageHeight = h
+}
+
 // SetOGImageAlt adds an OpenGraph image alt text.
 func (p *PageInfo) SetOGImageAlt(alt string) {
 	p.mu.Lock()
