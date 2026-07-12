@@ -12,6 +12,12 @@ All fields populated
   "OGImageWidth": "",
   "OGImageHeight": "",
   "OGImageAlt": "OG Image Alt Text",
+  "OGVideo": "http://example.com/video.mp4",
+  "OGVideoSecureURL": "https://example.com/video.mp4",
+  "OGVideoType": "video/mp4",
+  "OGVideoWidth": "1920",
+  "OGVideoHeight": "1080",
+  "OGVideoAlt": "A video alt",
   "OGDescription": "Test OG Description",
   "TwitterCard": "summary_large_image",
   "TwitterImage": "http://example.com/tw.jpg",
@@ -44,6 +50,12 @@ OpenGraph Type: article
 OpenGraph Image: http://example.com/og.jpg
 OpenGraph Description: Test OG Description
 OpenGraph Image Alt: OG Image Alt Text
+OpenGraph Video: http://example.com/video.mp4
+OpenGraph Video Secure URL: https://example.com/video.mp4
+OpenGraph Video Type: video/mp4
+OpenGraph Video Width: 1920
+OpenGraph Video Height: 1080
+OpenGraph Video Alt: A video alt
 Twitter Title: Twitter Title
 Twitter Card: summary_large_image
 Twitter Description: Twitter Desc

@@ -27,6 +27,12 @@ type PageInfo struct {
 	OGImageHeight    string
 	OGDescription    string
 	OGImageAlt       string
+	OGVideo          string
+	OGVideoSecureURL string
+	OGVideoType      string
+	OGVideoWidth     string
+	OGVideoHeight    string
+	OGVideoAlt       string
 
 	// Twitter
 	TwitterCard        string
@@ -142,6 +148,12 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("OpenGraph", "Image Height", "ImageHeight", p.OGImageHeight)
 	add("OpenGraph", "Description", "Description", p.OGDescription)
 	add("OpenGraph", "Image Alt", "ImageAlt", p.OGImageAlt)
+	add("OpenGraph", "Video", "Video", p.OGVideo)
+	add("OpenGraph", "Video Secure URL", "VideoSecureURL", p.OGVideoSecureURL)
+	add("OpenGraph", "Video Type", "VideoType", p.OGVideoType)
+	add("OpenGraph", "Video Width", "VideoWidth", p.OGVideoWidth)
+	add("OpenGraph", "Video Height", "VideoHeight", p.OGVideoHeight)
+	add("OpenGraph", "Video Alt", "VideoAlt", p.OGVideoAlt)
 	add("Twitter", "Title", "Title", p.TwitterTitle)
 	add("Twitter", "Card", "Type", p.TwitterCard)
 	add("Twitter", "Description", "Description", p.TwitterDescription)
