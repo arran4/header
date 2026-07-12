@@ -12,6 +12,11 @@ Extract OpenGraph and other standard HTML metadata
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta property="og:image:alt" content="A test image alt text" />
+	<meta property="og:video:url" content="https://www.youtube.com/embed/GOZ4CMm7704" />
+	<meta property="og:video:secure_url" content="https://www.youtube.com/embed/GOZ4CMm7704" />
+	<meta property="og:video:type" content="text/html" />
+	<meta property="og:video:width" content="1280" />
+	<meta property="og:video:height" content="720" />
 	<meta name="twitter:title" content="Test Twitter Title" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:image" content="http://example.com/twitter.jpg" />
@@ -40,6 +45,11 @@ Extract OpenGraph and other standard HTML metadata
   "OGImageHeight": "630",
   "OGDescription": "",
   "OGImageAlt": "A test image alt text",
+  "OGVideo": "https://www.youtube.com/embed/GOZ4CMm7704",
+  "OGVideoSecureURL": "https://www.youtube.com/embed/GOZ4CMm7704",
+  "OGVideoType": "text/html",
+  "OGVideoWidth": "1280",
+  "OGVideoHeight": "720",
   "TwitterCard": "summary_large_image",
   "TwitterImage": "http://example.com/twitter.jpg",
   "TwitterTitle": "Test Twitter Title",
