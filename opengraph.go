@@ -93,6 +93,12 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						info.SetTwitterTitle(content)
 					case "twitter:description":
 						info.SetTwitterDescription(content)
+					case "twitter:player":
+						info.SetTwitterPlayer(content)
+					case "twitter:player:width":
+						info.SetTwitterPlayerWidth(content)
+					case "twitter:player:height":
+						info.SetTwitterPlayerHeight(content)
 					}
 				}
 			case "title":

@@ -107,6 +107,27 @@ func (p *PageInfo) SetTwitterImageAlt(alt string) {
 	p.TwitterImageAlt = alt
 }
 
+// SetTwitterPlayer sets the Twitter player.
+func (p *PageInfo) SetTwitterPlayer(player string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.TwitterPlayer = player
+}
+
+// SetTwitterPlayerWidth sets the Twitter player width.
+func (p *PageInfo) SetTwitterPlayerWidth(width string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.TwitterPlayerWidth = width
+}
+
+// SetTwitterPlayerHeight sets the Twitter player height.
+func (p *PageInfo) SetTwitterPlayerHeight(height string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.TwitterPlayerHeight = height
+}
+
 // SetTwitterTitle sets the Twitter title.
 func (p *PageInfo) SetTwitterTitle(title string) {
 	p.mu.Lock()

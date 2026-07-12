@@ -22,6 +22,9 @@ All fields populated
   "TwitterCard": "summary_large_image",
   "TwitterImage": "http://example.com/tw.jpg",
   "TwitterImageAlt": "Twitter Image Alt Text",
+  "TwitterPlayer": "",
+  "TwitterPlayerWidth": "",
+  "TwitterPlayerHeight": "",
   "TwitterTitle": "Twitter Title",
   "TwitterDescription": "Twitter Desc",
   "YouTubeVideoID": "jNQXAC9IVRw",
@@ -39,7 +42,6 @@ All fields populated
     }
   ]
 }
-
 -- expected.txt --
 URL: https://example.com
 Title: Test Title

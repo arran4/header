@@ -7,7 +7,6 @@ Canonical Link matches URL
   "CanonicalLink": "https://example.com",
   "ShortLink": ""
 }
-
 -- expected.txt --
 URL (canonical): https://example.com
 Title: Test Title
