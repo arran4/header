@@ -35,11 +35,14 @@ type PageInfo struct {
 	OGVideoAlt       string
 
 	// Twitter
-	TwitterCard        string
-	TwitterImage       string
-	TwitterTitle       string
-	TwitterDescription string
-	TwitterImageAlt    string
+	TwitterCard         string
+	TwitterImage        string
+	TwitterTitle        string
+	TwitterDescription  string
+	TwitterImageAlt     string
+	TwitterPlayer       string
+	TwitterPlayerWidth  string
+	TwitterPlayerHeight string
 
 	// YouTube Specific
 	YouTubeVideoID       string
@@ -158,6 +161,9 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("Twitter", "Card", "Type", p.TwitterCard)
 	add("Twitter", "Description", "Description", p.TwitterDescription)
 	add("Twitter", "Image Alt", "ImageAlt", p.TwitterImageAlt)
+	add("Twitter", "Player", "Player", p.TwitterPlayer)
+	add("Twitter", "Player Width", "PlayerWidth", p.TwitterPlayerWidth)
+	add("Twitter", "Player Height", "PlayerHeight", p.TwitterPlayerHeight)
 	add("YouTube", "Video ID", "VideoID", p.YouTubeVideoID)
 	if p.YouTubeDuration > 0 {
 		add("YouTube", "Duration", "Duration", p.YouTubeDuration)

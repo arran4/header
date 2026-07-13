@@ -6,7 +6,6 @@ Short Link is parsed and displayed
   "Title": "Test Title",
   "ShortLink": "https://example.com/sp"
 }
-
 -- expected.txt --
 URL: https://example.com/some-page?utm_source=test
 Title: Test Title
