@@ -1,25 +1,20 @@
 package header
 
 import (
+	_ "embed"
 	"strings"
 	"testing"
 )
 
-func TestExtractYouTubeInfo(t *testing.T) {
-	htmlContent := `
-	<html>
-	<head>
-		<script>var ytInitialPlayerResponse = {"videoDetails":{"videoId":"dQw4w9WgXcQ","title":"Rick Astley - Never Gonna Give You Up (Official Music Video)","lengthSeconds":"212"}};</script>
-	</head>
-	<body></body>
-	</html>
-	`
+//go:embed testdata/youtube.html
+var youtubeHTML []byte
 
+func TestExtractYouTubeInfo(t *testing.T) {
 	info := &PageInfo{
 		URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 	}
 	extractor := youtubeExtractor{}
-	err := extractor.Extract(strings.NewReader(htmlContent), info)
+	err := extractor.Extract(strings.NewReader(string(youtubeHTML)), info)
 	if err != nil {
 		t.Fatalf("Extractor returned error: %v", err)
 	}
