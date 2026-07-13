@@ -7,14 +7,14 @@ import (
 )
 
 //go:embed testdata/youtube.html
-var youtubeHTML []byte
+var youtubeHTML string
 
 func TestExtractYouTubeInfo(t *testing.T) {
 	info := &PageInfo{
 		URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 	}
 	extractor := youtubeExtractor{}
-	err := extractor.Extract(strings.NewReader(string(youtubeHTML)), info)
+	err := extractor.Extract(strings.NewReader(youtubeHTML), info)
 	if err != nil {
 		t.Fatalf("Extractor returned error: %v", err)
 	}
