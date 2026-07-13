@@ -22,9 +22,9 @@ All fields populated
   "TwitterCard": "summary_large_image",
   "TwitterImage": "http://example.com/tw.jpg",
   "TwitterImageAlt": "Twitter Image Alt Text",
-  "TwitterPlayer": "",
-  "TwitterPlayerWidth": "",
-  "TwitterPlayerHeight": "",
+  "TwitterPlayer": "https://example.com/player",
+  "TwitterPlayerWidth": "640",
+  "TwitterPlayerHeight": "360",
   "TwitterTitle": "Twitter Title",
   "TwitterDescription": "Twitter Desc",
   "YouTubeVideoID": "jNQXAC9IVRw",
@@ -62,6 +62,9 @@ Twitter Title: Twitter Title
 Twitter Card: summary_large_image
 Twitter Description: Twitter Desc
 Twitter Image Alt: Twitter Image Alt Text
+Twitter Player: https://example.com/player
+Twitter Player Width: 640
+Twitter Player Height: 360
 YouTube Video ID: jNQXAC9IVRw
 YouTube Duration: 3m32s
 JSON-LD Type: VideoObject
