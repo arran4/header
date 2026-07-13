@@ -5,7 +5,6 @@ Only URL and Title populated
   "URL": "https://example.com",
   "Title": "Test Title"
 }
-
 -- expected.txt --
 URL: https://example.com
 Title: Test Title

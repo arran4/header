@@ -13,7 +13,6 @@ Fields from different sources have the same values and should be grouped
   "TwitterTitle": "Same Title",
   "JSONLDName": "Same Title"
 }
-
 -- expected.txt --
 URL: https://example.com
 Title: Test Title
