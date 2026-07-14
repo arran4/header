@@ -6,31 +6,31 @@
 
 -- commands --
 # Test setting title
-exec header edit head test.html -s 'New Title'
+exec header edit head -s 'New Title' test.html
 exec cat test.html
 stdout '<title>New Title</title>'
 
 # Test setting meta
-exec header edit meta description test.html -s 'New Description'
+exec header edit meta -s 'New Description' description test.html
 exec cat test.html
 stdout 'content="New Description"'
 
 # Test setting og:title which uses property= instead of name=
-exec header edit meta og:title test.html -s 'OG Title'
+exec header edit meta -s 'OG Title' og:title test.html
 exec cat test.html
 stdout 'property="og:title" content="OG Title"'
 
 # Test add
-exec header edit meta keywords test.html -S 'keyword1, keyword2'
+exec header edit meta -S 'keyword1, keyword2' keywords test.html
 exec cat test.html
 stdout 'name="keywords" content="keyword1, keyword2"'
 
 # Test replace
-exec header edit meta description test.html -r 'Replaced Description'
+exec header edit meta -r 'Replaced Description' description test.html
 exec cat test.html
 stdout 'content="Replaced Description"'
 
 # Test stdin/stdout
 stdin stdin.html
-exec header edit head - -s 'Replaced Stdin Title'
+exec header edit head -s 'Replaced Stdin Title' -
 stdout '<title>Replaced Stdin Title</title>'
