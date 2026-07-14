@@ -15,6 +15,10 @@ import (
 )
 
 func main() {
+	if len(os.Args) >= 2 && os.Args[1] == "edit" {
+		os.Exit(editCmd(os.Args[2:]))
+	}
+
 	// Create a new flag set so we can call main multiple times in tests
 	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")
