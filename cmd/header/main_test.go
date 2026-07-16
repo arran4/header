@@ -1,13 +1,13 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
-	_ "embed"
 
 	"github.com/rogpeppe/go-internal/testscript"
 )
