@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-func editCmd(args []string) int {
+func EditCmd(args []string) int {
 	if len(args) < 1 {
 		fmt.Fprintf(os.Stderr, "Usage:\n")
 		fmt.Fprintf(os.Stderr, "  header edit head [flags] <file>\n")

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/arran4/header/internal/cli"
 )
 
 func main() {
@@ -18,13 +20,13 @@ func main() {
 
 	switch command {
 	case "edit":
-		os.Exit(editCmd(os.Args[2:]))
+		os.Exit(cli.EditCmd(os.Args[2:]))
 	case "extract":
-		os.Exit(extractCmd(os.Args[2:]))
+		os.Exit(cli.ExtractCmd(os.Args[2:]))
 	default:
 		// To remain somewhat backwards compatible with old usage where people did `header https://...`,
 		// if the command isn't recognized, fallback to extract treating the command as an arg.
 		// e.g. `header -test https://example.com`
-		os.Exit(extractCmd(os.Args[1:]))
+		os.Exit(cli.ExtractCmd(os.Args[1:]))
 	}
 }
