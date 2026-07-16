@@ -1,0 +1,10 @@
+-- example.html --
+<!DOCTYPE html><html><head><title>Rick Astley - Never Gonna Give You Up (Official Music Video)</title><meta itemprop="videoId" content="dQw4w9WgXcQ"><meta itemprop="duration" content="PT3M32S"></head><body></body></html>
+-- expected.json --
+{
+    "URL": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "Title": "Rick Astley - Never Gonna Give You Up (Official Music Video)",
+    "YouTubeVideoID": "dQw4w9WgXcQ",
+    "YouTubeLengthSeconds": 212,
+    "YouTubeDuration": 212000000000
+}
