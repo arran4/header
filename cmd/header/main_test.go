@@ -49,6 +49,15 @@ func TestMain(m *testing.M) {
 		case "/image.jpg":
 			w.Header().Set("Content-Type", "image/jpeg")
 			_, _ = fmt.Fprint(w, "fake image data")
+        case "/redirect1":
+			w.Header().Set("Location", "/redirect2")
+			w.WriteHeader(http.StatusFound)
+        case "/redirect2":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write([]byte(`<html><head><meta http-equiv="refresh" content="0; url=/redirect3"></head><body>redirecting...</body></html>`))
+        case "/redirect3":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write([]byte(`<html><body>Final page</body></html>`))
 		default:
 			http.NotFound(w, r)
 		}
