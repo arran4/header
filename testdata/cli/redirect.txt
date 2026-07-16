@@ -1,0 +1,3 @@
+exec header -trace-redirects $TEST_SERVER_URL/redirect1
+stdout 'Tracing'
+stdout '1: '

@@ -60,3 +60,15 @@ Run unit and integration tests using:
 ```bash
 go test ./...
 ```
+
+### Redirect Tracing
+
+`header` replaces the `trace-redirects` application and supports tracing HTTP standard redirects as well as HTML meta-refresh redirects.
+
+```bash
+header trace-redirects https://example.com/redirect
+```
+
+You can customize the behaviour using various flags like `-store-cookies`, `-redirect-limit`, `-update-referer`, and `-redirect-delay`.
+
+Alternatively, use the `-trace-redirects` and `-follow-meta-redirects` flags on the default `extract` command to trace redirects before extracting the metadata.
