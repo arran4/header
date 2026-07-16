@@ -1,7 +1,7 @@
 //go:build !shiny
 // +build !shiny
 
-package main
+package ui
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func displayImage(urlStr string) {
+func DisplayImage(urlStr string) {
 	fmt.Printf("Displaying image (exec fallback): %s\n", urlStr)
 
 	client := &http.Client{
