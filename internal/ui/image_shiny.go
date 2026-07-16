@@ -1,7 +1,7 @@
 //go:build shiny
 // +build shiny
 
-package main
+package ui
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-func displayImage(urlStr string) {
+func DisplayImage(urlStr string) {
 	fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
 
 	client := &http.Client{

@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"bytes"
@@ -9,11 +9,12 @@ import (
 
 	"github.com/arran4/header"
 	"github.com/arran4/header/diagnostic"
+	"github.com/arran4/header/internal/ui"
 	"github.com/arran4/header/templates"
 	"github.com/fatih/color"
 )
 
-func extractCmd(args []string) int {
+func ExtractCmd(args []string) int {
 	fs := flag.NewFlagSet("header extract", flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")
 	showImage := fs.Bool("show-image", false, "Display the cover image (if available)")
@@ -77,7 +78,7 @@ func extractCmd(args []string) int {
 	if *showImage {
 		images := info.CoverImages()
 		if len(images) > 0 {
-			displayImage(images[0])
+			ui.DisplayImage(images[0])
 		} else {
 			fmt.Println("No cover image found to display.")
 		}
