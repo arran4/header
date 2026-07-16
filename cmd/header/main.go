@@ -13,6 +13,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\nCommands:\n")
 		fmt.Fprintf(os.Stderr, "  extract   Extract metadata from URL (default if no matching command is found)\n")
 		fmt.Fprintf(os.Stderr, "  edit      Edit HTML file head/meta fields\n")
+		fmt.Fprintf(os.Stderr, "  diagnose  Not implemented\n")
+		fmt.Fprintf(os.Stderr, "  debug     Not implemented\n")
+		fmt.Fprintf(os.Stderr, "  verify    Not implemented\n")
+		fmt.Fprintf(os.Stderr, "  lint      Not implemented\n")
+		fmt.Fprintf(os.Stderr, "  view      Not implemented (e.g. view image <url>)\n")
 		os.Exit(2)
 	}
 
@@ -23,6 +28,9 @@ func main() {
 		os.Exit(cli.EditCmd(os.Args[2:]))
 	case "extract":
 		os.Exit(cli.ExtractCmd(os.Args[2:]))
+	case "diagnose", "debug", "verify", "lint", "view":
+		fmt.Fprintf(os.Stderr, "Command '%s' is not implemented yet.\n", command)
+		os.Exit(1)
 	default:
 		// To remain somewhat backwards compatible with old usage where people did `header https://...`,
 		// if the command isn't recognized, fallback to extract treating the command as an arg.
