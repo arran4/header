@@ -5,18 +5,18 @@ package main
 
 import (
 	"fmt"
+	_ "golang.org/x/image/webp"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
-	_ "golang.org/x/image/webp"
 	"net/http"
 
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
+	"golang.org/x/image/draw"
 	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/paint"
-	"golang.org/x/image/draw"
 	"time"
 )
 
