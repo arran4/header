@@ -62,9 +62,7 @@ func ExtractCmd(args []string) int {
 		for i, url := range info.Trace {
 			fmt.Printf("%d: %s\n", i+1, url)
 		}
-		if len(info.Trace) > 0 {
-			fmt.Println("Done")
-		}
+		fmt.Println("Done")
 	}
 
 	tmplContent, err := templates.FS.ReadFile(*style + ".tmpl")
