@@ -11,7 +11,7 @@ func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintf(os.Stderr, "Usage: header <command> [args...]\n")
 		fmt.Fprintf(os.Stderr, "\nCommands:\n")
-		fmt.Fprintf(os.Stderr, "  extract         Extract metadata from URL (default if no matching command is found)\n")
+		fmt.Fprintf(os.Stderr, "  show            Extract metadata from URL (default if no matching command is found)\n")
 		fmt.Fprintf(os.Stderr, "  edit            Edit HTML file head/meta fields\n")
 		fmt.Fprintf(os.Stderr, "  trace-redirects Trace URL redirects\n")
 		fmt.Fprintf(os.Stderr, "  diagnose  Not implemented\n")
@@ -27,7 +27,7 @@ func main() {
 	switch command {
 	case "edit":
 		os.Exit(cli.EditCmd(os.Args[2:]))
-	case "extract":
+	case "show", "extract":
 		os.Exit(cli.ExtractCmd(os.Args[2:]))
 	case "trace-redirects":
 		os.Exit(cli.TraceRedirectsCmd(os.Args[2:]))
