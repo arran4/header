@@ -8,8 +8,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-
-	"github.com/rogpeppe/go-internal/testscript"
 )
 
 var ts *httptest.Server
@@ -49,13 +47,13 @@ func TestMain(m *testing.M) {
 		case "/image.jpg":
 			w.Header().Set("Content-Type", "image/jpeg")
 			_, _ = fmt.Fprint(w, "fake image data")
-        case "/redirect1":
+		case "/redirect1":
 			w.Header().Set("Location", "/redirect2")
 			w.WriteHeader(http.StatusFound)
-        case "/redirect2":
+		case "/redirect2":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write([]byte(`<html><head><meta http-equiv="refresh" content="0; url=/redirect3"></head><body>redirecting...</body></html>`))
-        case "/redirect3":
+		case "/redirect3":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write([]byte(`<html><body>Final page</body></html>`))
 		default:
@@ -64,30 +62,11 @@ func TestMain(m *testing.M) {
 	}))
 	defer ts.Close()
 
-	os.Exit(testscript.RunMain(m, map[string]func() int{
-		"header": func() int {
-			// Restore original os.Args after the call
-			origArgs := os.Args
-			defer func() { os.Args = origArgs }()
-
-			// We need a fresh set of flags per run since `flag.Parse()` is called
-			newArgs := make([]string, len(origArgs))
-			copy(newArgs, origArgs)
-
-			os.Args = newArgs
-			main()
-			return 0
-		},
-	}))
+	os.Exit(m.Run())
 }
 
 func TestCLI(t *testing.T) {
-	testscript.Run(t, testscript.Params{
-		Dir: "../../testdata/cli",
-		Setup: func(env *testscript.Env) error {
-			// Replace localhost placeholders with actual server URL
-			env.Setenv("TEST_SERVER_URL", ts.URL)
-			return nil
-		},
+	runTxtarScript(t, "../../testdata/cli", map[string]string{
+		"TEST_SERVER_URL": ts.URL,
 	})
 }
