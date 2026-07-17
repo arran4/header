@@ -20,6 +20,12 @@ func ExtractCmd(args []string) int {
 	showImage := fs.Bool("show-image", false, "Display the cover image (if available)")
 	style := fs.String("style", "default", "The output style template to use (e.g. default, plain)")
 	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
+	traceRedirects := fs.Bool("trace-redirects", false, "Trace redirects like trace-redirects tool")
+	followMetaRefresh := fs.Bool("follow-meta-redirects", false, "Follow meta refresh redirects")
+	updateReferer := fs.Bool("update-referer", true, "Update Referer header on redirect")
+	storeCookies := fs.Bool("store-cookies", true, "Store cookies across redirects")
+	redirectLimit := fs.Int("redirect-limit", 20, "Maximum number of redirects to follow")
+	redirectDelay := fs.Duration("redirect-delay", 0, "Delay between redirects (e.g. 1s, 500ms)")
 
 	if err := fs.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
@@ -36,13 +42,27 @@ func ExtractCmd(args []string) int {
 	urlStr := pargs[0]
 
 	opts := header.FetchOptions{
-		UserAgent: *userAgent,
+		UserAgent:         *userAgent,
+		TraceRedirects:    *traceRedirects,
+		FollowMetaRefresh: *followMetaRefresh,
+		UpdateReferer:     *updateReferer,
+		StoreCookies:      *storeCookies,
+		RedirectLimit:     *redirectLimit,
+		RedirectDelay:     *redirectDelay,
 	}
 
 	info, err := header.FetchURL(urlStr, opts)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error fetching URL: %v\n", err)
 		return 1
+	}
+
+	if *traceRedirects && len(info.Trace) > 0 {
+		fmt.Printf("Tracing %s\n", urlStr)
+		for i, url := range info.Trace {
+			fmt.Printf("%d: %s\n", i+1, url)
+		}
+		fmt.Println("Done")
 	}
 
 	tmplContent, err := templates.FS.ReadFile(*style + ".tmpl")

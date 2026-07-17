@@ -14,6 +14,8 @@ type PageInfo struct {
 
 	// General Information
 	URL      string
+	Trace    []string
+	MetaRefresh string
 	Title    string
 	Keywords string
 
