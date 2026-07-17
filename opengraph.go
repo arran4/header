@@ -27,9 +27,12 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 			t := z.Token()
 			switch t.Data {
 			case "meta":
+				var httpEquiv string
 				var property, name, content string
 				for _, attr := range t.Attr {
 					switch attr.Key {
+					case "http-equiv":
+						httpEquiv = attr.Val
 					case "property":
 						property = attr.Val
 					case "name":
@@ -37,6 +40,11 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					case "content":
 						content = attr.Val
 					}
+				}
+
+				// Meta Refresh
+				if strings.EqualFold(httpEquiv, "refresh") {
+					info.SetMetaRefresh(content)
 				}
 
 				// Standard Metadata

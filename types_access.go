@@ -253,3 +253,20 @@ func (p *PageInfo) SetOGVideoAlt(alt string) {
 	defer p.mu.Unlock()
 	p.OGVideoAlt = alt
 }
+
+
+// SetMetaRefresh sets the meta refresh URL if not already set.
+func (p *PageInfo) SetMetaRefresh(content string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.MetaRefresh == "" {
+		p.MetaRefresh = content
+	}
+}
+
+// AddTrace adds a URL to the redirect trace list.
+func (p *PageInfo) AddTrace(url string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.Trace = append(p.Trace, url)
+}
