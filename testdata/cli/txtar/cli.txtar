@@ -39,4 +39,4 @@ stdout 'OpenGraph Title:'
 exec header -style plain $TEST_SERVER_URL/media
 stdout 'URL: http'
 stdout 'Title: Media Title'
-stdout 'HTML Alternate Handheld Link: https://m.example.com/mobile'
+stdout 'HTML Alternate Link: https://m.example.com/mobile \(only screen and \(max-width: 640px\)\)'

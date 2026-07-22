@@ -159,11 +159,19 @@ func (p *PageInfo) SetShortLink(link string) {
 	p.ShortLink = link
 }
 
-// SetAlternateHandheldLink sets the alternate handheld link.
-func (p *PageInfo) SetAlternateHandheldLink(link string) {
+// AddAlternateLink adds an alternate link.
+func (p *PageInfo) AddAlternateLink(url, media string) {
+	if url == "" {
+		return
+	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.AlternateHandheldLink = link
+	for _, existing := range p.AlternateLinks {
+		if existing.URL == url && existing.Media == media {
+			return
+		}
+	}
+	p.AlternateLinks = append(p.AlternateLinks, AlternateLink{URL: url, Media: media})
 }
 
 // AddIcon adds an icon.
