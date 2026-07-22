@@ -1,4 +1,4 @@
-package main
+package header_test
 
 import (
 	"bytes"
@@ -61,7 +61,7 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 	}
 	binPath := filepath.Join(t.TempDir(), binName)
 	buildCmd := exec.Command("go", "build", "-o", binPath, "./cmd/header")
-	buildCmd.Dir = "../.." // root dir
+	buildCmd.Dir = "." // root dir
 	if out, err := buildCmd.CombinedOutput(); err != nil {
 		t.Fatalf("failed to build binary: %v\n%s", err, out)
 	}
