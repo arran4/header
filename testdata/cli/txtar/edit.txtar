@@ -1,10 +1,5 @@
--- test.html --
-<!DOCTYPE html><html><head><title>Old Title</title><meta name="description" content="Old Description"></head><body>Hello</body></html>
+test: edit
 
--- stdin.html --
-<!DOCTYPE html><html><head><title>Stdin Title</title></head><body></body></html>
-
--- commands --
 # Test setting title
 exec header edit head -s 'New Title' test.html
 exec cat test.html
@@ -34,3 +29,8 @@ stdout 'content="Replaced Description"'
 stdin stdin.html
 exec header edit head -s 'Replaced Stdin Title' -
 stdout '<title>Replaced Stdin Title</title>'
+-- test.html --
+<!DOCTYPE html><html><head><title>Old Title</title><meta name="description" content="Old Description"></head><body>Hello</body></html>
+
+-- stdin.html --
+<!DOCTYPE html><html><head><title>Stdin Title</title></head><body></body></html>

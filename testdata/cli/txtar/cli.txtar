@@ -1,3 +1,5 @@
+test: cli
+
 exec header -style plain $TEST_SERVER_URL/example
 stdout 'URL: http'
 stdout 'Title: Example Page'
