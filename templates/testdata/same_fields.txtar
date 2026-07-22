@@ -4,13 +4,13 @@ Fields from different sources have the same values and should be grouped
 {
   "URL": "https://example.com",
   "Title": "Test Title",
-  "OGType": "website",
-  "TwitterCard": "website",
-  "JSONLDType": "website",
-  "OGDescription": "Same description",
-  "TwitterDescription": "Same description",
   "OGTitle": "Same Title",
+  "OGType": "website",
+  "OGDescription": "Same description",
+  "TwitterCard": "website",
   "TwitterTitle": "Same Title",
+  "TwitterDescription": "Same description",
+  "JSONLDType": "website",
   "JSONLDName": "Same Title"
 }
 -- expected.txt --

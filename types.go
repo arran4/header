@@ -13,59 +13,59 @@ type PageInfo struct {
 	mu sync.Mutex
 
 	// General Information
-	URL         string
-	Trace       []string
-	MetaRefresh string
-	Title       string
-	Keywords    string
+	URL         string `json:",omitempty"`
+	Trace       []string `json:",omitempty"`
+	MetaRefresh string `json:",omitempty"`
+	Title       string `json:",omitempty"`
+	Keywords    string `json:",omitempty"`
 
 	// OpenGraph
-	OGTitle          string
-	OGType           string
-	OGImage          string
-	OGImageSecureURL string
-	OGImageType      string
-	OGImageWidth     string
-	OGImageHeight    string
-	OGDescription    string
-	OGImageAlt       string
-	OGVideo          string
-	OGVideoSecureURL string
-	OGVideoType      string
-	OGVideoWidth     string
-	OGVideoHeight    string
-	OGVideoAlt       string
+	OGTitle          string `json:",omitempty"`
+	OGType           string `json:",omitempty"`
+	OGImage          string `json:",omitempty"`
+	OGImageSecureURL string `json:",omitempty"`
+	OGImageType      string `json:",omitempty"`
+	OGImageWidth     string `json:",omitempty"`
+	OGImageHeight    string `json:",omitempty"`
+	OGDescription    string `json:",omitempty"`
+	OGImageAlt       string `json:",omitempty"`
+	OGVideo          string `json:",omitempty"`
+	OGVideoSecureURL string `json:",omitempty"`
+	OGVideoType      string `json:",omitempty"`
+	OGVideoWidth     string `json:",omitempty"`
+	OGVideoHeight    string `json:",omitempty"`
+	OGVideoAlt       string `json:",omitempty"`
 
 	// Twitter
-	TwitterCard         string
-	TwitterImage        string
-	TwitterTitle        string
-	TwitterDescription  string
-	TwitterImageAlt     string
-	TwitterPlayer       string
-	TwitterPlayerWidth  string
-	TwitterPlayerHeight string
+	TwitterCard         string `json:",omitempty"`
+	TwitterImage        string `json:",omitempty"`
+	TwitterTitle        string `json:",omitempty"`
+	TwitterDescription  string `json:",omitempty"`
+	TwitterImageAlt     string `json:",omitempty"`
+	TwitterPlayer       string `json:",omitempty"`
+	TwitterPlayerWidth  string `json:",omitempty"`
+	TwitterPlayerHeight string `json:",omitempty"`
 
 	// YouTube Specific
-	YouTubeVideoID       string
-	YouTubeLengthSeconds int
-	YouTubeDuration      time.Duration
+	YouTubeVideoID       string `json:",omitempty"`
+	YouTubeLengthSeconds int `json:",omitempty"`
+	YouTubeDuration      time.Duration `json:",omitempty"`
 
 	// JSON-LD (First found entity or merged data)
-	JSONLDType string
-	JSONLDName string
+	JSONLDType string `json:",omitempty"`
+	JSONLDName string `json:",omitempty"`
 
 	// HTML Links
-	CanonicalLink         string
-	ShortLink             string
-	AlternateHandheldLink string
-	Icons                 []Icon
+	CanonicalLink         string `json:",omitempty"`
+	ShortLink             string `json:",omitempty"`
+	AlternateHandheldLink string `json:",omitempty"`
+	Icons                 []Icon `json:",omitempty"`
 }
 
 // Icon represents a parsed icon link.
 type Icon struct {
-	URL   string
-	Sizes string
+	URL   string `json:",omitempty"`
+	Sizes string `json:",omitempty"`
 }
 
 // CoverImages returns a list of potential image URLs.
