@@ -10,5 +10,10 @@ Extract OpenGraph with alternate link using max-width media query
 -- expected.json --
 {
   "Title": "Test Title",
-  "AlternateHandheldLink": "https://m.youtube.com/watch?v=jNQXAC9IVRw"
+  "AlternateLinks": [
+    {
+      "URL": "https://m.youtube.com/watch?v=jNQXAC9IVRw",
+      "Media": "only screen and (max-width: 640px)"
+    }
+  ]
 }

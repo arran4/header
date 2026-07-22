@@ -58,8 +58,14 @@ type PageInfo struct {
 	// HTML Links
 	CanonicalLink         string `json:",omitempty"`
 	ShortLink             string `json:",omitempty"`
-	AlternateHandheldLink string `json:",omitempty"`
+	AlternateLinks        []AlternateLink `json:",omitempty"`
 	Icons                 []Icon `json:",omitempty"`
+}
+
+// AlternateLink represents a parsed alternate link.
+type AlternateLink struct {
+	URL   string `json:",omitempty"`
+	Media string `json:",omitempty"`
 }
 
 // Icon represents a parsed icon link.
@@ -131,8 +137,12 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	if p.ShortLink != "" && p.ShortLink != p.URL {
 		add("HTML", "Short Link", "ShortLink", p.ShortLink)
 	}
-	if p.AlternateHandheldLink != "" && p.AlternateHandheldLink != p.URL {
-		add("HTML", "Alternate Handheld Link", "AlternateHandheldLink", p.AlternateHandheldLink)
+	for _, link := range p.AlternateLinks {
+		val := link.URL
+		if link.Media != "" {
+			val = fmt.Sprintf("%s (%s)", link.URL, link.Media)
+		}
+		add("HTML", "Alternate Link", "AlternateLink", val)
 	}
 	for _, icon := range p.Icons {
 		val := icon.URL
