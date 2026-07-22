@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -18,25 +19,30 @@ func splitArgs(s string) []string {
 	var current []rune
 	inSingleQuote := false
 	inDoubleQuote := false
+	inArg := false
 	for _, r := range s {
 		if r == '\'' && !inDoubleQuote {
 			inSingleQuote = !inSingleQuote
+			inArg = true
 			continue
 		}
 		if r == '"' && !inSingleQuote {
 			inDoubleQuote = !inDoubleQuote
+			inArg = true
 			continue
 		}
 		if r == ' ' && !inSingleQuote && !inDoubleQuote {
-			if len(current) > 0 {
+			if inArg {
 				args = append(args, string(current))
 				current = current[:0]
+				inArg = false
 			}
 		} else {
 			current = append(current, r)
+			inArg = true
 		}
 	}
-	if len(current) > 0 {
+	if inArg {
 		args = append(args, string(current))
 	}
 	return args
@@ -48,8 +54,12 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 		t.Fatalf("failed to read dir: %v", err)
 	}
 
-    // Build the binary first
-	binPath := filepath.Join(t.TempDir(), "header_bin")
+	// Build the binary first
+	binName := "header_bin"
+	if runtime.GOOS == "windows" {
+		binName += ".exe"
+	}
+	binPath := filepath.Join(t.TempDir(), binName)
 	buildCmd := exec.Command("go", "build", "-o", binPath, "./cmd/header")
 	buildCmd.Dir = "../.." // root dir
 	if out, err := buildCmd.CombinedOutput(); err != nil {
@@ -76,11 +86,11 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 				if f.Name == "commands" {
 					commands = string(f.Data)
 				} else {
-                    targetPath := filepath.Join(tempDir, f.Name)
-                    err := os.MkdirAll(filepath.Dir(targetPath), 0755)
-                    if err != nil {
-                        t.Fatalf("failed to create dir for file: %v", err)
-                    }
+					targetPath := filepath.Join(tempDir, f.Name)
+					err := os.MkdirAll(filepath.Dir(targetPath), 0755)
+					if err != nil {
+						t.Fatalf("failed to create dir for file: %v", err)
+					}
 					err = os.WriteFile(targetPath, f.Data, 0644)
 					if err != nil {
 						t.Fatalf("failed to write file: %v", err)
@@ -96,9 +106,9 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 				}
 			}
 
-            for k, v := range env {
-                commands = strings.ReplaceAll(commands, "$"+k, v)
-            }
+			commands = os.Expand(commands, func(k string) string {
+				return env[k]
+			})
 
 			lines := strings.Split(commands, "\n")
 			var lastStdout string
@@ -109,16 +119,22 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 				if line == "" || strings.HasPrefix(line, "#") {
 					continue
 				}
+                if strings.HasPrefix(line, "test: ") {
+                    continue
+                }
 
 				args := splitArgs(line)
 				if len(args) == 0 {
 					continue
 				}
 
-                negate := false
-                if args[0] == "!" {
-                    negate = true
-                    args = args[1:]
+				negate := false
+				if args[0] == "!" {
+					negate = true
+					args = args[1:]
+				}
+                if len(args) == 0 {
+                    continue
                 }
 
 				switch args[0] {
@@ -132,38 +148,38 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 					}
 
 					if args[1] == "cat" {
-                        // Implement 'cat' internally for cross-platform support
-                        if len(args) < 3 {
-                            t.Fatalf("line %d: missing argument for cat", i+1)
-                        }
-                        content, err := os.ReadFile(filepath.Join(tempDir, args[2]))
-                        if err != nil {
-                            if !negate {
-                                t.Fatalf("line %d: cat failed: %v", i+1, err)
-                            }
-                        } else {
-                            if negate {
-                                t.Fatalf("line %d: cat succeeded but should have failed", i+1)
-                            }
-                        }
-                        lastStdout = string(content)
-                        continue
+						// Implement 'cat' internally for cross-platform support
+						if len(args) < 3 {
+							t.Fatalf("line %d: missing argument for cat", i+1)
+						}
+						content, err := os.ReadFile(filepath.Join(tempDir, args[2]))
+						if err != nil {
+							if !negate {
+								t.Fatalf("line %d: cat failed: %v", i+1, err)
+							}
+						} else {
+							if negate {
+								t.Fatalf("line %d: cat succeeded but should have failed", i+1)
+							}
+						}
+						lastStdout = string(content)
+						continue
 					}
 
 					var cmd *exec.Cmd
 					if args[1] == "header" {
-                        cmd = exec.Command(binPath, args[2:]...)
-                        cmd.Dir = tempDir
+						cmd = exec.Command(binPath, args[2:]...)
+						cmd.Dir = tempDir
 					} else {
 						cmd = exec.Command(args[1], args[2:]...)
-                        cmd.Dir = tempDir
+						cmd.Dir = tempDir
 					}
 
-                    var out bytes.Buffer
+					var out, stderrBuf bytes.Buffer
 					cmd.Stdout = &out
-					cmd.Stderr = os.Stderr
+					cmd.Stderr = &stderrBuf
 
-                    var f *os.File
+					var f *os.File
 					if stdinFile != "" {
 						f, err = os.Open(stdinFile)
 						if err != nil {
@@ -174,24 +190,24 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 
 					err = cmd.Run()
 
-                    if f != nil {
-                        f.Close()
-                        stdinFile = "" // reset
-                    }
+					if f != nil {
+						f.Close()
+						stdinFile = "" // reset
+					}
 
 					if err != nil {
-                        if !negate {
-                            if exitErr, ok := err.(*exec.ExitError); ok {
-                                t.Fatalf("line %d: exec failed: %v, output: %s", i+1, exitErr, out.String())
-                            } else {
-                                t.Fatalf("line %d: exec error: %v, output: %s", i+1, err, out.String())
-                            }
-                        }
+						if !negate {
+							if exitErr, ok := err.(*exec.ExitError); ok {
+								t.Fatalf("line %d: exec failed: %v, stdout: %s, stderr: %s", i+1, exitErr, out.String(), stderrBuf.String())
+							} else {
+								t.Fatalf("line %d: exec error: %v, stdout: %s, stderr: %s", i+1, err, out.String(), stderrBuf.String())
+							}
+						}
 					} else {
-                        if negate {
-                            t.Fatalf("line %d: exec succeeded but was expected to fail. output: %s", i+1, out.String())
-                        }
-                    }
+						if negate {
+							t.Fatalf("line %d: exec succeeded but was expected to fail. stdout: %s, stderr: %s", i+1, out.String(), stderrBuf.String())
+						}
+					}
 					lastStdout = out.String()
 
 				case "stdout":
@@ -202,17 +218,17 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 							t.Fatalf("invalid regex at line %d %s: %v", i+1, pattern, err)
 						}
 						if negate {
-                            if matched {
-                                t.Fatalf("line %d: expected stdout to NOT match %q, but it did", i+1, pattern)
-                            }
-                        } else {
-                            if !matched {
-                                t.Fatalf("line %d: expected stdout to match %q, but got %q", i+1, pattern, lastStdout)
-                            }
-                        }
+							if matched {
+								t.Fatalf("line %d: expected stdout to NOT match %q, but it did", i+1, pattern)
+							}
+						} else {
+							if !matched {
+								t.Fatalf("line %d: expected stdout to match %q, but got %q", i+1, pattern, lastStdout)
+							}
+						}
 					}
-                default:
-                    t.Fatalf("line %d: unknown command: %s", i+1, args[0])
+				default:
+					t.Fatalf("line %d: unknown command: %s", i+1, args[0])
 				}
 			}
 		})

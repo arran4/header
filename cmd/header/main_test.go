@@ -60,13 +60,13 @@ func TestMain(m *testing.M) {
 			http.NotFound(w, r)
 		}
 	}))
-	defer ts.Close()
 
-	os.Exit(m.Run())
+	code := m.Run()
+	ts.Close()
+	os.Exit(code)
 }
-
 func TestCLI(t *testing.T) {
-	runTxtarScript(t, "../../testdata/cli", map[string]string{
+	runTxtarScript(t, "../../testdata/cli/txtar", map[string]string{
 		"TEST_SERVER_URL": ts.URL,
 	})
 }
