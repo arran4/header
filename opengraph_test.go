@@ -3,9 +3,9 @@ package header
 import (
 	"embed"
 	"encoding/json"
+	"io/fs"
 	"strings"
 	"testing"
-	"io/fs"
 
 	"github.com/rogpeppe/go-internal/txtar"
 )
@@ -65,7 +65,7 @@ func TestExtractOpenGraph(t *testing.T) {
 			}
 
 			if expectedInfo.Title != info.Title || expectedInfo.Keywords != info.Keywords ||
-			   expectedInfo.OGTitle != info.OGTitle || expectedInfo.TwitterTitle != info.TwitterTitle {
+				expectedInfo.OGTitle != info.OGTitle || expectedInfo.TwitterTitle != info.TwitterTitle {
 				t.Errorf("Mismatch in expected output.\nExpected:\n%s\n\nActual:\n%s\n", expectedJSON, string(actualJSON))
 			}
 

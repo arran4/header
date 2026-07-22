@@ -1,8 +1,8 @@
 package header
 
 import (
-	"io"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -57,7 +57,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 
 	client := &http.Client{
 		Timeout: timeout,
-		Jar: jar,
+		Jar:     jar,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
@@ -192,7 +192,7 @@ func extractFromResponse(resp *http.Response, info *PageInfo, maxBodySize int64)
 
 	// Read from resp.Body and broadcast to all writers
 	// Use a limited reader so we don't download infinite files
-		if maxBodySize <= 0 {
+	if maxBodySize <= 0 {
 		maxBodySize = 2 * 1024 * 1024 // 2MB default
 	}
 	limitedBody := io.LimitReader(resp.Body, maxBodySize)

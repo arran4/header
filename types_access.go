@@ -254,7 +254,6 @@ func (p *PageInfo) SetOGVideoAlt(alt string) {
 	p.OGVideoAlt = alt
 }
 
-
 // SetMetaRefresh sets the meta refresh URL if not already set.
 func (p *PageInfo) SetMetaRefresh(content string) {
 	p.mu.Lock()

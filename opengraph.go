@@ -113,7 +113,7 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 				tt = z.Next()
 				if tt == html.TextToken {
 					info.SetTitleIfEmpty(z.Token().Data)
-			}
+				}
 			case "link":
 				var rel, href, sizes, media string
 				for _, attr := range t.Attr {
