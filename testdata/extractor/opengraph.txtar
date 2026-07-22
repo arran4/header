@@ -36,7 +36,6 @@ Extract OpenGraph and other standard HTML metadata
 </html>
 -- expected.json --
 {
-  "URL": "",
   "Title": "Test Title",
   "Keywords": "video, sharing, camera phone, video phone, free, upload",
   "OGTitle": "Test OG Title",
@@ -46,34 +45,25 @@ Extract OpenGraph and other standard HTML metadata
   "OGImageType": "image/jpeg",
   "OGImageWidth": "1200",
   "OGImageHeight": "630",
-  "OGDescription": "",
   "OGImageAlt": "A test image alt text",
   "OGVideo": "https://www.youtube.com/embed/GOZ4CMm7704",
   "OGVideoSecureURL": "https://www.youtube.com/embed/GOZ4CMm7704",
   "OGVideoType": "text/html",
   "OGVideoWidth": "1280",
   "OGVideoHeight": "720",
-  "OGVideoAlt": "",
   "TwitterCard": "summary_large_image",
   "TwitterImage": "http://example.com/twitter.jpg",
   "TwitterTitle": "Test Twitter Title",
-  "TwitterDescription": "",
   "TwitterImageAlt": "A test twitter image alt text",
   "TwitterPlayer": "https://www.youtube.com/embed/GOZ4CMm7704",
   "TwitterPlayerWidth": "1280",
   "TwitterPlayerHeight": "720",
-  "YouTubeVideoID": "",
-  "YouTubeLengthSeconds": 0,
-  "YouTubeDuration": 0,
-  "JSONLDType": "",
-  "JSONLDName": "",
   "CanonicalLink": "https://example.com/canonical",
   "ShortLink": "https://youtu.be/jNQXAC9IVRw",
   "AlternateHandheldLink": "https://m.youtube.com/",
   "Icons": [
     {
-      "URL": "https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico",
-      "Sizes": ""
+      "URL": "https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico"
     },
     {
       "URL": "https://www.youtube.com/s/desktop/6740ecb6/img/favicon_32x32.png",
