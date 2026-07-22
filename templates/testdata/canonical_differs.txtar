@@ -4,8 +4,7 @@ Canonical Link differs from URL
 {
   "URL": "https://example.com/some-page?utm_source=test",
   "Title": "Test Title",
-  "CanonicalLink": "https://example.com/some-page",
-  "ShortLink": ""
+  "CanonicalLink": "https://example.com/some-page"
 }
 -- expected.txt --
 URL: https://example.com/some-page?utm_source=test
