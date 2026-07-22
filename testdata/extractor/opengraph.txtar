@@ -60,7 +60,12 @@ Extract OpenGraph and other standard HTML metadata
   "TwitterPlayerHeight": "720",
   "CanonicalLink": "https://example.com/canonical",
   "ShortLink": "https://youtu.be/jNQXAC9IVRw",
-  "AlternateHandheldLink": "https://m.youtube.com/",
+  "AlternateLinks": [
+    {
+      "URL": "https://m.youtube.com/",
+      "Media": "handheld"
+    }
+  ],
   "Icons": [
     {
       "URL": "https://www.youtube.com/s/desktop/6740ecb6/img/favicon.ico"
