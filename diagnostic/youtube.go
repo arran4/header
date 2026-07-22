@@ -2,8 +2,8 @@ package diagnostic
 
 import (
 	"fmt"
-	"net/url"
 	"github.com/arran4/header"
+	"net/url"
 )
 
 type youtubeRule struct{}
