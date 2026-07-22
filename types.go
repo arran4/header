@@ -13,11 +13,11 @@ type PageInfo struct {
 	mu sync.Mutex
 
 	// General Information
-	URL      string
-	Trace    []string
+	URL         string
+	Trace       []string
 	MetaRefresh string
-	Title    string
-	Keywords string
+	Title       string
+	Keywords    string
 
 	// OpenGraph
 	OGTitle          string
@@ -56,10 +56,10 @@ type PageInfo struct {
 	JSONLDName string
 
 	// HTML Links
-	CanonicalLink string
-	ShortLink     string
+	CanonicalLink         string
+	ShortLink             string
 	AlternateHandheldLink string
-	Icons         []Icon
+	Icons                 []Icon
 }
 
 // Icon represents a parsed icon link.
@@ -67,7 +67,6 @@ type Icon struct {
 	URL   string
 	Sizes string
 }
-
 
 // CoverImages returns a list of potential image URLs.
 func (p *PageInfo) CoverImages() []string {
