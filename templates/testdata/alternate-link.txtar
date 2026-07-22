@@ -1,0 +1,17 @@
+-- description --
+Tests that Alternate Link is rendered correctly in the output.
+-- input.json --
+{
+  "URL": "https://example.com/desktop",
+  "Title": "Example",
+  "AlternateLinks": [
+    {
+      "URL": "https://m.example.com/mobile",
+      "Media": "handheld"
+    }
+  ]
+}
+-- expected.txt --
+URL: https://example.com/desktop
+Title: Example
+HTML Alternate Link: https://m.example.com/mobile (handheld)
