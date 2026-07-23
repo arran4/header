@@ -1,14 +1,21 @@
 package header_test
 
 import (
-	_ "embed"
+	"embed"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	_ "github.com/arran4/header/internal/cli"
 )
+
+// Force the test cache to be invalidated when the CLI package main changes.
+//
+//go:embed cmd/header/*.go
+var _ embed.FS
 
 var ts *httptest.Server
 
