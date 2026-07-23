@@ -1,27 +1,34 @@
-package main
+package header_test
 
 import (
-	_ "embed"
+	"embed"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	_ "github.com/arran4/header/internal/cli"
 )
+
+// Force the test cache to be invalidated when the CLI package main changes.
+//
+//go:embed cmd/header/*.go
+var _ embed.FS
 
 var ts *httptest.Server
 
-//go:embed testdata/example.html
+//go:embed testdata/server/example.html
 var exampleHTML []byte
 
-//go:embed testdata/missing.html
+//go:embed testdata/server/missing.html
 var missingHTML []byte
 
-//go:embed testdata/issue.html
+//go:embed testdata/server/issue.html
 var issueHTML []byte
 
-//go:embed testdata/media.html
+//go:embed testdata/server/media.html
 var mediaHTML []byte
 
 func TestMain(m *testing.M) {
@@ -66,7 +73,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 func TestCLI(t *testing.T) {
-	runTxtarScript(t, "../../testdata/cli/txtar", map[string]string{
+	runTxtarScript(t, "testdata/cli/txtar", map[string]string{
 		"TEST_SERVER_URL": ts.URL,
 	})
 }
