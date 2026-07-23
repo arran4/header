@@ -7,16 +7,28 @@ import (
 	"os"
 	"text/template"
 
+	"strings"
+
 	"github.com/arran4/header"
+
 	"github.com/arran4/header/diagnostic"
 	"github.com/arran4/header/internal/ui"
+	"github.com/arran4/header/lint"
 	"github.com/arran4/header/templates"
 	"github.com/fatih/color"
 )
 
+// To avoid unused import issues if lint isn't used directly here, we wrap it
+func importLint(info *header.PageInfo, tags []string) {
+	lint.Run(info, tags)
+}
+
 func ExtractCmd(args []string) int {
 	fs := flag.NewFlagSet("header extract", flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")
+	lintFlags := fs.String("lint", "", "Run linting with specific tags (comma-separated). Set to 'default' or leave empty for defaults if flag is used")
+	lintRun := false
+	fs.BoolVar(&lintRun, "lint-run", false, "Run default linting")
 	showImage := fs.Bool("show-image", false, "Display the cover image (if available)")
 	style := fs.String("style", "default", "The output style template to use (e.g. default, plain)")
 	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
@@ -93,6 +105,26 @@ func ExtractCmd(args []string) int {
 
 	if *testMode {
 		diagnostic.Run(info)
+	}
+
+	isLintRun := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "lint" {
+			isLintRun = true
+		}
+	})
+
+	if isLintRun || lintRun {
+		tags := []string{}
+		if *lintFlags != "" {
+			tags = strings.Split(*lintFlags, ",")
+			for i, t := range tags {
+				tags[i] = strings.TrimSpace(t)
+			}
+		}
+		// If both -lint-run and -lint=... are used, tags are combined or -lint wins,
+		// but since we initialize tags from -lint, it's fine.
+		importLint(info, tags)
 	}
 
 	if *showImage {
