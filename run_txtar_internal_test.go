@@ -119,9 +119,9 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 				if line == "" || strings.HasPrefix(line, "#") {
 					continue
 				}
-                if strings.HasPrefix(line, "test: ") {
-                    continue
-                }
+				if strings.HasPrefix(line, "test: ") {
+					continue
+				}
 
 				args := splitArgs(line)
 				if len(args) == 0 {
@@ -133,9 +133,9 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 					negate = true
 					args = args[1:]
 				}
-                if len(args) == 0 {
-                    continue
-                }
+				if len(args) == 0 {
+					continue
+				}
 
 				switch args[0] {
 				case "stdin":
