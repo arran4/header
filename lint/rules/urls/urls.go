@@ -1,4 +1,4 @@
-package lint
+package urls
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/arran4/header"
+	"github.com/arran4/header/lint"
 )
 
 type urlCheckRule struct{}
@@ -17,8 +18,24 @@ func (r urlCheckRule) Name() string { return "URL Reachability & Content-Type Ch
 
 func (r urlCheckRule) Tags() []string { return []string{"", "default", "urls"} }
 
-func (r urlCheckRule) Check(info *header.PageInfo) []Result {
-	var results []Result
+// HTTPClient represents the interface we need from the HTTP client.
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+func (r urlCheckRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+	var results []lint.Result
+
+	var client HTTPClient = &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	for _, opt := range ops {
+		switch o := opt.(type) {
+		case HTTPClient:
+			client = o
+		}
+	}
 
 	type checkTarget struct {
 		url          string
@@ -60,10 +77,6 @@ func (r urlCheckRule) Check(info *header.PageInfo) []Result {
 		return results
 	}
 
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
@@ -75,7 +88,7 @@ func (r urlCheckRule) Check(info *header.PageInfo) []Result {
 			req, err := http.NewRequest("HEAD", t.url, nil)
 			if err != nil {
 				mu.Lock()
-				results = append(results, Result{SeverityError, fmt.Sprintf("Invalid URL %s: %v", t.url, err)})
+				results = append(results, lint.Result{Severity: lint.SeverityError, Message: fmt.Sprintf("Invalid URL %s: %v", t.url, err)})
 				mu.Unlock()
 				return
 			}
@@ -84,7 +97,7 @@ func (r urlCheckRule) Check(info *header.PageInfo) []Result {
 			resp, err := client.Do(req)
 			if err != nil {
 				mu.Lock()
-				results = append(results, Result{SeverityError, fmt.Sprintf("Unreachable URL %s: %v", t.url, err)})
+				results = append(results, lint.Result{Severity: lint.SeverityError, Message: fmt.Sprintf("Unreachable URL %s: %v", t.url, err)})
 				mu.Unlock()
 				return
 			}
@@ -92,7 +105,7 @@ func (r urlCheckRule) Check(info *header.PageInfo) []Result {
 
 			if resp.StatusCode >= 400 {
 				mu.Lock()
-				results = append(results, Result{SeverityError, fmt.Sprintf("URL %s returned status %d", t.url, resp.StatusCode)})
+				results = append(results, lint.Result{Severity: lint.SeverityError, Message: fmt.Sprintf("URL %s returned status %d", t.url, resp.StatusCode)})
 				mu.Unlock()
 				return
 			}
@@ -101,7 +114,7 @@ func (r urlCheckRule) Check(info *header.PageInfo) []Result {
 				contentType := resp.Header.Get("Content-Type")
 				if contentType != "" && !strings.HasPrefix(strings.ToLower(contentType), t.expectedType) {
 					mu.Lock()
-					results = append(results, Result{SeverityWarning, fmt.Sprintf("URL %s expected %s but got Content-Type %s", t.url, t.expectedType, contentType)})
+					results = append(results, lint.Result{Severity: lint.SeverityWarning, Message: fmt.Sprintf("URL %s expected %s but got Content-Type %s", t.url, t.expectedType, contentType)})
 					mu.Unlock()
 				}
 			}
@@ -114,5 +127,5 @@ func (r urlCheckRule) Check(info *header.PageInfo) []Result {
 }
 
 func init() {
-	Register(urlCheckRule{})
+	lint.Register(urlCheckRule{})
 }

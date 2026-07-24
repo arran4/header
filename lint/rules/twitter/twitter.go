@@ -1,7 +1,8 @@
-package lint
+package twitter
 
 import (
 	"github.com/arran4/header"
+	"github.com/arran4/header/lint"
 )
 
 type twitterRule struct{}
@@ -10,8 +11,8 @@ func (r twitterRule) Name() string { return "Twitter Card Checks" }
 
 func (r twitterRule) Tags() []string { return []string{"", "default", "twitter"} }
 
-func (r twitterRule) Check(info *header.PageInfo) []Result {
-	var results []Result
+func (r twitterRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+	var results []lint.Result
 
 	if info.TwitterCard != "" {
 		validCards := map[string]bool{
@@ -22,24 +23,24 @@ func (r twitterRule) Check(info *header.PageInfo) []Result {
 		}
 
 		if !validCards[info.TwitterCard] {
-			results = append(results, Result{SeverityError, "Invalid twitter:card value: " + info.TwitterCard})
+			results = append(results, lint.Result{Severity: lint.SeverityError, Message: "Invalid twitter:card value: " + info.TwitterCard})
 		}
 
 		if info.TwitterCard == "summary_large_image" {
 			if info.TwitterImage == "" {
-				results = append(results, Result{SeverityError, "twitter:card is summary_large_image but twitter:image is missing"})
+				results = append(results, lint.Result{Severity: lint.SeverityError, Message: "twitter:card is summary_large_image but twitter:image is missing"})
 			}
 		}
 
 		if info.TwitterCard == "player" {
 			if info.TwitterPlayer == "" {
-				results = append(results, Result{SeverityError, "twitter:card is player but twitter:player is missing"})
+				results = append(results, lint.Result{Severity: lint.SeverityError, Message: "twitter:card is player but twitter:player is missing"})
 			}
 		}
 	} else {
 		// If they have twitter fields but no card, it's usually bad
 		if info.TwitterTitle != "" || info.TwitterDescription != "" || info.TwitterImage != "" {
-			results = append(results, Result{SeverityWarning, "Twitter metadata found but twitter:card is missing (defaults to summary, but should be explicit)"})
+			results = append(results, lint.Result{Severity: lint.SeverityWarning, Message: "Twitter metadata found but twitter:card is missing (defaults to summary, but should be explicit)"})
 		}
 	}
 
@@ -47,5 +48,5 @@ func (r twitterRule) Check(info *header.PageInfo) []Result {
 }
 
 func init() {
-	Register(twitterRule{})
+	lint.Register(twitterRule{})
 }

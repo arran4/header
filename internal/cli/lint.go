@@ -8,6 +8,7 @@ import (
 
 	"github.com/arran4/header"
 	"github.com/arran4/header/lint"
+	_ "github.com/arran4/header/lint/rules/all" // Load all rules by default
 )
 
 func LintCmd(args []string) int {

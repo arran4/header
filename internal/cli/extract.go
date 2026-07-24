@@ -14,6 +14,7 @@ import (
 	"github.com/arran4/header/diagnostic"
 	"github.com/arran4/header/internal/ui"
 	"github.com/arran4/header/lint"
+	_ "github.com/arran4/header/lint/rules/all" // Ensure rules are loaded
 	"github.com/arran4/header/templates"
 	"github.com/fatih/color"
 )
