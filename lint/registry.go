@@ -24,7 +24,7 @@ type Result struct {
 type Rule interface {
 	Name() string
 	Tags() []string
-	Check(info *header.PageInfo) []Result
+	Check(info *header.PageInfo, ops ...any) []Result
 }
 
 var registry []Rule
@@ -35,7 +35,7 @@ func Register(rule Rule) {
 }
 
 // Run executes all registered lint rules matching the given tags against the given PageInfo.
-func Run(info *header.PageInfo, tags []string) {
+func Run(info *header.PageInfo, tags []string, ops ...any) {
 	fmt.Println("--- Lint ---")
 
 	totalIssues := 0
@@ -43,7 +43,7 @@ func Run(info *header.PageInfo, tags []string) {
 		if !matchTags(rule.Tags(), tags) {
 			continue
 		}
-		results := rule.Check(info)
+		results := rule.Check(info, ops...)
 		if len(results) > 0 {
 			for _, res := range results {
 				totalIssues++
