@@ -8,22 +8,14 @@ import (
 
 	"github.com/arran4/header"
 	"github.com/arran4/header/lint"
-	"github.com/arran4/header/lint/lists"
 	_ "github.com/arran4/header/lint/lists/all" // Load all lists and rules by default
 	_ "github.com/arran4/header/lint/lists/recommended"
 )
 
 func printAvailableLintRules() {
-	fmt.Println("Available Lint Lists:")
-	allLists := lists.GetAll()
-	for name, rules := range allLists {
-		fmt.Printf("  - %s: [%s]\n", name, strings.Join(rules, ", "))
-	}
-	fmt.Println("\nAvailable Lint Rules:")
-	allRules := lint.GetRegisteredRules()
-	for id, rule := range allRules {
-		fmt.Printf("  - %s: %s\n", id, rule.Name())
-	}
+	PrintLists()
+	fmt.Println()
+	PrintRules()
 }
 
 func LintCmd(args []string) int {
