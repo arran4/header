@@ -1,0 +1,25 @@
+exec header lint -list=all $TEST_SERVER_URL/mock.html
+stdout '--- Lint ---'
+stdout 'Missing og:title'
+stdout 'Missing HTML <title>'
+stdout 'Missing og:type'
+stdout 'Missing og:image'
+stdout '------------'
+
+exec header lint -rule=opengraph $TEST_SERVER_URL/mock.html
+stdout '--- Lint ---'
+stdout 'Missing og:title'
+stdout 'Missing og:type'
+stdout 'Missing og:image'
+stdout '------------'
+
+exec header -lint-run $TEST_SERVER_URL/mock.html
+stdout '--- Lint ---'
+stdout 'Missing og:title'
+stdout 'Missing HTML <title>'
+-- mock.html --
+<!DOCTYPE html>
+<html>
+<head></head>
+<body></body>
+</html>

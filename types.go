@@ -13,11 +13,11 @@ type PageInfo struct {
 	mu sync.Mutex
 
 	// General Information
-	URL         string `json:",omitempty"`
+	URL         string   `json:",omitempty"`
 	Trace       []string `json:",omitempty"`
-	MetaRefresh string `json:",omitempty"`
-	Title       string `json:",omitempty"`
-	Keywords    string `json:",omitempty"`
+	MetaRefresh string   `json:",omitempty"`
+	Title       string   `json:",omitempty"`
+	Keywords    string   `json:",omitempty"`
 
 	// OpenGraph
 	OGTitle          string `json:",omitempty"`
@@ -47,8 +47,8 @@ type PageInfo struct {
 	TwitterPlayerHeight string `json:",omitempty"`
 
 	// YouTube Specific
-	YouTubeVideoID       string `json:",omitempty"`
-	YouTubeLengthSeconds int `json:",omitempty"`
+	YouTubeVideoID       string        `json:",omitempty"`
+	YouTubeLengthSeconds int           `json:",omitempty"`
 	YouTubeDuration      time.Duration `json:",omitempty"`
 
 	// JSON-LD (First found entity or merged data)
@@ -56,10 +56,10 @@ type PageInfo struct {
 	JSONLDName string `json:",omitempty"`
 
 	// HTML Links
-	CanonicalLink         string `json:",omitempty"`
-	ShortLink             string `json:",omitempty"`
-	AlternateLinks        []AlternateLink `json:",omitempty"`
-	Icons                 []Icon `json:",omitempty"`
+	CanonicalLink  string          `json:",omitempty"`
+	ShortLink      string          `json:",omitempty"`
+	AlternateLinks []AlternateLink `json:",omitempty"`
+	Icons          []Icon          `json:",omitempty"`
 }
 
 // AlternateLink represents a parsed alternate link.

@@ -1,0 +1,11 @@
+exec header lint -list-rules
+stdout 'Available Lint Lists:'
+stdout 'Available Lint Rules:'
+
+exec header lint list
+stdout 'Available Lint Lists:'
+stdout 'Available Lint Rules:'
+
+exec header lint list-rules
+stdout 'Available Lint Lists:'
+stdout 'Available Lint Rules:'
