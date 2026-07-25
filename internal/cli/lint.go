@@ -8,7 +8,8 @@ import (
 
 	"github.com/arran4/header"
 	"github.com/arran4/header/lint"
-	_ "github.com/arran4/header/lint/rules/all" // Load all rules by default
+	_ "github.com/arran4/header/lint/lists/all" // Load all lists and rules by default
+	_ "github.com/arran4/header/lint/lists/recommended"
 )
 
 func LintCmd(args []string) int {

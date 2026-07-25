@@ -1,7 +1,7 @@
 package recommended
 
 import (
-	"github.com/arran4/header/lint"
+	"github.com/arran4/header/lint/lists"
 	"github.com/arran4/header/lint/rules/consistency"
 	"github.com/arran4/header/lint/rules/html"
 	"github.com/arran4/header/lint/rules/opengraph"
@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	lint.RegisterList("recommended", []string{
+	lists.Register("recommended", []string{
 		consistency.RuleID,
 		html.RuleID,
 		opengraph.RuleID,

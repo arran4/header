@@ -1,7 +1,7 @@
 package all
 
 import (
-	"github.com/arran4/header/lint"
+	"github.com/arran4/header/lint/lists"
 	"github.com/arran4/header/lint/rules/consistency"
 	"github.com/arran4/header/lint/rules/facebook"
 	"github.com/arran4/header/lint/rules/html"
@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	lint.RegisterList("all", []string{
+	lists.Register("all", []string{
 		consistency.RuleID,
 		facebook.RuleID,
 		html.RuleID,
@@ -21,7 +21,7 @@ func init() {
 	})
 
 	// Set default list mapping
-	lint.RegisterList("default", []string{
+	lists.Register("default", []string{
 		consistency.RuleID,
 		html.RuleID,
 		opengraph.RuleID,
