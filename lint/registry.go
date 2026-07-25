@@ -2,6 +2,8 @@ package lint
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/arran4/header"
 )
 
@@ -22,27 +24,83 @@ type Result struct {
 
 // Rule is an interface for checking a PageInfo for issues.
 type Rule interface {
+	ID() string
 	Name() string
-	Tags() []string
 	Check(info *header.PageInfo, ops ...any) []Result
 }
 
-var registry []Rule
+var (
+	ruleRegistry = make(map[string]Rule)
+	listRegistry = make(map[string][]string)
+)
 
-// Register adds a rule to the lint registry.
-func Register(rule Rule) {
-	registry = append(registry, rule)
+// RegisterRule adds a rule to the lint registry.
+func RegisterRule(rule Rule) {
+	ruleRegistry[rule.ID()] = rule
 }
 
-// Run executes all registered lint rules matching the given tags against the given PageInfo.
-func Run(info *header.PageInfo, tags []string, ops ...any) {
+// RegisterList adds a named list of rule IDs to the registry.
+func RegisterList(name string, ruleIDs []string) {
+	listRegistry[name] = ruleIDs
+}
+
+// Run executes specific rules and/or lists of rules against the given PageInfo.
+func Run(info *header.PageInfo, listNames []string, ruleIDs []string, ops ...any) {
 	fmt.Println("--- Lint ---")
 
-	totalIssues := 0
-	for _, rule := range registry {
-		if !matchTags(rule.Tags(), tags) {
+	rulesToRun := make(map[string]Rule)
+
+	// Resolve lists
+	for _, ln := range listNames {
+		ln = strings.TrimSpace(ln)
+		if ln == "" {
 			continue
 		}
+		if ids, ok := listRegistry[ln]; ok {
+			for _, id := range ids {
+				if r, exists := ruleRegistry[id]; exists {
+					rulesToRun[id] = r
+				} else {
+					fmt.Printf("[WARN] List '%s' references unknown rule '%s'\n", ln, id)
+				}
+			}
+		} else {
+			fmt.Printf("[WARN] Unknown rule list '%s'\n", ln)
+		}
+	}
+
+	// Resolve specific rules
+	for _, id := range ruleIDs {
+		id = strings.TrimSpace(id)
+		if id == "" {
+			continue
+		}
+		if r, ok := ruleRegistry[id]; ok {
+			rulesToRun[id] = r
+		} else {
+			fmt.Printf("[WARN] Unknown rule '%s'\n", id)
+		}
+	}
+
+	// Default behavior if nothing specified
+	if len(listNames) == 0 && len(ruleIDs) == 0 {
+		// Run 'default' list if it exists, otherwise run everything for backward compatibility / fallback
+		if ids, ok := listRegistry["default"]; ok {
+			for _, id := range ids {
+				if r, exists := ruleRegistry[id]; exists {
+					rulesToRun[id] = r
+				}
+			}
+		} else {
+			// No default list defined, run all rules
+			for id, r := range ruleRegistry {
+				rulesToRun[id] = r
+			}
+		}
+	}
+
+	totalIssues := 0
+	for _, rule := range rulesToRun {
 		results := rule.Check(info, ops...)
 		if len(results) > 0 {
 			for _, res := range results {
@@ -63,51 +121,4 @@ func Run(info *header.PageInfo, tags []string, ops ...any) {
 		fmt.Println("No lint issues detected.")
 	}
 	fmt.Println("------------")
-}
-
-func matchTags(ruleTags []string, userTags []string) bool {
-	// If the user specified no tags or just "", it means they want default rules
-	wantsDefault := false
-	if len(userTags) == 0 {
-		wantsDefault = true
-	} else {
-		for _, ut := range userTags {
-			if ut == "" || ut == "default" {
-				wantsDefault = true
-				break
-			}
-		}
-	}
-
-	// Check if this rule is a default rule (has "" tag)
-	isDefaultRule := false
-	if len(ruleTags) == 0 {
-		isDefaultRule = true
-	} else {
-		for _, rt := range ruleTags {
-			if rt == "" || rt == "default" {
-				isDefaultRule = true
-				break
-			}
-		}
-	}
-
-	// If the user requested default rules and this is a default rule, match.
-	if wantsDefault && isDefaultRule {
-		return true
-	}
-
-	// Otherwise, check for specific tag overlap
-	for _, ut := range userTags {
-		if ut == "" || ut == "default" {
-			continue // handled above
-		}
-		for _, rt := range ruleTags {
-			if ut == rt {
-				return true
-			}
-		}
-	}
-
-	return false
 }

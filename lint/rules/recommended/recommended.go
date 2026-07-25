@@ -1,8 +1,18 @@
 package recommended
 
 import (
-	_ "github.com/arran4/header/lint/rules/consistency"
-	_ "github.com/arran4/header/lint/rules/html"
-	_ "github.com/arran4/header/lint/rules/opengraph"
-	_ "github.com/arran4/header/lint/rules/twitter"
+	"github.com/arran4/header/lint"
+	"github.com/arran4/header/lint/rules/consistency"
+	"github.com/arran4/header/lint/rules/html"
+	"github.com/arran4/header/lint/rules/opengraph"
+	"github.com/arran4/header/lint/rules/twitter"
 )
+
+func init() {
+	lint.RegisterList("recommended", []string{
+		consistency.RuleID,
+		html.RuleID,
+		opengraph.RuleID,
+		twitter.RuleID,
+	})
+}

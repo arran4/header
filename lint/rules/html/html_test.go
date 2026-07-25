@@ -1,8 +1,8 @@
 package html
 
 import (
-	"testing"
 	"github.com/arran4/header"
+	"testing"
 )
 
 func TestHTMLRule(t *testing.T) {

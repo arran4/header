@@ -1,8 +1,8 @@
 package facebook
 
 import (
-	"testing"
 	"github.com/arran4/header"
+	"testing"
 )
 
 func TestFacebookRule(t *testing.T) {

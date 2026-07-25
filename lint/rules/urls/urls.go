@@ -12,11 +12,12 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+const RuleID = "urls"
+
 type urlCheckRule struct{}
 
+func (r urlCheckRule) ID() string   { return RuleID }
 func (r urlCheckRule) Name() string { return "URL Reachability & Content-Type Checks" }
-
-func (r urlCheckRule) Tags() []string { return []string{"", "default", "urls"} }
 
 // HTTPClient represents the interface we need from the HTTP client.
 type HTTPClient interface {
@@ -127,5 +128,5 @@ func (r urlCheckRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 }
 
 func init() {
-	lint.Register(urlCheckRule{})
+	lint.RegisterRule(urlCheckRule{})
 }

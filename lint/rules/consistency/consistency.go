@@ -5,11 +5,12 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+const RuleID = "consistency"
+
 type consistencyRule struct{}
 
+func (r consistencyRule) ID() string   { return RuleID }
 func (r consistencyRule) Name() string { return "Metadata Consistency Checks" }
-
-func (r consistencyRule) Tags() []string { return []string{"", "default", "consistency"} }
 
 func (r consistencyRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 	var results []lint.Result
@@ -26,5 +27,5 @@ func (r consistencyRule) Check(info *header.PageInfo, ops ...any) []lint.Result 
 }
 
 func init() {
-	lint.Register(consistencyRule{})
+	lint.RegisterRule(consistencyRule{})
 }

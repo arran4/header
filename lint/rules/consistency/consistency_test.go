@@ -1,15 +1,15 @@
 package consistency
 
 import (
-	"testing"
 	"github.com/arran4/header"
+	"testing"
 )
 
 func TestConsistencyRule(t *testing.T) {
 	rule := consistencyRule{}
 
 	info := &header.PageInfo{
-		OGTitle: "Title A",
+		OGTitle:      "Title A",
 		TwitterTitle: "Title B",
 	}
 	results := rule.Check(info)
