@@ -7,16 +7,31 @@ import (
 	"os"
 	"text/template"
 
+	"strings"
+
 	"github.com/arran4/header"
+
 	"github.com/arran4/header/diagnostic"
 	"github.com/arran4/header/internal/ui"
+	"github.com/arran4/header/lint"
+	_ "github.com/arran4/header/lint/lists/all" // Ensure rules are loaded
+	_ "github.com/arran4/header/lint/lists/recommended"
 	"github.com/arran4/header/templates"
 	"github.com/fatih/color"
 )
 
+// To avoid unused import issues if lint isn't used directly here, we wrap it
+func importLint(info *header.PageInfo, lists, rules []string) {
+	lint.Run(info, lists, rules)
+}
+
 func ExtractCmd(args []string) int {
 	fs := flag.NewFlagSet("header extract", flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")
+	lintListFlags := fs.String("lint-list", "", "Run linting with specific lists (comma-separated). Default is 'recommended' if flag is used")
+	lintRuleFlags := fs.String("lint-rule", "", "Run linting with specific rules (comma-separated).")
+	lintRun := false
+	fs.BoolVar(&lintRun, "lint-run", false, "Run default linting")
 	showImage := fs.Bool("show-image", false, "Display the cover image (if available)")
 	style := fs.String("style", "default", "The output style template to use (e.g. default, plain)")
 	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
@@ -93,6 +108,33 @@ func ExtractCmd(args []string) int {
 
 	if *testMode {
 		diagnostic.Run(info)
+	}
+
+	isLintRun := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "lint-list" || f.Name == "lint-rule" {
+			isLintRun = true
+		}
+	})
+
+	if isLintRun || lintRun {
+		lists := []string{}
+		if *lintListFlags != "" {
+			lists = strings.Split(*lintListFlags, ",")
+			for i, t := range lists {
+				lists[i] = strings.TrimSpace(t)
+			}
+		}
+
+		rules := []string{}
+		if *lintRuleFlags != "" {
+			rules = strings.Split(*lintRuleFlags, ",")
+			for i, t := range rules {
+				rules[i] = strings.TrimSpace(t)
+			}
+		}
+
+		importLint(info, lists, rules)
 	}
 
 	if *showImage {
