@@ -28,7 +28,7 @@ func importLint(info *header.PageInfo, lists, rules []string) {
 func ExtractCmd(args []string) int {
 	fs := flag.NewFlagSet("header extract", flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")
-	lintListFlags := fs.String("lint-list", "", "Run linting with specific lists (comma-separated). Default is 'default' if flag is used")
+	lintListFlags := fs.String("lint-list", "", "Run linting with specific lists (comma-separated). Default is 'recommended' if flag is used")
 	lintRuleFlags := fs.String("lint-rule", "", "Run linting with specific rules (comma-separated).")
 	lintRun := false
 	fs.BoolVar(&lintRun, "lint-run", false, "Run default linting")

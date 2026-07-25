@@ -39,6 +39,15 @@ func RegisterRule(rule Rule) {
 	ruleRegistry[rule.ID()] = rule
 }
 
+// GetRegisteredRules returns all registered rules in the registry.
+func GetRegisteredRules() map[string]Rule {
+	ret := make(map[string]Rule)
+	for k, v := range ruleRegistry {
+		ret[k] = v
+	}
+	return ret
+}
+
 // Run executes specific rules and/or lists of rules against the given PageInfo.
 func Run(info *header.PageInfo, listNames []string, ruleIDs []string, ops ...any) {
 	fmt.Println("--- Lint ---")
@@ -79,15 +88,15 @@ func Run(info *header.PageInfo, listNames []string, ruleIDs []string, ops ...any
 
 	// Default behavior if nothing specified
 	if len(listNames) == 0 && len(ruleIDs) == 0 {
-		// Run 'default' list if it exists, otherwise run everything for backward compatibility / fallback
-		if ids, ok := lists.Get("default"); ok {
+		// Run 'recommended' list if it exists, otherwise run everything for backward compatibility / fallback
+		if ids, ok := lists.Get("recommended"); ok {
 			for _, id := range ids {
 				if r, exists := ruleRegistry[id]; exists {
 					rulesToRun[id] = r
 				}
 			}
 		} else {
-			// No default list defined, run all rules
+			// No recommended list defined, run all rules
 			for id, r := range ruleRegistry {
 				rulesToRun[id] = r
 			}
