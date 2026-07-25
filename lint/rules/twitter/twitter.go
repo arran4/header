@@ -5,11 +5,12 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+const RuleID = "twitter"
+
 type twitterRule struct{}
 
+func (r twitterRule) ID() string   { return RuleID }
 func (r twitterRule) Name() string { return "Twitter Card Checks" }
-
-func (r twitterRule) Tags() []string { return []string{"", "default", "twitter"} }
 
 func (r twitterRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 	var results []lint.Result
@@ -48,5 +49,5 @@ func (r twitterRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 }
 
 func init() {
-	lint.Register(twitterRule{})
+	lint.RegisterRule(twitterRule{})
 }

@@ -1,9 +1,9 @@
 package all
 
 import (
-	"testing"
 	"github.com/arran4/header"
 	"github.com/arran4/header/lint"
+	"testing"
 )
 
 func TestAllRulesLoaded(t *testing.T) {
@@ -14,5 +14,5 @@ func TestAllRulesLoaded(t *testing.T) {
 	info := &header.PageInfo{}
 
 	// Just verify it doesn't panic
-	lint.Run(info, []string{"all"})
+	lint.Run(info, []string{"all"}, nil)
 }

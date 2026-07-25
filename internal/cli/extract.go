@@ -20,14 +20,15 @@ import (
 )
 
 // To avoid unused import issues if lint isn't used directly here, we wrap it
-func importLint(info *header.PageInfo, tags []string) {
-	lint.Run(info, tags)
+func importLint(info *header.PageInfo, lists, rules []string) {
+	lint.Run(info, lists, rules)
 }
 
 func ExtractCmd(args []string) int {
 	fs := flag.NewFlagSet("header extract", flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")
-	lintFlags := fs.String("lint", "", "Run linting with specific tags (comma-separated). Set to 'default' or leave empty for defaults if flag is used")
+	lintListFlags := fs.String("lint-list", "", "Run linting with specific lists (comma-separated). Default is 'default' if flag is used")
+	lintRuleFlags := fs.String("lint-rule", "", "Run linting with specific rules (comma-separated).")
 	lintRun := false
 	fs.BoolVar(&lintRun, "lint-run", false, "Run default linting")
 	showImage := fs.Bool("show-image", false, "Display the cover image (if available)")
@@ -110,22 +111,29 @@ func ExtractCmd(args []string) int {
 
 	isLintRun := false
 	fs.Visit(func(f *flag.Flag) {
-		if f.Name == "lint" {
+		if f.Name == "lint-list" || f.Name == "lint-rule" {
 			isLintRun = true
 		}
 	})
 
 	if isLintRun || lintRun {
-		tags := []string{}
-		if *lintFlags != "" {
-			tags = strings.Split(*lintFlags, ",")
-			for i, t := range tags {
-				tags[i] = strings.TrimSpace(t)
+		lists := []string{}
+		if *lintListFlags != "" {
+			lists = strings.Split(*lintListFlags, ",")
+			for i, t := range lists {
+				lists[i] = strings.TrimSpace(t)
 			}
 		}
-		// If both -lint-run and -lint=... are used, tags are combined or -lint wins,
-		// but since we initialize tags from -lint, it's fine.
-		importLint(info, tags)
+
+		rules := []string{}
+		if *lintRuleFlags != "" {
+			rules = strings.Split(*lintRuleFlags, ",")
+			for i, t := range rules {
+				rules[i] = strings.TrimSpace(t)
+			}
+		}
+
+		importLint(info, lists, rules)
 	}
 
 	if *showImage {

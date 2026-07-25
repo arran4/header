@@ -7,11 +7,12 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+const RuleID = "html"
+
 type htmlRule struct{}
 
+func (r htmlRule) ID() string   { return RuleID }
 func (r htmlRule) Name() string { return "HTML Good Practices" }
-
-func (r htmlRule) Tags() []string { return []string{"", "default", "html"} }
 
 func (r htmlRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 	var results []lint.Result
@@ -54,5 +55,5 @@ func (r htmlRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 }
 
 func init() {
-	lint.Register(htmlRule{})
+	lint.RegisterRule(htmlRule{})
 }

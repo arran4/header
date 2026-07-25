@@ -13,7 +13,8 @@ import (
 
 func LintCmd(args []string) int {
 	fs := flag.NewFlagSet("header lint", flag.ContinueOnError)
-	tagsFlag := fs.String("tags", "", "Comma-separated list of lint rules to run (e.g. 'twitter,opengraph'). Default is default rules.")
+	listFlag := fs.String("list", "", "Comma-separated list of lint lists to run (e.g. 'all', 'recommended'). Default is 'default'.")
+	ruleFlag := fs.String("rule", "", "Comma-separated list of specific lint rules to run (e.g. 'twitter,opengraph').")
 	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
 
 	if err := fs.Parse(args); err != nil {
@@ -46,15 +47,23 @@ func LintCmd(args []string) int {
 		return 1
 	}
 
-	tags := []string{}
-	if *tagsFlag != "" {
-		tags = strings.Split(*tagsFlag, ",")
-		for i, t := range tags {
-			tags[i] = strings.TrimSpace(t)
+	lists := []string{}
+	if *listFlag != "" {
+		lists = strings.Split(*listFlag, ",")
+		for i, t := range lists {
+			lists[i] = strings.TrimSpace(t)
 		}
 	}
 
-	lint.Run(info, tags)
+	rules := []string{}
+	if *ruleFlag != "" {
+		rules = strings.Split(*ruleFlag, ",")
+		for i, t := range rules {
+			rules[i] = strings.TrimSpace(t)
+		}
+	}
+
+	lint.Run(info, lists, rules)
 
 	return 0
 }

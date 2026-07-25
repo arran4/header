@@ -5,11 +5,12 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+const RuleID = "opengraph"
+
 type opengraphRule struct{}
 
+func (r opengraphRule) ID() string   { return RuleID }
 func (r opengraphRule) Name() string { return "OpenGraph Basic Checks" }
-
-func (r opengraphRule) Tags() []string { return []string{"", "default", "opengraph"} }
 
 func (r opengraphRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 	var results []lint.Result
@@ -29,5 +30,5 @@ func (r opengraphRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 }
 
 func init() {
-	lint.Register(opengraphRule{})
+	lint.RegisterRule(opengraphRule{})
 }

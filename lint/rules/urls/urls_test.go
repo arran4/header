@@ -2,10 +2,10 @@ package urls
 
 import (
 	"bytes"
+	"github.com/arran4/header"
 	"io"
 	"net/http"
 	"testing"
-	"github.com/arran4/header"
 )
 
 type mockClient struct {

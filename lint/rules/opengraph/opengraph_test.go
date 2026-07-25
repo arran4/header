@@ -1,8 +1,8 @@
 package opengraph
 
 import (
-	"testing"
 	"github.com/arran4/header"
+	"testing"
 )
 
 func TestOpenGraphRule(t *testing.T) {
@@ -17,7 +17,7 @@ func TestOpenGraphRule(t *testing.T) {
 
 	info = &header.PageInfo{
 		OGTitle: "Test",
-		OGType: "website",
+		OGType:  "website",
 		OGImage: "https://example.com/image.jpg",
 	}
 	results = rule.Check(info)

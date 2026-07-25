@@ -1,8 +1,8 @@
 package twitter
 
 import (
-	"testing"
 	"github.com/arran4/header"
+	"testing"
 )
 
 func TestTwitterRule(t *testing.T) {
@@ -25,7 +25,7 @@ func TestTwitterRule(t *testing.T) {
 	}
 
 	info = &header.PageInfo{
-		TwitterCard: "summary_large_image",
+		TwitterCard:  "summary_large_image",
 		TwitterImage: "https://example.com/image.jpg",
 	}
 	results = rule.Check(info)

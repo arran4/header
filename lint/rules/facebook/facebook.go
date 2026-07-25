@@ -5,11 +5,12 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+const RuleID = "facebook"
+
 type facebookRule struct{}
 
+func (r facebookRule) ID() string   { return RuleID }
 func (r facebookRule) Name() string { return "Facebook Specific Checks" }
-
-func (r facebookRule) Tags() []string { return []string{"facebook"} }
 
 func (r facebookRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 	var results []lint.Result
@@ -20,5 +21,5 @@ func (r facebookRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 }
 
 func init() {
-	lint.Register(facebookRule{})
+	lint.RegisterRule(facebookRule{})
 }
