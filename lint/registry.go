@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/arran4/header"
+	"github.com/arran4/header/lint/lists"
 )
 
 // Severity indicates the level of a lint result.
@@ -31,17 +32,11 @@ type Rule interface {
 
 var (
 	ruleRegistry = make(map[string]Rule)
-	listRegistry = make(map[string][]string)
 )
 
 // RegisterRule adds a rule to the lint registry.
 func RegisterRule(rule Rule) {
 	ruleRegistry[rule.ID()] = rule
-}
-
-// RegisterList adds a named list of rule IDs to the registry.
-func RegisterList(name string, ruleIDs []string) {
-	listRegistry[name] = ruleIDs
 }
 
 // Run executes specific rules and/or lists of rules against the given PageInfo.
@@ -56,7 +51,7 @@ func Run(info *header.PageInfo, listNames []string, ruleIDs []string, ops ...any
 		if ln == "" {
 			continue
 		}
-		if ids, ok := listRegistry[ln]; ok {
+		if ids, ok := lists.Get(ln); ok {
 			for _, id := range ids {
 				if r, exists := ruleRegistry[id]; exists {
 					rulesToRun[id] = r
@@ -85,7 +80,7 @@ func Run(info *header.PageInfo, listNames []string, ruleIDs []string, ops ...any
 	// Default behavior if nothing specified
 	if len(listNames) == 0 && len(ruleIDs) == 0 {
 		// Run 'default' list if it exists, otherwise run everything for backward compatibility / fallback
-		if ids, ok := listRegistry["default"]; ok {
+		if ids, ok := lists.Get("default"); ok {
 			for _, id := range ids {
 				if r, exists := ruleRegistry[id]; exists {
 					rulesToRun[id] = r
