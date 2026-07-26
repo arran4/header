@@ -5,6 +5,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -50,7 +51,14 @@ func (e youtubeExtractor) Extract(r io.Reader, info *PageInfo) error {
 							if err := json.Unmarshal([]byte(jsonText), &pr); err == nil {
 								if pr.VideoDetails.LengthSeconds != "" {
 									sec, _ := strconv.Atoi(pr.VideoDetails.LengthSeconds)
-									info.SetYouTubeInfo(pr.VideoDetails.VideoID, pr.VideoDetails.Title, sec)
+									info.Mutate(func(i *PageInfo) {
+										i.YouTubeVideoID = pr.VideoDetails.VideoID
+										if i.Title == "" && pr.VideoDetails.Title != "" {
+											i.Title = pr.VideoDetails.Title
+										}
+										i.YouTubeLengthSeconds = sec
+										i.YouTubeDuration = time.Duration(sec) * time.Second
+									})
 									return nil // We found what we need, stop parsing early
 								}
 							}
