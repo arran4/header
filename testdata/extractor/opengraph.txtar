@@ -31,6 +31,8 @@ Extract OpenGraph and other standard HTML metadata
 	<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_48x48.png" sizes="48x48">
 	<link rel="icon" href="https://www.youtube.com/s/desktop/6740ecb6/img/favicon_144x144.png" sizes="144x144">
 	<link rel="alternate" media="handheld" href="https://m.youtube.com/">
+	<link rel="alternate" type="application/rss+xml" title="RSS Feed" href="https://example.com/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="Atom Feed" href="https://example.com/atom.xml" />
 </head>
 <body></body>
 </html>
@@ -64,6 +66,18 @@ Extract OpenGraph and other standard HTML metadata
     {
       "URL": "https://m.youtube.com/",
       "Media": "handheld"
+    }
+  ],
+  "FeedLinks": [
+    {
+      "URL": "https://example.com/rss.xml",
+      "Title": "RSS Feed",
+      "Type": "application/rss+xml"
+    },
+    {
+      "URL": "https://example.com/atom.xml",
+      "Title": "Atom Feed",
+      "Type": "application/atom+xml"
     }
   ],
   "Icons": [

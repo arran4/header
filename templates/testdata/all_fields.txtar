@@ -28,6 +28,13 @@ All fields populated
   "YouTubeDuration": 212000000000,
   "JSONLDType": "VideoObject",
   "JSONLDName": "Rick Astley",
+  "FeedLinks": [
+    {
+      "URL": "https://example.com/rss",
+      "Title": "RSS Feed",
+      "Type": "application/rss+xml"
+    }
+  ],
   "Icons": [
     {
       "URL": "https://example.com/favicon.ico"
@@ -41,6 +48,7 @@ All fields populated
 -- expected.txt --
 URL: https://example.com
 Title: Test Title
+HTML Feed Link: https://example.com/rss ("RSS Feed", application/rss+xml)
 HTML Icon: https://example.com/favicon.ico
 HTML Icon: https://example.com/favicon_32x32.png (32x32)
 OpenGraph Title: OG Title

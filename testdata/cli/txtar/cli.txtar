@@ -8,6 +8,7 @@ stdout 'Twitter Card: summary'
 stdout 'HTML Canonical Link: https://example.com/canonical-url'
 stdout 'HTML Icon: https://example.com/favicon.ico'
 stdout 'HTML Icon: https://example.com/favicon_32x32.png \(32x32\)'
+stdout 'HTML Feed Link: https://example.com/feed.xml \("RSS Feed", application/rss\+xml\)'
 stdout 'JSON-LD Type: WebPage'
 
 exec header -style default $TEST_SERVER_URL/example
@@ -15,6 +16,7 @@ stdout 'URL:'
 stdout 'Title:'
 stdout 'HTML Canonical Link:'
 stdout 'https://example.com/canonical-url'
+stdout 'HTML Feed Link: https://example.com/feed.xml \("RSS Feed", application/rss\+xml\)'
 stdout 'HTML Icon: https://example.com/favicon.ico'
 stdout 'HTML Icon: https://example.com/favicon_32x32.png \(32x32\)'
 
