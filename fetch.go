@@ -76,7 +76,9 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 		}
 
 		if opts.TraceRedirects {
-			info.AddTrace(nextURL)
+			info.Mutate(func(i *PageInfo) {
+				i.Trace = append(i.Trace, nextURL)
+			})
 		}
 
 		if i > 0 && opts.RedirectDelay > 0 {
