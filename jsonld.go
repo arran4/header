@@ -61,15 +61,23 @@ func (e jsonldExtractor) Extract(r io.Reader, info *PageInfo) error {
 }
 
 func extractDataFromMap(data map[string]interface{}, info *PageInfo) {
-	if t, ok := data["@type"].(string); ok {
-		info.SetJSONLDTypeIfEmpty(t)
-	}
-	if n, ok := data["name"].(string); ok {
-		info.SetJSONLDNameIfEmpty(n)
-	}
-	if t, ok := data["headline"].(string); ok {
-		info.SetTitleIfEmpty(t)
-	}
+	info.Mutate(func(i *PageInfo) {
+		if t, ok := data["@type"].(string); ok {
+			if i.JSONLDType == "" {
+				i.JSONLDType = t
+			}
+		}
+		if n, ok := data["name"].(string); ok {
+			if i.JSONLDName == "" {
+				i.JSONLDName = n
+			}
+		}
+		if t, ok := data["headline"].(string); ok {
+			if i.Title == "" {
+				i.Title = t
+			}
+		}
+	})
 }
 
 func init() {

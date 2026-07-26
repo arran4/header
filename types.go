@@ -247,3 +247,11 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 
 	return results
 }
+
+// Mutate executes the given function while holding the PageInfo mutex lock,
+// allowing thread-safe modifications to the PageInfo fields.
+func (p *PageInfo) Mutate(fn func(*PageInfo)) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	fn(p)
+}
