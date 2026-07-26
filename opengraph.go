@@ -130,7 +130,7 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					})
 				}
 			case "link":
-				var rel, href, sizes, media string
+				var rel, href, sizes, media, typ, title string
 				for _, attr := range t.Attr {
 					switch attr.Key {
 					case "rel":
@@ -141,6 +141,10 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						sizes = attr.Val
 					case "media":
 						media = attr.Val
+					case "type":
+						typ = attr.Val
+					case "title":
+						title = attr.Val
 					}
 				}
 				info.Mutate(func(i *PageInfo) {
@@ -155,15 +159,29 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						i.ShortLink = href
 					}
 					if strings.EqualFold(rel, "alternate") && href != "" {
-						found := false
-						for _, existing := range i.AlternateLinks {
-							if existing.URL == href && existing.Media == media {
-								found = true
-								break
+						typeLower := strings.ToLower(typ)
+						if strings.Contains(typeLower, "rss") || strings.Contains(typeLower, "atom") || strings.Contains(typeLower, "json") {
+							found := false
+							for _, existing := range i.FeedLinks {
+								if existing.URL == href && existing.Type == typ {
+									found = true
+									break
+								}
 							}
-						}
-						if !found {
-							i.AlternateLinks = append(i.AlternateLinks, AlternateLink{URL: href, Media: media})
+							if !found {
+								i.FeedLinks = append(i.FeedLinks, FeedLink{URL: href, Type: typ, Title: title})
+							}
+						} else {
+							found := false
+							for _, existing := range i.AlternateLinks {
+								if existing.URL == href && existing.Media == media {
+									found = true
+									break
+								}
+							}
+							if !found {
+								i.AlternateLinks = append(i.AlternateLinks, AlternateLink{URL: href, Media: media})
+							}
 						}
 					}
 					if href != "" && strings.Contains(strings.ToLower(rel), "icon") {
