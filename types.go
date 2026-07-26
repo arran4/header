@@ -59,7 +59,15 @@ type PageInfo struct {
 	CanonicalLink  string          `json:",omitempty"`
 	ShortLink      string          `json:",omitempty"`
 	AlternateLinks []AlternateLink `json:",omitempty"`
+	FeedLinks      []FeedLink      `json:",omitempty"`
 	Icons          []Icon          `json:",omitempty"`
+}
+
+// FeedLink represents a parsed RSS, Atom or JSON feed link.
+type FeedLink struct {
+	URL   string `json:",omitempty"`
+	Title string `json:",omitempty"`
+	Type  string `json:",omitempty"`
 }
 
 // AlternateLink represents a parsed alternate link.
@@ -143,6 +151,20 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 			val = fmt.Sprintf("%s (%s)", link.URL, link.Media)
 		}
 		add("HTML", "Alternate Link", "AlternateLink", val)
+	}
+	for _, link := range p.FeedLinks {
+		val := link.URL
+		var extras []string
+		if link.Title != "" {
+			extras = append(extras, fmt.Sprintf("%q", link.Title))
+		}
+		if link.Type != "" {
+			extras = append(extras, link.Type)
+		}
+		if len(extras) > 0 {
+			val = fmt.Sprintf("%s (%s)", link.URL, strings.Join(extras, ", "))
+		}
+		add("HTML", "Feed Link", "FeedLink", val)
 	}
 	for _, icon := range p.Icons {
 		val := icon.URL
