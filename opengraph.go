@@ -42,77 +42,92 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					}
 				}
 
-				// Meta Refresh
-				if strings.EqualFold(httpEquiv, "refresh") {
-					info.SetMetaRefresh(content)
-				}
-
-				// Standard Metadata
-				if strings.EqualFold(name, "keywords") {
-					info.SetKeywords(content)
-				}
-
-				// OpenGraph
-				if strings.HasPrefix(property, "og:") {
-					switch property {
-					case "og:type":
-						info.SetOGType(content)
-					case "og:image":
-						info.SetOGImage(content)
-					case "og:image:secure_url":
-						info.SetOGImageSecureURL(content)
-					case "og:image:type":
-						info.SetOGImageType(content)
-					case "og:image:width":
-						info.SetOGImageWidth(content)
-					case "og:image:height":
-						info.SetOGImageHeight(content)
-					case "og:image:alt":
-						info.SetOGImageAlt(content)
-					case "og:description":
-						info.SetOGDescription(content)
-					case "og:title":
-						info.SetOGTitle(content)
-					case "og:video", "og:video:url":
-						info.SetOGVideo(content)
-					case "og:video:secure_url":
-						info.SetOGVideoSecureURL(content)
-					case "og:video:type":
-						info.SetOGVideoType(content)
-					case "og:video:width":
-						info.SetOGVideoWidth(content)
-					case "og:video:height":
-						info.SetOGVideoHeight(content)
-					case "og:video:alt":
-						info.SetOGVideoAlt(content)
+				info.Mutate(func(i *PageInfo) {
+					// Meta Refresh
+					if strings.EqualFold(httpEquiv, "refresh") {
+						if i.MetaRefresh == "" {
+							i.MetaRefresh = content
+						}
 					}
-				}
 
-				// Twitter Card
-				if strings.HasPrefix(name, "twitter:") {
-					switch name {
-					case "twitter:card":
-						info.SetTwitterCard(content)
-					case "twitter:image":
-						info.SetTwitterImage(content)
-					case "twitter:image:alt":
-						info.SetTwitterImageAlt(content)
-					case "twitter:title":
-						info.SetTwitterTitle(content)
-					case "twitter:description":
-						info.SetTwitterDescription(content)
-					case "twitter:player":
-						info.SetTwitterPlayer(content)
-					case "twitter:player:width":
-						info.SetTwitterPlayerWidth(content)
-					case "twitter:player:height":
-						info.SetTwitterPlayerHeight(content)
+					// Standard Metadata
+					if strings.EqualFold(name, "keywords") {
+						i.Keywords = content
 					}
-				}
+
+					// OpenGraph
+					if strings.HasPrefix(property, "og:") {
+						switch property {
+						case "og:type":
+							i.OGType = content
+						case "og:image":
+							i.OGImage = content
+						case "og:image:secure_url":
+							i.OGImageSecureURL = content
+						case "og:image:type":
+							i.OGImageType = content
+						case "og:image:width":
+							i.OGImageWidth = content
+						case "og:image:height":
+							i.OGImageHeight = content
+						case "og:image:alt":
+							i.OGImageAlt = content
+						case "og:description":
+							i.OGDescription = content
+						case "og:title":
+							i.OGTitle = content
+							if i.Title == "" {
+								i.Title = content
+							}
+						case "og:video", "og:video:url":
+							i.OGVideo = content
+						case "og:video:secure_url":
+							i.OGVideoSecureURL = content
+						case "og:video:type":
+							i.OGVideoType = content
+						case "og:video:width":
+							i.OGVideoWidth = content
+						case "og:video:height":
+							i.OGVideoHeight = content
+						case "og:video:alt":
+							i.OGVideoAlt = content
+						}
+					}
+
+					// Twitter Card
+					if strings.HasPrefix(name, "twitter:") {
+						switch name {
+						case "twitter:card":
+							i.TwitterCard = content
+						case "twitter:image":
+							i.TwitterImage = content
+						case "twitter:image:alt":
+							i.TwitterImageAlt = content
+						case "twitter:title":
+							i.TwitterTitle = content
+							if i.Title == "" {
+								i.Title = content
+							}
+						case "twitter:description":
+							i.TwitterDescription = content
+						case "twitter:player":
+							i.TwitterPlayer = content
+						case "twitter:player:width":
+							i.TwitterPlayerWidth = content
+						case "twitter:player:height":
+							i.TwitterPlayerHeight = content
+						}
+					}
+				})
 			case "title":
 				tt = z.Next()
 				if tt == html.TextToken {
-					info.SetTitleIfEmpty(z.Token().Data)
+					data := z.Token().Data
+					info.Mutate(func(i *PageInfo) {
+						if i.Title == "" {
+							i.Title = data
+						}
+					})
 				}
 			case "link":
 				var rel, href, sizes, media string
@@ -128,22 +143,42 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 						media = attr.Val
 					}
 				}
-				if strings.EqualFold(rel, "canonical") && href != "" {
-					info.SetCanonicalLink(href)
-				}
-				if strings.EqualFold(rel, "shortlink") && href != "" {
-					info.SetShortLink(href)
-				}
-				// Support non-standard shortlinkUrl variant often found in the wild (e.g. YouTube)
-				if strings.EqualFold(rel, "shortlinkurl") && href != "" {
-					info.SetShortLink(href)
-				}
-				if strings.EqualFold(rel, "alternate") && href != "" {
-					info.AddAlternateLink(href, media)
-				}
-				if href != "" && strings.Contains(strings.ToLower(rel), "icon") {
-					info.AddIcon(href, sizes)
-				}
+				info.Mutate(func(i *PageInfo) {
+					if strings.EqualFold(rel, "canonical") && href != "" {
+						i.CanonicalLink = href
+					}
+					if strings.EqualFold(rel, "shortlink") && href != "" {
+						i.ShortLink = href
+					}
+					// Support non-standard shortlinkUrl variant often found in the wild (e.g. YouTube)
+					if strings.EqualFold(rel, "shortlinkurl") && href != "" {
+						i.ShortLink = href
+					}
+					if strings.EqualFold(rel, "alternate") && href != "" {
+						found := false
+						for _, existing := range i.AlternateLinks {
+							if existing.URL == href && existing.Media == media {
+								found = true
+								break
+							}
+						}
+						if !found {
+							i.AlternateLinks = append(i.AlternateLinks, AlternateLink{URL: href, Media: media})
+						}
+					}
+					if href != "" && strings.Contains(strings.ToLower(rel), "icon") {
+						found := false
+						for _, existing := range i.Icons {
+							if existing.URL == href && existing.Sizes == sizes {
+								found = true
+								break
+							}
+						}
+						if !found {
+							i.Icons = append(i.Icons, Icon{URL: href, Sizes: sizes})
+						}
+					}
+				})
 			case "body":
 				// Once we hit body, we can typically stop parsing for metadata
 				return nil
