@@ -19,7 +19,8 @@ stdout 'Displaying image \(exec fallback\)'
 ! exec header view non-existent $TEST_SERVER_URL/issue_view.html
 
 exec header view -viewer mock image $TEST_SERVER_URL/issue_view.html
-stdout 'Mock view image: '
+! stdout 'Mock view image: '
+! stdout 'Displaying image'
 
 exec header view -viewer print-url image $TEST_SERVER_URL/issue_view.html
 stdout 'image.jpg'
