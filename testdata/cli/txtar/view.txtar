@@ -1,0 +1,29 @@
+exec header view image $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view og-image $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view twitter-image $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view favicon $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view icon-32 $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view favicon-32 $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+! exec header view non-existent $TEST_SERVER_URL/issue_view.html
+
+exec header view -viewer mock image $TEST_SERVER_URL/issue_view.html
+! stdout 'Mock view image: '
+! stdout 'Displaying image'
+
+exec header view -viewer print-url image $TEST_SERVER_URL/issue_view.html
+stdout 'image.jpg'
+
+exec header view -viewer bad-viewer image $TEST_SERVER_URL/issue_view.html
+stdout 'Error: unsupported viewer "bad-viewer" requested'
