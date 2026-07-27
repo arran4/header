@@ -111,16 +111,13 @@ func DisplayImage(urlStr string, viewer string) {
 				}
 			}
 		}
-	} else if viewer == "open" {
-		cmd = exec.Command("open", finalName)
-	} else if viewer == "xdg-open" {
-		cmd = exec.Command("xdg-open", finalName)
-	} else if viewer == "gio" {
-		cmd = exec.Command("gio", "open", finalName)
-	} else if viewer == "gnome-open" {
-		cmd = exec.Command("gnome-open", finalName)
-	} else if viewer == "kde-open" {
-		cmd = exec.Command("kde-open", finalName)
+	} else {
+		switch viewer {
+		case "open", "xdg-open", "gnome-open", "kde-open":
+			cmd = exec.Command(viewer, finalName)
+		case "gio":
+			cmd = exec.Command("gio", "open", finalName)
+		}
 	}
 
 	if cmd != nil {
