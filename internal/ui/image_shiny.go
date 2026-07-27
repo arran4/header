@@ -9,7 +9,7 @@ import (
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
-	"net/http"
+	"io"
 
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
@@ -17,31 +17,17 @@ import (
 	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/paint"
-	"time"
 )
 
-func DisplayImage(urlStr string) {
-	fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
+func HasShiny() bool {
+	return true
+}
 
-	client := &http.Client{
-		Timeout: 15 * time.Second,
-	}
-	resp, err := client.Get(urlStr)
-	if err != nil {
-		fmt.Printf("Failed to download image: %v\n", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("Failed to download image: HTTP %s\n", resp.Status)
-		return
-	}
-
-	img, _, err := image.Decode(resp.Body)
+func ShowShiny(r io.Reader, urlStr string) bool {
+	img, _, err := image.Decode(r)
 	if err != nil {
 		fmt.Printf("Failed to decode image: %v\n", err)
-		return
+		return false
 	}
 
 	driver.Main(func(s screen.Screen) {
@@ -84,4 +70,6 @@ func DisplayImage(urlStr string) {
 			}
 		}
 	})
+
+	return true
 }

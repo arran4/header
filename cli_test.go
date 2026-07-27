@@ -41,6 +41,12 @@ func TestMain(m *testing.M) {
 		case "/missing":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(missingHTML)
+		case "/issue_view.html":
+			b, err := os.ReadFile("testdata/server/issue_view.html")
+			if err != nil { panic(err) }
+			html := string(b)
+			html = strings.ReplaceAll(html, "http://127.0.0.1:0", ts.URL)
+			w.Write([]byte(html))
 		case "/issue":
 			w.Header().Set("Content-Type", "text/html")
 			// We need to inject the actual URL into the HTML so they match
