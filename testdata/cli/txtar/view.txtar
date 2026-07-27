@@ -1,0 +1,19 @@
+exec header view image $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view og-image $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view twitter-image $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view favicon $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view icon-32 $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+exec header view favicon-32 $TEST_SERVER_URL/issue_view.html
+stdout 'Displaying image \(exec fallback\)'
+
+! exec header view non-existent $TEST_SERVER_URL/issue_view.html
