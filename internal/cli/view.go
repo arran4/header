@@ -13,6 +13,7 @@ import (
 func ViewCmd(args []string) int {
 	fs := flag.NewFlagSet("header view", flag.ContinueOnError)
 	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
+	viewer := fs.String("viewer", "default", "The viewer to use (e.g., open, xdg-open, shiny, mock, export, print-url, default)")
 
 	if err := fs.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
@@ -21,7 +22,7 @@ func ViewCmd(args []string) int {
 
 	pargs := fs.Args()
 	if len(pargs) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: header view <type> <url>\n")
+		fmt.Fprintf(os.Stderr, "Usage: header view [flags] <type> <url>\n")
 		return 2
 	}
 
@@ -41,18 +42,18 @@ func ViewCmd(args []string) int {
 	var targetURL string
 
 	switch viewType {
-	case "image":
+	case "image", "cover", "cover-image":
 		images := info.CoverImages()
 		if len(images) > 0 {
 			targetURL = images[0]
 		}
-	case "og-image":
+	case "og-image", "opengraph-image", "open-graph-image", "meta-image", "facebook-image":
 		if info.OGImage != "" {
 			targetURL = info.OGImage
 		} else if info.OGImageSecureURL != "" {
 			targetURL = info.OGImageSecureURL
 		}
-	case "twitter-image":
+	case "twitter-image", "x-image":
 		targetURL = info.TwitterImage
 	case "favicon", "icon":
 		for _, icon := range info.Icons {
@@ -80,6 +81,6 @@ func ViewCmd(args []string) int {
 		return 1
 	}
 
-	ui.DisplayImage(targetURL)
+	ui.DisplayImage(targetURL, *viewer)
 	return 0
 }

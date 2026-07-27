@@ -20,7 +20,17 @@ import (
 	"time"
 )
 
-func DisplayImage(urlStr string) {
+func DisplayImage(urlStr string, viewer string) {
+	if viewer == "print-url" {
+		fmt.Println(urlStr)
+		return
+	}
+
+	if viewer == "mock" {
+		fmt.Printf("Mock view image: %s\n", urlStr)
+		return
+	}
+
 	fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
 
 	client := &http.Client{
