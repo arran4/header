@@ -140,7 +140,7 @@ func ExtractCmd(args []string) int {
 	if *showImage {
 		images := info.CoverImages()
 		if len(images) > 0 {
-			ui.DisplayImage(images[0])
+			ui.DisplayImage(images[0], "default")
 		} else {
 			fmt.Println("No cover image found to display.")
 		}

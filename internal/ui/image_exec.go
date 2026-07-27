@@ -14,8 +14,20 @@ import (
 	"time"
 )
 
-func DisplayImage(urlStr string) {
-	fmt.Printf("Displaying image (exec fallback): %s\n", urlStr)
+func DisplayImage(urlStr string, viewer string) {
+	if viewer == "print-url" {
+		fmt.Println(urlStr)
+		return
+	}
+
+	if viewer == "mock" {
+		fmt.Printf("Mock view image: %s\n", urlStr)
+		return
+	}
+
+	if viewer == "" || viewer == "default" {
+		fmt.Printf("Displaying image (exec fallback): %s\n", urlStr)
+	}
 
 	client := &http.Client{
 		Timeout: 15 * time.Second,
@@ -38,7 +50,6 @@ func DisplayImage(urlStr string) {
 	}
 	tmpName := tmpFile.Name()
 	defer func() { _ = tmpFile.Close() }()
-	// Depending on OS we may need to leave the file around for a moment for the viewer to open it
 
 	_, err = io.Copy(tmpFile, resp.Body)
 	if err != nil {
@@ -46,7 +57,6 @@ func DisplayImage(urlStr string) {
 		return
 	}
 
-	// Make sure we have the right extension for Windows mostly
 	finalName := tmpName
 	if filepath.Ext(tmpName) == "" {
 		finalName = tmpName + ".jpg"
@@ -56,14 +66,28 @@ func DisplayImage(urlStr string) {
 		}
 	}
 
+	if viewer == "export" {
+		fmt.Printf("Image exported to: %s\n", finalName)
+		return
+	}
+
 	var cmd *exec.Cmd
-	switch runtime.GOOS {
-	case "windows":
-		cmd = exec.Command("cmd", "/c", "start", "", finalName)
-	case "darwin":
-		cmd = exec.Command("open", finalName)
-	default:
-		cmd = exec.Command("xdg-open", finalName)
+
+	if envViewer := os.Getenv("IMAGE_VIEWER"); envViewer != "" {
+		cmd = exec.Command(envViewer, finalName)
+	} else if viewer == "shiny" {
+		fmt.Println("Warning: shiny viewer requested but not compiled with shiny tags, falling back to default")
+	}
+
+	if cmd == nil {
+		switch runtime.GOOS {
+		case "windows":
+			cmd = exec.Command("cmd", "/c", "start", "", finalName)
+		case "darwin":
+			cmd = exec.Command("open", finalName)
+		default:
+			cmd = exec.Command("xdg-open", finalName)
+		}
 	}
 
 	err = cmd.Start()
