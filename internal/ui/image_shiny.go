@@ -11,6 +11,10 @@ import (
 	_ "image/png"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"io"
 
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
@@ -20,6 +24,11 @@ import (
 	"golang.org/x/mobile/event/paint"
 	"time"
 )
+
+func isCommandAvailable(name string) bool {
+	_, err := exec.LookPath(name)
+	return err == nil
+}
 
 func DisplayImage(urlStr string, viewer string) {
 	if viewer == "print-url" {
@@ -31,8 +40,9 @@ func DisplayImage(urlStr string, viewer string) {
 		return
 	}
 
-	if viewer == "" || viewer == "default" {
-		fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
+	if viewer != "" && viewer != "default" && viewer != "shiny" && viewer != "open" && viewer != "xdg-open" && viewer != "gio" && viewer != "gnome-open" && viewer != "kde-open" && viewer != "export" {
+		fmt.Printf("Error: unsupported viewer %q requested\n", viewer)
+		return
 	}
 
 	client := &http.Client{
@@ -48,6 +58,95 @@ func DisplayImage(urlStr string, viewer string) {
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Failed to download image: HTTP %s\n", resp.Status)
 		return
+	}
+
+	if viewer == "export" || viewer == "open" || viewer == "xdg-open" || viewer == "gio" || viewer == "gnome-open" || viewer == "kde-open" {
+		// Needs temp file for these
+		tmpFile, err := os.CreateTemp("", "header-cover-*.jpg")
+		if err != nil {
+			fmt.Printf("Failed to create temp file: %v\n", err)
+			return
+		}
+		tmpName := tmpFile.Name()
+		defer func() { _ = tmpFile.Close() }()
+
+		_, err = io.Copy(tmpFile, resp.Body)
+		if err != nil {
+			fmt.Printf("Failed to save image: %v\n", err)
+			return
+		}
+
+		finalName := tmpName
+		if filepath.Ext(tmpName) == "" {
+			finalName = tmpName + ".jpg"
+			if err := os.Rename(tmpName, finalName); err != nil {
+				fmt.Printf("Failed to rename temp file: %v\n", err)
+				return
+			}
+		}
+
+		if viewer == "export" {
+			fmt.Printf("Image exported to: %s\n", finalName)
+			return
+		}
+
+		var cmd *exec.Cmd
+		if viewer == "open" {
+			cmd = exec.Command("open", finalName)
+		} else if viewer == "xdg-open" {
+			cmd = exec.Command("xdg-open", finalName)
+		} else if viewer == "gio" {
+			cmd = exec.Command("gio", "open", finalName)
+		} else if viewer == "gnome-open" {
+			cmd = exec.Command("gnome-open", finalName)
+		} else if viewer == "kde-open" {
+			cmd = exec.Command("kde-open", finalName)
+		}
+
+		if cmd != nil {
+			err = cmd.Start()
+			if err != nil {
+				fmt.Printf("Failed to open image viewer: %v\n", err)
+			}
+		}
+		return
+	}
+
+	envViewer := os.Getenv("IMAGE_VIEWER")
+	if (viewer == "" || viewer == "default") && envViewer != "" {
+		// Needs temp file for these
+		tmpFile, err := os.CreateTemp("", "header-cover-*.jpg")
+		if err != nil {
+			fmt.Printf("Failed to create temp file: %v\n", err)
+			return
+		}
+		tmpName := tmpFile.Name()
+		defer func() { _ = tmpFile.Close() }()
+
+		_, err = io.Copy(tmpFile, resp.Body)
+		if err != nil {
+			fmt.Printf("Failed to save image: %v\n", err)
+			return
+		}
+
+		finalName := tmpName
+		if filepath.Ext(tmpName) == "" {
+			finalName = tmpName + ".jpg"
+			if err := os.Rename(tmpName, finalName); err != nil {
+				fmt.Printf("Failed to rename temp file: %v\n", err)
+				return
+			}
+		}
+
+		cmd := exec.Command(envViewer, finalName)
+		if err := cmd.Start(); err != nil {
+			fmt.Printf("Failed to open image viewer: %v\n", err)
+		}
+		return
+	}
+
+	if viewer == "" || viewer == "default" {
+		fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
 	}
 
 	img, _, err := image.Decode(resp.Body)

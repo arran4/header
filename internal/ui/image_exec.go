@@ -14,6 +14,11 @@ import (
 	"time"
 )
 
+func isCommandAvailable(name string) bool {
+	_, err := exec.LookPath(name)
+	return err == nil
+}
+
 func DisplayImage(urlStr string, viewer string) {
 	if viewer == "print-url" {
 		fmt.Println(urlStr)
@@ -21,6 +26,11 @@ func DisplayImage(urlStr string, viewer string) {
 	}
 
 	if viewer == "mock" {
+		return
+	}
+
+	if viewer != "" && viewer != "default" && viewer != "shiny" && viewer != "open" && viewer != "xdg-open" && viewer != "gio" && viewer != "gnome-open" && viewer != "kde-open" && viewer != "export" {
+		fmt.Printf("Error: unsupported viewer %q requested\n", viewer)
 		return
 	}
 
@@ -72,27 +82,51 @@ func DisplayImage(urlStr string, viewer string) {
 
 	var cmd *exec.Cmd
 
-	if envViewer := os.Getenv("IMAGE_VIEWER"); envViewer != "" && (viewer == "" || viewer == "default") {
-		cmd = exec.Command(envViewer, finalName)
-	} else if viewer == "shiny" {
+	if viewer == "shiny" {
 		fmt.Println("Warning: shiny viewer requested but not compiled with shiny tags, falling back to default")
-	} else if viewer != "" && viewer != "default" {
-		cmd = exec.Command(viewer, finalName)
+		viewer = "default"
 	}
 
-	if cmd == nil {
-		switch runtime.GOOS {
-		case "windows":
-			cmd = exec.Command("cmd", "/c", "start", "", finalName)
-		case "darwin":
-			cmd = exec.Command("open", finalName)
-		default:
-			cmd = exec.Command("xdg-open", finalName)
+	if viewer == "" || viewer == "default" {
+		if envViewer := os.Getenv("IMAGE_VIEWER"); envViewer != "" {
+			cmd = exec.Command(envViewer, finalName)
+		} else {
+			switch runtime.GOOS {
+			case "windows":
+				cmd = exec.Command("cmd", "/c", "start", "", finalName)
+			case "darwin":
+				cmd = exec.Command("open", finalName)
+			default:
+				if isCommandAvailable("xdg-open") {
+					cmd = exec.Command("xdg-open", finalName)
+				} else if isCommandAvailable("gio") {
+					cmd = exec.Command("gio", "open", finalName)
+				} else if isCommandAvailable("gnome-open") {
+					cmd = exec.Command("gnome-open", finalName)
+				} else if isCommandAvailable("kde-open") {
+					cmd = exec.Command("kde-open", finalName)
+				} else {
+					fmt.Println("Warning: no default viewer found (e.g. xdg-open)")
+					return
+				}
+			}
 		}
+	} else if viewer == "open" {
+		cmd = exec.Command("open", finalName)
+	} else if viewer == "xdg-open" {
+		cmd = exec.Command("xdg-open", finalName)
+	} else if viewer == "gio" {
+		cmd = exec.Command("gio", "open", finalName)
+	} else if viewer == "gnome-open" {
+		cmd = exec.Command("gnome-open", finalName)
+	} else if viewer == "kde-open" {
+		cmd = exec.Command("kde-open", finalName)
 	}
 
-	err = cmd.Start()
-	if err != nil {
-		fmt.Printf("Failed to open image viewer: %v\n", err)
+	if cmd != nil {
+		err = cmd.Start()
+		if err != nil {
+			fmt.Printf("Failed to open image viewer: %v\n", err)
+		}
 	}
 }
