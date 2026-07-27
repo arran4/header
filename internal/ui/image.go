@@ -1,6 +1,3 @@
-//go:build !shiny
-// +build !shiny
-
 package ui
 
 import (
@@ -34,7 +31,7 @@ func DisplayImage(urlStr string, viewer string) {
 		return
 	}
 
-	if viewer == "" || viewer == "default" {
+	if (viewer == "" || viewer == "default") && !HasShiny() {
 		fmt.Printf("Displaying image (exec fallback): %s\n", urlStr)
 	}
 
@@ -52,6 +49,20 @@ func DisplayImage(urlStr string, viewer string) {
 		return
 	}
 
+	// Try Shiny first if requested or default (and shiny is available)
+	if (viewer == "shiny" || viewer == "" || viewer == "default") && HasShiny() {
+		if viewer == "" || viewer == "default" {
+			fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
+		}
+		if ShowShiny(resp.Body, urlStr) {
+			return
+		}
+		// If ShowShiny returns false (e.g., error decoding), we can fall back to the rest
+	} else if viewer == "shiny" && !HasShiny() {
+		fmt.Println("Warning: shiny viewer requested but not compiled with shiny tags, falling back to default")
+		viewer = "default"
+	}
+
 	tmpFile, err := os.CreateTemp("", "header-cover-*.jpg")
 	if err != nil {
 		fmt.Printf("Failed to create temp file: %v\n", err)
@@ -59,6 +70,12 @@ func DisplayImage(urlStr string, viewer string) {
 	}
 	tmpName := tmpFile.Name()
 	defer func() { _ = tmpFile.Close() }()
+
+	// We may have read from resp.Body during shiny attempt, but let's assume it failed before that if it returned false or we haven't touched it.
+	// Actually we should read it to a buffer if we want to try multiple ways, but for now we'll just download it to a temp file first ALWAYS if we might need it for exec.
+	// We'll refactor this lightly.
+
+	// Save to temp file since both export and exec need it. (Shiny only needs it if we use bytes buffer, but let's simplify)
 
 	_, err = io.Copy(tmpFile, resp.Body)
 	if err != nil {
@@ -81,11 +98,6 @@ func DisplayImage(urlStr string, viewer string) {
 	}
 
 	var cmd *exec.Cmd
-
-	if viewer == "shiny" {
-		fmt.Println("Warning: shiny viewer requested but not compiled with shiny tags, falling back to default")
-		viewer = "default"
-	}
 
 	if viewer == "" || viewer == "default" {
 		if envViewer := os.Getenv("IMAGE_VIEWER"); envViewer != "" {
