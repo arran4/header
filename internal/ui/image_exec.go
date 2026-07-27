@@ -21,7 +21,6 @@ func DisplayImage(urlStr string, viewer string) {
 	}
 
 	if viewer == "mock" {
-		fmt.Printf("Mock view image: %s\n", urlStr)
 		return
 	}
 
@@ -73,10 +72,12 @@ func DisplayImage(urlStr string, viewer string) {
 
 	var cmd *exec.Cmd
 
-	if envViewer := os.Getenv("IMAGE_VIEWER"); envViewer != "" {
+	if envViewer := os.Getenv("IMAGE_VIEWER"); envViewer != "" && (viewer == "" || viewer == "default") {
 		cmd = exec.Command(envViewer, finalName)
 	} else if viewer == "shiny" {
 		fmt.Println("Warning: shiny viewer requested but not compiled with shiny tags, falling back to default")
+	} else if viewer != "" && viewer != "default" {
+		cmd = exec.Command(viewer, finalName)
 	}
 
 	if cmd == nil {

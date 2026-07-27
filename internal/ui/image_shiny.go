@@ -10,6 +10,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"net/http"
+	"os"
 
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
@@ -27,11 +28,12 @@ func DisplayImage(urlStr string, viewer string) {
 	}
 
 	if viewer == "mock" {
-		fmt.Printf("Mock view image: %s\n", urlStr)
 		return
 	}
 
-	fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
+	if viewer == "" || viewer == "default" {
+		fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
+	}
 
 	client := &http.Client{
 		Timeout: 15 * time.Second,
