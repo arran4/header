@@ -15,7 +15,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  edit            Edit HTML file head/meta fields\n")
 		fmt.Fprintf(os.Stderr, "  trace-redirects Trace URL redirects\n")
 		fmt.Fprintf(os.Stderr, "  diagnose         Not implemented\n")
-		fmt.Fprintf(os.Stderr, "  debug            Not implemented\n")
 		fmt.Fprintf(os.Stderr, "  verify           Checks all the urls, and other details, it's a subset of the lint rules that is mostly concerned with valid info\n")
 		fmt.Fprintf(os.Stderr, "  lint             Lint the metadata of a URL\n")
 		fmt.Fprintf(os.Stderr, "  lint-rule-lists  List available lint rule lists\n")
@@ -43,7 +42,7 @@ func main() {
 		os.Exit(cli.ViewCmd(os.Args[2:]))
 	case "verify":
 		os.Exit(cli.VerifyCmd(os.Args[2:]))
-	case "diagnose", "debug":
+	case "diagnose":
 		fmt.Fprintf(os.Stderr, "Command '%s' is not implemented yet.\n", command)
 		os.Exit(1)
 	default:
