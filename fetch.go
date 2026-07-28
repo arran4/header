@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/henvic/httpretty"
 )
 
 // FetchOptions contains configuration for fetching a URL.
@@ -22,6 +24,7 @@ type FetchOptions struct {
 	RedirectDelay     time.Duration
 	Timeout           time.Duration
 	MaxBodySize       int64
+	Httpretty         bool
 }
 
 // Extractor is an interface for extracting metadata from an HTML document.
@@ -61,6 +64,20 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
+	}
+
+	if opts.Httpretty {
+		logger := &httpretty.Logger{
+			Time:           true,
+			TLS:            true,
+			RequestHeader:  true,
+			RequestBody:    true,
+			ResponseHeader: true,
+			ResponseBody:   true,
+			Colors:         true,
+			Formatters:     []httpretty.Formatter{&httpretty.JSONFormatter{}},
+		}
+		client.Transport = logger.RoundTripper(http.DefaultTransport)
 	}
 
 	info := &PageInfo{

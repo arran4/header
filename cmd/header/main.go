@@ -16,6 +16,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  trace-redirects Trace URL redirects\n")
 		fmt.Fprintf(os.Stderr, "  verify           Checks all the urls, and other details, it's a subset of the lint rules that is mostly concerned with valid info\n")
 		fmt.Fprintf(os.Stderr, "  lint             Lint the metadata of a URL\n")
+		fmt.Fprintf(os.Stderr, "  httpretty        Fetch a URL and print HTTP requests and responses using httpretty\n")
 		fmt.Fprintf(os.Stderr, "  lint-rule-lists  List available lint rule lists\n")
 		fmt.Fprintf(os.Stderr, "  lint-rules       List available lint rules\n")
 		fmt.Fprintf(os.Stderr, "  view             View images or icons from a URL (e.g. view image <url>)\n")
@@ -41,6 +42,8 @@ func main() {
 		os.Exit(cli.ViewCmd(os.Args[2:]))
 	case "verify":
 		os.Exit(cli.VerifyCmd(os.Args[2:]))
+	case "httpretty":
+		os.Exit(cli.HttprettyCmd(os.Args[2:]))
 	default:
 		// To remain somewhat backwards compatible with old usage where people did `header https://...`,
 		// if the command isn't recognized, fallback to extract treating the command as an arg.
