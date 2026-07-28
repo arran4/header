@@ -16,6 +16,7 @@ func TraceRedirectsCmd(args []string) int {
 	redirectLimit := fs.Int("redirect-limit", 20, "Maximum number of redirects to follow")
 	redirectDelay := fs.Duration("redirect-delay", 0, "Delay between redirects (e.g. 1s, 500ms)")
 	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
+	httprettyFlag := fs.Bool("httpretty", false, "Print HTTP requests and responses")
 
 	if err := fs.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
@@ -39,6 +40,7 @@ func TraceRedirectsCmd(args []string) int {
 		StoreCookies:      *storeCookies,
 		RedirectLimit:     *redirectLimit,
 		RedirectDelay:     *redirectDelay,
+		Httpretty:         *httprettyFlag,
 	}
 
 	fmt.Printf("Tracing %s\n", urlStr)
