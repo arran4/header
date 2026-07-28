@@ -1,0 +1,10 @@
+exec header verify $TEST_SERVER_URL/mock.html
+stdout '--- Lint ---'
+stdout 'No lint issues detected.'
+stdout '------------'
+-- mock.html --
+<!DOCTYPE html>
+<html>
+<head></head>
+<body></body>
+</html>
