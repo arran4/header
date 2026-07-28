@@ -1,6 +1,6 @@
 exec header lint-rule-lists list
 stdout 'Available Lint Lists:'
-stdout 'recommended: \[consistency, html, opengraph, twitter\]'
+stdout 'recommended: \[consistency, html, images, opengraph, twitter\]'
 
 exec header lint-rule-lists list-rules
 stdout 'Available Lint Rules:'
