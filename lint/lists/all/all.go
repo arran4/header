@@ -20,6 +20,8 @@ func init() {
 		opengraph.RuleID,
 		twitter.RuleID,
 		urls.RuleID,
+		"cors",
+		"cloudflare",
 	})
 
 	// Set default list mapping
@@ -30,5 +32,7 @@ func init() {
 		opengraph.RuleID,
 		twitter.RuleID,
 		urls.RuleID,
+		"cors",
+		"cloudflare",
 	})
 }
