@@ -16,5 +16,7 @@ func init() {
 		images.RuleID,
 		opengraph.RuleID,
 		twitter.RuleID,
+		"cors",
+		"cloudflare",
 	})
 }
