@@ -41,6 +41,7 @@ func ExtractCmd(args []string) int {
 	storeCookies := fs.Bool("store-cookies", true, "Store cookies across redirects")
 	redirectLimit := fs.Int("redirect-limit", 20, "Maximum number of redirects to follow")
 	redirectDelay := fs.Duration("redirect-delay", 0, "Delay between redirects (e.g. 1s, 500ms)")
+	httprettyFlag := fs.Bool("httpretty", false, "Print HTTP requests and responses")
 
 	if err := fs.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
@@ -64,6 +65,7 @@ func ExtractCmd(args []string) int {
 		StoreCookies:      *storeCookies,
 		RedirectLimit:     *redirectLimit,
 		RedirectDelay:     *redirectDelay,
+		Httpretty:         *httprettyFlag,
 	}
 
 	info, err := header.FetchURL(urlStr, opts)

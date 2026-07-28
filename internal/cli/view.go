@@ -14,6 +14,7 @@ func ViewCmd(args []string) int {
 	fs := flag.NewFlagSet("header view", flag.ContinueOnError)
 	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
 	viewer := fs.String("viewer", "default", "The viewer to use (e.g., open, xdg-open, shiny, mock, export, print-url, default)")
+	httprettyFlag := fs.Bool("httpretty", false, "Print HTTP requests and responses")
 
 	if err := fs.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
@@ -31,6 +32,7 @@ func ViewCmd(args []string) int {
 
 	opts := header.FetchOptions{
 		UserAgent: *userAgent,
+		Httpretty: *httprettyFlag,
 	}
 
 	info, err := header.FetchURL(urlStr, opts)
