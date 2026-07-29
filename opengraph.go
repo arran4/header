@@ -54,6 +54,35 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					if strings.EqualFold(name, "keywords") {
 						i.Keywords = content
 					}
+					if strings.EqualFold(name, "theme-color") {
+						i.ThemeColor = content
+					}
+					if strings.EqualFold(name, "application-title") {
+						i.ApplicationTitle = content
+					}
+
+					// App Links
+					if strings.HasPrefix(property, "al:") {
+						switch property {
+						case "al:ios:app_name":
+							i.AppLinksIOSName = content
+						case "al:ios:app_store_id":
+							i.AppLinksIOSAppStoreID = content
+						case "al:ios:url":
+							i.AppLinksIOSURL = content
+						case "al:android:app_name":
+							i.AppLinksAndroidName = content
+						case "al:android:package":
+							i.AppLinksAndroidPackage = content
+						case "al:android:url":
+							i.AppLinksAndroidURL = content
+						}
+					}
+
+					// Instagram specific
+					if property == "instapp:owner_user_id" {
+						i.InstagramOwnerUserID = content
+					}
 
 					// OpenGraph
 					if strings.HasPrefix(property, "og:") {
