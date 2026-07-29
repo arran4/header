@@ -9,6 +9,21 @@ import (
 
 const RuleID = "html"
 
+// htmlRule is a lint rule that checks for HTML best practices and Progressive Web App (PWA) recommendations.
+// What it checks:
+// - Verifies the presence of the standard HTML `<title>` element.
+// - Checks that at least one icon specifies the `sizes` attribute if icons are present.
+// - Checks for the presence of standard PWA icon sizes (192x192 or 512x512).
+// - Validates the format of the `media` or `type` attribute on alternate links.
+//
+// Why it checks this:
+// - A `<title>` is essential for SEO and browser tab identification.
+// - Specifying icon sizes allows browsers and devices to select the most appropriate icon resolution.
+// - The 192x192 and 512x512 icon sizes are specifically recommended for PWAs to be installable and display correctly on home screens.
+//
+// References:
+// - HTML Document Title: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/title
+// - Web App Manifest Icons: https://developer.mozilla.org/en-US/docs/Web/Manifest/icons
 type htmlRule struct{}
 
 func (r htmlRule) ID() string   { return RuleID }
