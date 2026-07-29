@@ -51,6 +51,21 @@ type PageInfo struct {
 	YouTubeLengthSeconds int           `json:",omitempty"`
 	YouTubeDuration      time.Duration `json:",omitempty"`
 
+	// App Links
+	AppLinksIOSName        string `json:",omitempty"`
+	AppLinksIOSAppStoreID  string `json:",omitempty"`
+	AppLinksIOSURL         string `json:",omitempty"`
+	AppLinksAndroidName    string `json:",omitempty"`
+	AppLinksAndroidPackage string `json:",omitempty"`
+	AppLinksAndroidURL     string `json:",omitempty"`
+
+	// Instagram Specific
+	InstagramOwnerUserID string `json:",omitempty"`
+
+	// HTML Application
+	ApplicationTitle string `json:",omitempty"`
+	ThemeColor       string `json:",omitempty"`
+
 	// JSON-LD (First found entity or merged data)
 	JSONLDType string `json:",omitempty"`
 	JSONLDName string `json:",omitempty"`
@@ -175,6 +190,15 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	}
 
 	add("HTML", "Keywords", "Keywords", p.Keywords)
+	add("HTML", "Application Title", "ApplicationTitle", p.ApplicationTitle)
+	add("HTML", "Theme Color", "ThemeColor", p.ThemeColor)
+	add("AppLinks", "iOS Name", "AppLinksIOSName", p.AppLinksIOSName)
+	add("AppLinks", "iOS App Store ID", "AppLinksIOSAppStoreID", p.AppLinksIOSAppStoreID)
+	add("AppLinks", "iOS URL", "AppLinksIOSURL", p.AppLinksIOSURL)
+	add("AppLinks", "Android Name", "AppLinksAndroidName", p.AppLinksAndroidName)
+	add("AppLinks", "Android Package", "AppLinksAndroidPackage", p.AppLinksAndroidPackage)
+	add("AppLinks", "Android URL", "AppLinksAndroidURL", p.AppLinksAndroidURL)
+	add("Instagram", "Owner User ID", "InstagramOwnerUserID", p.InstagramOwnerUserID)
 	add("OpenGraph", "Title", "Title", p.OGTitle)
 	add("OpenGraph", "Type", "Type", p.OGType)
 	add("OpenGraph", "Image", "Image", p.OGImage)

@@ -1,0 +1,31 @@
+Extract Instagram Specific Metadata
+-- example.html --
+<!DOCTYPE html><html class="_9dls _ar44" lang="en" dir="ltr"><head>
+<link rel="alternate" href="https://www.instagram.com/reels/Day4n9LOhpx/" hreflang="x-default" />
+<meta property="al:ios:app_name" content="Instagram" />
+<meta property="al:ios:app_store_id" content="389801252" />
+<meta property="al:ios:url" content="instagram://media?id=3941461660253428337" />
+<meta property="al:android:app_name" content="Instagram" />
+<meta property="al:android:package" content="com.instagram.android" />
+<meta property="al:android:url" content="https://www.instagram.com/reels/Day4n9LOhpx/" />
+<meta property="instapp:owner_user_id" content="25048339" />
+<meta name="application-title" content="Instagram" />
+<meta name="theme-color" content="#ffffff" />
+</head><body></body></html>
+-- expected.json --
+{
+  "AppLinksIOSName": "Instagram",
+  "AppLinksIOSAppStoreID": "389801252",
+  "AppLinksIOSURL": "instagram://media?id=3941461660253428337",
+  "AppLinksAndroidName": "Instagram",
+  "AppLinksAndroidPackage": "com.instagram.android",
+  "AppLinksAndroidURL": "https://www.instagram.com/reels/Day4n9LOhpx/",
+  "InstagramOwnerUserID": "25048339",
+  "ApplicationTitle": "Instagram",
+  "ThemeColor": "#ffffff",
+  "AlternateLinks": [
+    {
+      "URL": "https://www.instagram.com/reels/Day4n9LOhpx/"
+    }
+  ]
+}

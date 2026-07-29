@@ -4,6 +4,7 @@ import (
 	"github.com/arran4/header/lint/lists"
 	"github.com/arran4/header/lint/rules/consistency"
 	"github.com/arran4/header/lint/rules/facebook"
+	"github.com/arran4/header/lint/rules/discord"
 	"github.com/arran4/header/lint/rules/html"
 	"github.com/arran4/header/lint/rules/images"
 	"github.com/arran4/header/lint/rules/opengraph"
@@ -14,6 +15,7 @@ import (
 func init() {
 	lists.Register("all", []string{
 		consistency.RuleID,
+		discord.RuleID,
 		facebook.RuleID,
 		html.RuleID,
 		images.RuleID,
