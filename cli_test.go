@@ -31,10 +31,16 @@ var issueHTML []byte
 //go:embed testdata/server/media.html
 var mediaHTML []byte
 
+//go:embed testdata/server/instagram.html
+var instagramHTML []byte
+
 func TestMain(m *testing.M) {
 	// Start server that runs for the entire duration of the tests, including child processes!
 	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/instagram":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write(instagramHTML)
 		case "/example":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(exampleHTML)

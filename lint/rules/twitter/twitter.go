@@ -1,6 +1,8 @@
 package twitter
 
 import (
+	"strings"
+
 	"github.com/arran4/header"
 	"github.com/arran4/header/lint"
 )
@@ -55,6 +57,27 @@ func (r twitterRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 		// If they have twitter fields but no card, it's usually bad
 		if info.TwitterTitle != "" || info.TwitterDescription != "" || info.TwitterImage != "" {
 			results = append(results, lint.Result{Severity: lint.SeverityWarning, Message: "Twitter metadata found but twitter:card is missing (defaults to summary, but should be explicit)"})
+		}
+	}
+
+	// Discord inline video check: Discord heavily relies on twitter:player for inline playback.
+	// If a page has video intent (og:video or Instagram reel/short), it should include twitter:player.
+	isVideoIntent := false
+	if info.OGVideo != "" {
+		isVideoIntent = true
+	}
+	if strings.Contains(info.URL, "/reels/") || strings.Contains(info.URL, "/reel/") || strings.Contains(info.URL, "/shorts/") {
+		isVideoIntent = true
+	}
+	for _, al := range info.AlternateLinks {
+		if strings.Contains(al.URL, "/reels/") || strings.Contains(al.URL, "/reel/") || strings.Contains(al.URL, "/shorts/") {
+			isVideoIntent = true
+		}
+	}
+
+	if isVideoIntent {
+		if info.TwitterPlayer == "" {
+			results = append(results, lint.Result{Severity: lint.SeverityWarning, Message: "Video intent detected (og:video or known video URL) but missing twitter:player. This is often required by secondary consumers like Discord for inline video playback."})
 		}
 	}
 
