@@ -14,6 +14,19 @@ import (
 
 const RuleID = "cors"
 
+// corsRule is a lint rule that checks if referenced resources support Cross-Origin Resource Sharing (CORS).
+// What it checks:
+// - Extracts URLs for images (like `og:image`, `twitter:image`) and icons.
+// - Sends an HTTP HEAD request to these URLs, supplying an `Origin` header that mimics the current page's origin.
+// - Inspects the `Access-Control-Allow-Origin` response header.
+// - Warns if the header is missing or does not allow the current page's origin when the resource is hosted on a different origin.
+//
+// Why it checks this:
+// - Resources served without proper CORS headers cannot be fetched via JavaScript (e.g., using `fetch()`) from different origins.
+// - This is particularly problematic for web applications that need to draw cross-origin images onto a `<canvas>` element (which taints the canvas and prevents `toDataURL` export if CORS is missing).
+//
+// References:
+// - MDN Cross-Origin Resource Sharing (CORS): https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 type corsRule struct{}
 
 func (r corsRule) ID() string   { return RuleID }

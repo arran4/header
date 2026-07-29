@@ -7,6 +7,19 @@ import (
 
 const RuleID = "twitter"
 
+// twitterRule is a lint rule that validates the structure and requirements of Twitter Card metadata.
+// What it checks:
+// - Validates the `twitter:card` attribute against the allowed values (`summary`, `summary_large_image`, `app`, `player`).
+// - If `twitter:card` is set to `summary_large_image`, it ensures the `twitter:image` attribute is also provided.
+// - If `twitter:card` is set to `player`, it ensures the `twitter:player` attribute is provided.
+// - Warns if Twitter-specific metadata (like title, description, or image) is present, but the explicit `twitter:card` type declaration is missing.
+//
+// Why it checks this:
+// - Twitter requires specific field combinations for its various card types to render correctly in the timeline.
+// - Providing an invalid card type or missing required dependent fields will result in Twitter falling back to a default link layout or failing to show a rich preview.
+//
+// References:
+// - Twitter Cards Getting Started Guide: https://developer.x.com/en/docs/twitter-for-websites/cards/guides/getting-started
 type twitterRule struct{}
 
 func (r twitterRule) ID() string   { return RuleID }
