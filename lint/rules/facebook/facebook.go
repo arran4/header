@@ -7,6 +7,15 @@ import (
 
 const RuleID = "facebook"
 
+// facebookRule is a lint rule placeholder for checking Facebook-specific metadata.
+// What it checks:
+// - Currently acts as a placeholder for future Facebook-specific tag validations (e.g., `fb:app_id`, `fb:pages`, or `article:author`).
+//
+// Why it checks this:
+// - While Facebook heavily utilizes OpenGraph tags (`og:*`), they also maintain proprietary tags that enable insights and deeper platform integration.
+//
+// References:
+// - Meta for Developers - Sharing for Web: https://developers.facebook.com/docs/sharing/webmasters/
 type facebookRule struct{}
 
 func (r facebookRule) ID() string   { return RuleID }
