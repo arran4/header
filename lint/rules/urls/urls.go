@@ -14,6 +14,21 @@ import (
 
 const RuleID = "urls"
 
+// urlCheckRule is a lint rule that checks the reachability and content types of referenced URLs.
+// What it checks:
+// - Extracts URLs referenced in the page metadata (e.g., images, canonical links).
+// - Resolves relative URLs to absolute URLs using the page's base URL.
+// - Sends an HTTP HEAD request to each extracted URL.
+// - Verifies the URL is reachable (status code < 400).
+// - Validates that the returned `Content-Type` matches the expected type (e.g., verifying image URLs actually return an `image/*` content type).
+//
+// Why it checks this:
+// - Broken links (404s, 500s) degrade the user experience and can negatively impact SEO and link previews.
+// - Returning an incorrect `Content-Type` (like serving an HTML error page instead of an image) can cause social platforms to silently fail to display the media.
+//
+// References:
+// - HTTP HEAD Method: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/HEAD
+// - HTTP Content-Type Header: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type
 type urlCheckRule struct{}
 
 func (r urlCheckRule) ID() string   { return RuleID }

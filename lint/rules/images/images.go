@@ -19,6 +19,20 @@ import (
 
 const RuleID = "images"
 
+// imagesRule is a lint rule that checks the validity and metadata of referenced images.
+// What it checks:
+// - Verifies image reachability by making a GET request to the image URLs (like `og:image`, `twitter:image`).
+// - Checks that the `Content-Type` header is an image type and matches the expected type (e.g., `og:image:type`).
+// - Downloads the beginning of the image to decode its configuration (dimensions and format).
+// - Cross-references the actual decoded dimensions (width/height) with the expected metadata dimensions (like `og:image:width` and `og:image:height`).
+//
+// Why it checks this:
+// - Providing incorrect image dimensions or formats in metadata can lead to broken or incorrectly cropped previews.
+// - Ensuring the image is reachable and valid prevents social platforms from falling back to empty or default thumbnails.
+//
+// References:
+// - Open Graph Image Guidelines: https://ogp.me/#structured
+// - Twitter Card Image Guidelines: https://developer.x.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image
 type imagesRule struct{}
 
 func (r imagesRule) ID() string   { return RuleID }

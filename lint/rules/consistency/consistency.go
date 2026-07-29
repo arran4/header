@@ -7,6 +7,15 @@ import (
 
 const RuleID = "consistency"
 
+// consistencyRule is a lint rule that checks for parity between different metadata ecosystems.
+// What it checks:
+// - Cross-references the OpenGraph title (`og:title`) against the Twitter title (`twitter:title`).
+// - Cross-references the OpenGraph description (`og:description`) against the Twitter description (`twitter:description`).
+// - Emits an info-level notice if they are both populated but contain different values.
+//
+// Why it checks this:
+// - Maintaining separate, duplicate tags for OpenGraph and Twitter is common, but differences between them are usually unintentional sync issues caused by CMS bugs or human error.
+// - It helps ensure consistent messaging across different social sharing platforms.
 type consistencyRule struct{}
 
 func (r consistencyRule) ID() string   { return RuleID }
