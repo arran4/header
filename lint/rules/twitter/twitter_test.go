@@ -1,35 +1,61 @@
 package twitter
 
 import (
-	"github.com/arran4/header"
 	"testing"
+
+	"github.com/arran4/header"
 )
 
 func TestTwitterRule(t *testing.T) {
 	rule := twitterRule{}
 
-	info := &header.PageInfo{
-		TwitterCard: "invalid",
-	}
-	results := rule.Check(info)
-	if len(results) != 1 {
-		t.Errorf("Expected 1 error for invalid card, got %d", len(results))
+	tests := []struct {
+		name     string
+		info     *header.PageInfo
+		expected int
+	}{
+		{
+			name: "No video intent",
+			info: &header.PageInfo{
+				URL: "https://example.com",
+			},
+			expected: 0,
+		},
+		{
+			name: "Video intent with og:video but no twitter:player",
+			info: &header.PageInfo{
+				URL:     "https://example.com/video",
+				OGVideo: "https://example.com/video.mp4",
+			},
+			expected: 1,
+		},
+		{
+			name: "Instagram reels but no twitter:player",
+			info: &header.PageInfo{
+				URL: "https://www.instagram.com/reels/Day4n9LOhpx/",
+			},
+			expected: 1,
+		},
+		{
+			name: "Video intent with twitter:player",
+			info: &header.PageInfo{
+				URL:           "https://example.com/video",
+				OGVideo:       "https://example.com/video.mp4",
+				TwitterPlayer: "https://example.com/player",
+			},
+			expected: 0,
+		},
 	}
 
-	info = &header.PageInfo{
-		TwitterCard: "summary_large_image",
-	}
-	results = rule.Check(info)
-	if len(results) != 1 {
-		t.Errorf("Expected 1 error for missing image, got %d", len(results))
-	}
-
-	info = &header.PageInfo{
-		TwitterCard:  "summary_large_image",
-		TwitterImage: "https://example.com/image.jpg",
-	}
-	results = rule.Check(info)
-	if len(results) != 0 {
-		t.Errorf("Expected 0 errors for valid large image card, got %d", len(results))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			results := rule.Check(tt.info)
+			if len(results) != tt.expected {
+				t.Errorf("Expected %d results, got %d", tt.expected, len(results))
+				if len(results) > 0 {
+					t.Logf("Result: %v", results[0].Message)
+				}
+			}
+		})
 	}
 }
