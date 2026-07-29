@@ -9,19 +9,23 @@ Extract Instagram Specific Metadata
 <meta property="al:android:package" content="com.instagram.android" />
 <meta property="al:android:url" content="https://www.instagram.com/reels/Day4n9LOhpx/" />
 <meta property="instapp:owner_user_id" content="25048339" />
+<meta name="application-title" content="Instagram" />
+<meta name="theme-color" content="#ffffff" />
 </head><body></body></html>
 -- expected.json --
 {
-  "AlternateLinks": [
-    {
-      "URL": "https://www.instagram.com/reels/Day4n9LOhpx/"
-    }
-  ],
   "AppLinksIOSName": "Instagram",
   "AppLinksIOSAppStoreID": "389801252",
   "AppLinksIOSURL": "instagram://media?id=3941461660253428337",
   "AppLinksAndroidName": "Instagram",
   "AppLinksAndroidPackage": "com.instagram.android",
   "AppLinksAndroidURL": "https://www.instagram.com/reels/Day4n9LOhpx/",
-  "InstagramOwnerUserID": "25048339"
+  "InstagramOwnerUserID": "25048339",
+  "ApplicationTitle": "Instagram",
+  "ThemeColor": "#ffffff",
+  "AlternateLinks": [
+    {
+      "URL": "https://www.instagram.com/reels/Day4n9LOhpx/"
+    }
+  ]
 }

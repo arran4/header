@@ -1,26 +1,16 @@
-1. **Update `types.go`**:
-   - Add App Links properties (`AppLinksIOSName`, `AppLinksIOSAppStoreID`, `AppLinksIOSURL`, `AppLinksAndroidName`, `AppLinksAndroidPackage`, `AppLinksAndroidURL`).
-   - Add Instagram specific properties (`InstagramOwnerUserID`).
-   - Add ApplicationTitle (`ApplicationTitle`) and ThemeColor (`ThemeColor`).
-   - Update `GroupedProperties` to include these new fields.
+1. **Understand Feedback**:
+   - The user commented: "secondary consumers should only be acknowledged in the comments. A primary consumer is meta / twitter as they defined the structure/standard, secondary are people that just use the standard. You may make a note of this in a .md in the base of the lint rules as a note for anyone working on this. Elaborate that document a bit."
+   - And also: "Also you have modified standard output, I am expecting more txtar changes".
+   - The PR branch needs to be updated. Since I used `git checkout jules-15303647914510867825-40f019b8` which I was on but then lost my changes due to `git reset --hard` but I can retrieve them or reapply them.
+   - Wait, my branch was `feat/discord-instagram-support`, but in the PR it was `jules-15303647914510867825-40f019b8`. Wait! Let me check the branch.
+   - I need to recreate the PR changes, but this time modify `twitterRule` (or `opengraphRule`) to check for the Discord stuff, instead of making a `discordRule`. I will also add a `README.md` in `lint/rules/` documenting primary vs secondary consumers.
+   - I also need to update the `testdata/cli/txtar/*.txtar` test outputs because adding the new fields into `types.go` changes the output format of `cli.txtar` and others! (Ah, I missed modifying `cli.txtar` earlier, which is why they failed but they actually didn't fail earlier because the default test HTML didn't have Instagram fields. BUT wait, if the order of output changes, or length of grouped fields changes, maybe the output is different).
 
-2. **Update `opengraph.go`**:
-   - In the `meta` tag parser, extract `al:ios:*`, `al:android:*`, `instapp:owner_user_id`, `theme-color`, and `application-title`.
-
-3. **Update Linter Rules**:
-   - Create a `discord` rule in `lint/rules/discord/discord.go`.
-   - The rule will check if the intent is to show video (like URL contains `/reels/` or `/shorts/` or `/reel/` or `og:video` is present) and if it is, verify that `twitter:player` and `oembed` link (or just `twitter:player`) is also present. If missing, it should report that it's missing what Discord requires.
-   - Register the `discord` rule in `lint/lists/all/all.go` and `lint/lists/recommended/recommended.go`.
-
-4. **Verify Discord Rule**:
-   - Use `read_file` to verify the correct creation of `lint/rules/discord/discord.go` and the updates to `lint/lists/all/all.go` and `lint/lists/recommended/recommended.go`.
-
-5. **Update tests and expectations**:
-   - Create `testdata/extractor/instagram.txtar` with the mock HTML and expected JSON to test the new fields.
-   - Update the expected outputs in `testdata/cli/txtar/lint_lists.txtar`, `testdata/cli/txtar/lint_list_rules.txtar`, `testdata/cli/txtar/lint_root_cmds.txtar`, and `testdata/cli/txtar/cli.txtar` (if any are affected) to include the newly registered `discord` rule and the new extracted fields.
-
-6. **Run Tests**:
-   - Run `go test ./...` to ensure all tests pass and no regressions were introduced.
-
-7. **Pre-commit Instructions**:
-   - Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
+2. **Steps**:
+   - Add the `AppLinksIOSName` and other Instagram properties to `types.go`.
+   - Update `opengraph.go` to parse these fields.
+   - Add the Discord/Instagram check inside `twitterRule` (in `lint/rules/twitter/twitter.go`) and mention Discord in the comments.
+   - Check if `og:video` is present, or if it's an Instagram Reels/Shorts URL, and verify `twitter:player` exists. Add a lint warning if missing.
+   - Add `lint/rules/README.md` explaining primary vs secondary consumers.
+   - Update `testdata/extractor/instagram.txtar`.
+   - Update `testdata/cli/txtar/cli.txtar` or others if the default output changes (wait, did the default output change? Yes, because we added "AppLinks" and "Instagram" and "HTML Application Title" to the `GroupedProperties` and it might change the order or count if the test HTML had these, but the mock HTML doesn't. However, the user said "Also you have modified standard output, I am expecting more txtar changes". I should check which tests need updating. Wait, `testdata/cli/txtar/cli.txtar` failed in my previous attempt? Ah, the failure was `lint_root_cmds` because I added `discord` rule to the list. This time I won't add a `discord` rule, so the list remains the same. But the user said "you have modified standard output, I am expecting more txtar changes". This might mean that because I added new fields to `types.go` and `GroupedProperties`, they expect me to update the `txtar` tests that dump the *default* properties or maybe add a new `txtar` test for Instagram? Or maybe they mean I should update `cli.txtar` to mock those fields? No, they probably mean I should add a test for the new output formatting, or maybe I should update the existing mock HTML to include Instagram fields to test it? Let's check).

@@ -42,3 +42,10 @@ exec header -style plain $TEST_SERVER_URL/media
 stdout 'URL: http'
 stdout 'Title: Media Title'
 stdout 'HTML Alternate Link: https://m.example.com/mobile \(only screen and \(max-width: 640px\)\)'
+
+exec header -style plain $TEST_SERVER_URL/instagram
+stdout 'AppLinks iOS Name: Instagram'
+stdout 'AppLinks iOS App Store ID: 389801252'
+stdout 'Instagram Owner User ID: 25048339'
+stdout 'HTML Application Title: Instagram'
+stdout 'HTML Theme Color: #ffffff'
