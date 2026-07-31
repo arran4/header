@@ -1,0 +1,12 @@
+Extract Atom Title
+-- example.html --
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>The Go Blog</title>
+  <link href="https://go.dev/blog/"/>
+  <updated>2025-02-18T00:00:00Z</updated>
+</feed>
+-- expected.json --
+{
+  "Title": "The Go Blog"
+}
