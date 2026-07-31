@@ -27,19 +27,6 @@ type FetchOptions struct {
 	Httpretty         bool
 }
 
-// Extractor is an interface for extracting metadata from an HTML document.
-type Extractor interface {
-	Name() string
-	Extract(r io.Reader, info *PageInfo) error
-}
-
-var extractorRegistry []Extractor
-
-// RegisterExtractor adds an extractor to the list of extractors used when fetching a URL.
-func RegisterExtractor(e Extractor) {
-	extractorRegistry = append(extractorRegistry, e)
-}
-
 // FetchURL retrieves a URL and extracts metadata from it.
 func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 	if opts.RedirectLimit <= 0 {
