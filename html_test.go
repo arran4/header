@@ -13,7 +13,7 @@ import (
 //go:embed testdata/extractor/*.txtar
 var testDataFS embed.FS
 
-func TestExtractOpenGraph(t *testing.T) {
+func TestExtractHTML(t *testing.T) {
 	err := fs.WalkDir(testDataFS, "testdata/extractor", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -47,7 +47,7 @@ func TestExtractOpenGraph(t *testing.T) {
 			}
 
 			info := &PageInfo{}
-			extractor := openGraphExtractor{}
+			extractor := htmlExtractor{}
 			err = extractor.Extract(strings.NewReader(htmlContent), info)
 			if err != nil {
 				t.Fatalf("Extractor returned error: %v", err)
