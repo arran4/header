@@ -187,9 +187,24 @@ func (e openGraphExtractor) Extract(r io.Reader, info *PageInfo) error {
 					if strings.EqualFold(rel, "shortlinkurl") && href != "" {
 						i.ShortLink = href
 					}
-					if strings.EqualFold(rel, "alternate") && href != "" {
+
+					isAlternate := false
+					for _, token := range strings.Fields(rel) {
+						if strings.EqualFold(token, "alternate") {
+							isAlternate = true
+							break
+						}
+					}
+
+					if isAlternate && href != "" {
 						typeLower := strings.ToLower(typ)
-						if strings.Contains(typeLower, "rss") || strings.Contains(typeLower, "atom") || strings.Contains(typeLower, "json") {
+						hrefLower := strings.ToLower(href)
+						isFeed := strings.Contains(typeLower, "rss") || strings.Contains(typeLower, "atom") || strings.Contains(typeLower, "json")
+						if !isFeed && typeLower == "" {
+							isFeed = strings.HasSuffix(hrefLower, ".rss") || strings.HasSuffix(hrefLower, ".atom") || strings.HasSuffix(hrefLower, ".xml")
+						}
+
+						if isFeed {
 							found := false
 							for _, existing := range i.FeedLinks {
 								if existing.URL == href && existing.Type == typ {
