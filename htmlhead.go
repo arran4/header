@@ -7,11 +7,11 @@ import (
 	"golang.org/x/net/html"
 )
 
-type htmlExtractor struct{}
+type htmlHeadExtractor struct{}
 
-func (e htmlExtractor) Name() string { return "HTML" }
+func (e htmlHeadExtractor) Name() string { return "HTMLHead" }
 
-func (e htmlExtractor) Extract(r io.Reader, info *PageInfo) error {
+func (e htmlHeadExtractor) Extract(r io.Reader, info *PageInfo) error {
 	z := html.NewTokenizer(r)
 
 	for {
@@ -250,5 +250,5 @@ func (e htmlExtractor) Extract(r io.Reader, info *PageInfo) error {
 }
 
 func init() {
-	RegisterExtractor(htmlExtractor{})
+	RegisterExtractor(htmlHeadExtractor{})
 }
