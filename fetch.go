@@ -48,7 +48,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 	client := &http.Client{
 		Timeout: timeout,
 		Jar:     jar,
-		CheckRedirect: func(_ *http.Request, via []*http.Request) error {
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
 	}
