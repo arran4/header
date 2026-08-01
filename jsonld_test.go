@@ -14,15 +14,20 @@ var jsonldHTML []byte
 func TestExtractJSONLD(t *testing.T) {
 	info := &PageInfo{}
 
-	doc, err := html.Parse(strings.NewReader(string(jsonldHTML)))
-	if err != nil {
-		t.Fatalf("Failed to parse jsonldHTML: %v", err)
-	}
-
 	extractor := jsonldExtractor{}
-	err = extractor.Extract(doc, info)
-	if err != nil {
-		t.Fatalf("Extractor returned error: %v", err)
+	processor := extractor.Init(info)
+
+	z := html.NewTokenizer(strings.NewReader(string(jsonldHTML)))
+	for {
+		tt := z.Next()
+		if tt == html.ErrorToken {
+			break
+		}
+
+		tk := z.Token()
+		if processor.ProcessToken(tk) {
+			break
+		}
 	}
 
 	if info.JSONLDType != "NewsArticle" {

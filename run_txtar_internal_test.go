@@ -191,7 +191,7 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 					err = cmd.Run()
 
 					if f != nil {
-						f.Close()
+						_ = f.Close()
 						stdinFile = "" // reset
 					}
 

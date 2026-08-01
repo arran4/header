@@ -48,7 +48,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 	client := &http.Client{
 		Timeout: timeout,
 		Jar:     jar,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		CheckRedirect: func(_ *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
 	}
@@ -127,7 +127,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 		if !isRedirect {
 			// Extract HTML content
 			err = extractFromResponse(resp, info, opts.MaxBodySize)
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			if err != nil {
 				return info, err
 			}
@@ -148,7 +148,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 				}
 			}
 		} else {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		}
 
 		if !isRedirect {
@@ -178,14 +178,35 @@ func extractFromResponse(resp *http.Response, info *PageInfo, maxBodySize int64)
 	}
 	limitedBody := io.LimitReader(resp.Body, maxBodySize)
 
-	doc, err := html.Parse(limitedBody)
-	if err != nil {
-		return err
+	processors := make([]Processor, len(extractors))
+	active := make([]bool, len(extractors))
+	activeCount := len(extractors)
+
+	for i, ext := range extractors {
+		processors[i] = ext.Init(info)
+		active[i] = true
 	}
 
-	for _, ext := range extractors {
-		// Ignore individual extractor errors so one failing doesn't block the rest
-		_ = ext.Extract(doc, info)
+	z := html.NewTokenizer(limitedBody)
+	for activeCount > 0 {
+		tt := z.Next()
+		if tt == html.ErrorToken {
+			if z.Err() == io.EOF {
+				break
+			}
+			return z.Err()
+		}
+
+		t := z.Token()
+		for i, p := range processors {
+			if active[i] {
+				stop := p.ProcessToken(t)
+				if stop {
+					active[i] = false
+					activeCount--
+				}
+			}
+		}
 	}
 
 	return nil

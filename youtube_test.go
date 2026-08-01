@@ -16,15 +16,20 @@ func TestExtractYouTubeInfo(t *testing.T) {
 		URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 	}
 
-	doc, err := html.Parse(strings.NewReader(youtubeHTML))
-	if err != nil {
-		t.Fatalf("Failed to parse youtubeHTML: %v", err)
-	}
-
 	extractor := youtubeExtractor{}
-	err = extractor.Extract(doc, info)
-	if err != nil {
-		t.Fatalf("Extractor returned error: %v", err)
+	processor := extractor.Init(info)
+
+	z := html.NewTokenizer(strings.NewReader(youtubeHTML))
+	for {
+		tt := z.Next()
+		if tt == html.ErrorToken {
+			break
+		}
+
+		tk := z.Token()
+		if processor.ProcessToken(tk) {
+			break
+		}
 	}
 
 	if info.YouTubeVideoID != "dQw4w9WgXcQ" {

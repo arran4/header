@@ -13,56 +13,63 @@ type youtubeExtractor struct{}
 
 func (e youtubeExtractor) Name() string { return "YouTube" }
 
-func (e youtubeExtractor) Extract(n *html.Node, info *PageInfo) error {
+func (e youtubeExtractor) Init(info *PageInfo) Processor {
 	if !isYouTubeURL(info.URL) {
-		return nil
+		return &noopProcessor{}
 	}
+	return &youtubeProcessor{info: info}
+}
 
-	var walk func(*html.Node) bool
-	walk = func(n *html.Node) bool {
-		if n.Type == html.ElementNode && n.Data == "script" {
+type noopProcessor struct{}
+func (p *noopProcessor) ProcessToken(t html.Token) bool { return true }
+
+type youtubeProcessor struct {
+	info     *PageInfo
+	inScript bool
+}
+
+func (p *youtubeProcessor) ProcessToken(t html.Token) bool {
+	if t.Type == html.StartTagToken {
+		if t.Data == "script" {
 			var isJSONLD bool
-			for _, attr := range n.Attr {
+			for _, attr := range t.Attr {
 				if attr.Key == "type" && attr.Val == "application/ld+json" {
 					isJSONLD = true
 					break
 				}
 			}
-
-			if !isJSONLD && n.FirstChild != nil && n.FirstChild.Type == html.TextNode {
-				script := n.FirstChild.Data
-				jsonText, ok := extractAssignedJSONObject(script, "ytInitialPlayerResponse")
-				if ok {
-					var pr playerResponse
-					if err := json.Unmarshal([]byte(jsonText), &pr); err == nil {
-						if pr.VideoDetails.LengthSeconds != "" {
-							sec, _ := strconv.Atoi(pr.VideoDetails.LengthSeconds)
-							info.Mutate(func(i *PageInfo) {
-								i.YouTubeVideoID = pr.VideoDetails.VideoID
-								if i.Title == "" && pr.VideoDetails.Title != "" {
-									i.Title = pr.VideoDetails.Title
-								}
-								i.YouTubeLengthSeconds = sec
-								i.YouTubeDuration = time.Duration(sec) * time.Second
-							})
-							return true // We found what we need, stop walking
+			if !isJSONLD {
+				p.inScript = true
+			}
+		} else if t.Data == "body" {
+			return true // No player response script inside body needed usually, but could be safe to not break on body.
+		}
+	} else if t.Type == html.TextToken && p.inScript {
+		script := t.Data
+		jsonText, ok := extractAssignedJSONObject(script, "ytInitialPlayerResponse")
+		if ok {
+			var pr playerResponse
+			if err := json.Unmarshal([]byte(jsonText), &pr); err == nil {
+				if pr.VideoDetails.LengthSeconds != "" {
+					sec, _ := strconv.Atoi(pr.VideoDetails.LengthSeconds)
+					p.info.Mutate(func(i *PageInfo) {
+						i.YouTubeVideoID = pr.VideoDetails.VideoID
+						if i.Title == "" && pr.VideoDetails.Title != "" {
+							i.Title = pr.VideoDetails.Title
 						}
-					}
+						i.YouTubeLengthSeconds = sec
+						i.YouTubeDuration = time.Duration(sec) * time.Second
+					})
+					return true // We found what we need, stop processing
 				}
 			}
 		}
-
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			if walk(c) {
-				return true
-			}
+	} else if t.Type == html.EndTagToken {
+		if t.Data == "script" {
+			p.inScript = false
 		}
-
-		return false
 	}
-
-	walk(n)
-	return nil
+	return false
 }
 
 func init() {

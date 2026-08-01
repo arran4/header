@@ -9,6 +9,7 @@ import (
 	"github.com/arran4/header/lint/lists"
 )
 
+// PrintLists displays the available lint lists.
 func PrintLists() {
 	fmt.Println("Available Lint Lists:")
 	allLists := lists.GetAll()
@@ -17,6 +18,7 @@ func PrintLists() {
 	}
 }
 
+// PrintRules displays the available individual lint rules.
 func PrintRules() {
 	fmt.Println("Available Lint Rules:")
 	allRules := lint.GetRegisteredRules()
@@ -25,6 +27,7 @@ func PrintRules() {
 	}
 }
 
+// LintRuleListsCmd handles the lint-rule-lists subcommand.
 func LintRuleListsCmd(args []string) int {
 	if len(args) == 0 {
 		fmt.Fprintf(os.Stderr, "Usage: header lint-rule-lists <command>\n\nCommands:\n  list        List available lint lists\n  list-rules  List available lint rules\n")
@@ -44,6 +47,7 @@ func LintRuleListsCmd(args []string) int {
 	}
 }
 
+// LintRulesCmd handles the lint-rules subcommand.
 func LintRulesCmd(args []string) int {
 	if len(args) == 0 {
 		fmt.Fprintf(os.Stderr, "Usage: header lint-rules <command>\n\nCommands:\n  list        List available lint rules\n")

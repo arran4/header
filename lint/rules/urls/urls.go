@@ -12,6 +12,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the URL validation lint rule.
 const RuleID = "urls"
 
 // urlCheckRule is a lint rule that checks the reachability and content types of referenced URLs.
@@ -68,9 +69,9 @@ func (r urlCheckRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 		if info.URL != "" {
 			base, err := url.Parse(info.URL)
 			if err == nil {
-				parsedUrl, err := url.Parse(u)
+				parsedURL, err := url.Parse(u)
 				if err == nil {
-					u = base.ResolveReference(parsedUrl).String()
+					u = base.ResolveReference(parsedURL).String()
 				}
 			}
 		}
@@ -117,7 +118,7 @@ func (r urlCheckRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 				mu.Unlock()
 				return
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode >= 400 {
 				mu.Lock()

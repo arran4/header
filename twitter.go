@@ -10,12 +10,19 @@ type twitterExtractor struct{}
 
 func (e twitterExtractor) Name() string { return "Twitter" }
 
-func (e twitterExtractor) Extract(n *html.Node, info *PageInfo) error {
-	var walk func(*html.Node)
-	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "meta" {
+func (e twitterExtractor) Init(info *PageInfo) Processor {
+	return &twitterProcessor{info: info}
+}
+
+type twitterProcessor struct {
+	info *PageInfo
+}
+
+func (p *twitterProcessor) ProcessToken(t html.Token) bool {
+	if t.Type == html.StartTagToken || t.Type == html.SelfClosingTagToken {
+		if t.Data == "meta" {
 			var name, content string
-			for _, attr := range n.Attr {
+			for _, attr := range t.Attr {
 				switch attr.Key {
 				case "name":
 					name = attr.Val
@@ -24,7 +31,7 @@ func (e twitterExtractor) Extract(n *html.Node, info *PageInfo) error {
 				}
 			}
 
-			info.Mutate(func(i *PageInfo) {
+			p.info.Mutate(func(i *PageInfo) {
 				if strings.HasPrefix(name, "twitter:") {
 					switch name {
 					case "twitter:card":
@@ -49,15 +56,11 @@ func (e twitterExtractor) Extract(n *html.Node, info *PageInfo) error {
 					}
 				}
 			})
-		}
-
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			walk(c)
+		} else if t.Data == "body" {
+			return true
 		}
 	}
-
-	walk(n)
-	return nil
+	return false
 }
 
 func init() {

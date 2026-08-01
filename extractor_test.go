@@ -33,9 +33,10 @@ func TestExtractors(t *testing.T) {
 			var htmlContent, expectedJSON string
 
 			for _, file := range archive.Files {
-				if file.Name == "example.html" {
+				switch file.Name {
+				case "example.html":
 					htmlContent = string(file.Data)
-				} else if file.Name == "expected.json" {
+				case "expected.json":
 					expectedJSON = string(file.Data)
 				}
 			}
@@ -51,15 +52,32 @@ func TestExtractors(t *testing.T) {
 				URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Ensure youtube extractor works if needed
 			}
 
-			doc, err := html.Parse(strings.NewReader(htmlContent))
-			if err != nil {
-				t.Fatalf("Failed to parse htmlContent: %v", err)
+			extractors := extractorRegistry
+			processors := make([]Processor, len(extractors))
+			active := make([]bool, len(extractors))
+			activeCount := len(extractors)
+
+			for i, ext := range extractors {
+				processors[i] = ext.Init(info)
+				active[i] = true
 			}
 
-			for _, extractor := range extractorRegistry {
-				err = extractor.Extract(doc, info)
-				if err != nil {
-					t.Fatalf("Extractor %s returned error: %v", extractor.Name(), err)
+			z := html.NewTokenizer(strings.NewReader(htmlContent))
+			for activeCount > 0 {
+				tt := z.Next()
+				if tt == html.ErrorToken {
+					break
+				}
+
+				tk := z.Token()
+				for i, p := range processors {
+					if active[i] {
+						stop := p.ProcessToken(tk)
+						if stop {
+							active[i] = false
+							activeCount--
+						}
+					}
 				}
 			}
 
