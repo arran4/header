@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"strings"
 	"testing"
+
+	"golang.org/x/net/html"
 )
 
 //go:embed testdata/jsonld.html
@@ -11,8 +13,14 @@ var jsonldHTML []byte
 
 func TestExtractJSONLD(t *testing.T) {
 	info := &PageInfo{}
+
+	doc, err := html.Parse(strings.NewReader(string(jsonldHTML)))
+	if err != nil {
+		t.Fatalf("Failed to parse jsonldHTML: %v", err)
+	}
+
 	extractor := jsonldExtractor{}
-	err := extractor.Extract(strings.NewReader(string(jsonldHTML)), info)
+	err = extractor.Extract(doc, info)
 	if err != nil {
 		t.Fatalf("Extractor returned error: %v", err)
 	}

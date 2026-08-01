@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"strings"
 	"testing"
+
+	"golang.org/x/net/html"
 )
 
 //go:embed testdata/youtube.html
@@ -13,8 +15,14 @@ func TestExtractYouTubeInfo(t *testing.T) {
 	info := &PageInfo{
 		URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 	}
+
+	doc, err := html.Parse(strings.NewReader(youtubeHTML))
+	if err != nil {
+		t.Fatalf("Failed to parse youtubeHTML: %v", err)
+	}
+
 	extractor := youtubeExtractor{}
-	err := extractor.Extract(strings.NewReader(youtubeHTML), info)
+	err = extractor.Extract(doc, info)
 	if err != nil {
 		t.Fatalf("Extractor returned error: %v", err)
 	}
