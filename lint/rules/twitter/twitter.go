@@ -27,7 +27,7 @@ type twitterRule struct{}
 func (r twitterRule) ID() string   { return RuleID }
 func (r twitterRule) Name() string { return "Twitter Card Checks" }
 
-func (r twitterRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+func (r twitterRule) Check(info *header.PageInfo, _ ...any) []lint.Result {
 	var results []lint.Result
 
 	if info.TwitterCard != "" {
