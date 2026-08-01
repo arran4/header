@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/rogpeppe/go-internal/txtar"
+	"golang.org/x/net/html"
 )
 
 //go:embed testdata/extractor/*.txtar
@@ -50,8 +51,13 @@ func TestExtractors(t *testing.T) {
 				URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Ensure youtube extractor works if needed
 			}
 
+			doc, err := html.Parse(strings.NewReader(htmlContent))
+			if err != nil {
+				t.Fatalf("Failed to parse htmlContent: %v", err)
+			}
+
 			for _, extractor := range extractorRegistry {
-				err = extractor.Extract(strings.NewReader(htmlContent), info)
+				err = extractor.Extract(doc, info)
 				if err != nil {
 					t.Fatalf("Extractor %s returned error: %v", extractor.Name(), err)
 				}

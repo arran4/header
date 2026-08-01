@@ -1,12 +1,12 @@
 // Package header provides tools for extracting metadata from web pages.
 package header
 
-import "io"
+import "golang.org/x/net/html"
 
 // Extractor is an interface for extracting metadata from an HTML document.
 type Extractor interface {
 	Name() string
-	Extract(r io.Reader, info *PageInfo) error
+	Extract(n *html.Node, info *PageInfo) error
 }
 
 var extractorRegistry []Extractor

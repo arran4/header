@@ -7,10 +7,10 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/henvic/httpretty"
+	"golang.org/x/net/html"
 )
 
 // FetchOptions contains configuration for fetching a URL.
@@ -168,62 +168,25 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 }
 
 func extractFromResponse(resp *http.Response, info *PageInfo, maxBodySize int64) error {
-	// Revert return nil inside extractFromResponse
-
-	// Set up multicast reading
 	extractors := extractorRegistry
 	if len(extractors) == 0 {
 		return nil
 	}
 
-	writers := make([]*io.PipeWriter, len(extractors))
-	readers := make([]*io.PipeReader, len(extractors))
-
-	for i := range extractors {
-		r, w := io.Pipe()
-		readers[i] = r
-		writers[i] = w
-	}
-
-	var wg sync.WaitGroup
-	for i, ext := range extractors {
-		wg.Add(1)
-		go func(e Extractor, r *io.PipeReader) {
-			defer wg.Done()
-			// Extract handles its own reading from the pipe
-			_ = e.Extract(r, info)
-			_ = r.Close() // Ensure the reader is closed when the extractor finishes or errors out
-		}(ext, readers[i])
-	}
-
-	// Read from resp.Body and broadcast to all writers
-	// Use a limited reader so we don't download infinite files
 	if maxBodySize <= 0 {
 		maxBodySize = 2 * 1024 * 1024 // 2MB default
 	}
 	limitedBody := io.LimitReader(resp.Body, maxBodySize)
-	buf := make([]byte, 32*1024)
-	for {
-		n, err := limitedBody.Read(buf)
-		if n > 0 {
-			for _, w := range writers {
-				// We ignore write errors. A write error just means the specific extractor
-				// closed its reader early (e.g. it found what it needed).
-				_, _ = w.Write(buf[:n])
-			}
-		}
-		if err != nil {
-			break
-		}
+
+	doc, err := html.Parse(limitedBody)
+	if err != nil {
+		return err
 	}
 
-	// Close all writers to signal EOF to the extractors
-	for _, w := range writers {
-		_ = w.Close()
+	for _, ext := range extractors {
+		// Ignore individual extractor errors so one failing doesn't block the rest
+		_ = ext.Extract(doc, info)
 	}
-
-	// Wait for all extractors to finish
-	wg.Wait()
 
 	return nil
 }
