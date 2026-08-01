@@ -10,12 +10,19 @@ type appLinksExtractor struct{}
 
 func (e appLinksExtractor) Name() string { return "AppLinks" }
 
-func (e appLinksExtractor) Extract(n *html.Node, info *PageInfo) error {
-	var walk func(*html.Node)
-	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "meta" {
+func (e appLinksExtractor) Init(info *PageInfo) Processor {
+	return &appLinksProcessor{info: info}
+}
+
+type appLinksProcessor struct {
+	info *PageInfo
+}
+
+func (p *appLinksProcessor) ProcessToken(t html.Token) bool {
+	if t.Type == html.StartTagToken || t.Type == html.SelfClosingTagToken {
+		if t.Data == "meta" {
 			var property, content string
-			for _, attr := range n.Attr {
+			for _, attr := range t.Attr {
 				switch attr.Key {
 				case "property":
 					property = attr.Val
@@ -24,7 +31,7 @@ func (e appLinksExtractor) Extract(n *html.Node, info *PageInfo) error {
 				}
 			}
 
-			info.Mutate(func(i *PageInfo) {
+			p.info.Mutate(func(i *PageInfo) {
 				// App Links
 				if strings.HasPrefix(property, "al:") {
 					switch property {
@@ -48,15 +55,11 @@ func (e appLinksExtractor) Extract(n *html.Node, info *PageInfo) error {
 					i.InstagramOwnerUserID = content
 				}
 			})
-		}
-
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			walk(c)
+		} else if t.Data == "body" {
+			return true
 		}
 	}
-
-	walk(n)
-	return nil
+	return false
 }
 
 func init() {

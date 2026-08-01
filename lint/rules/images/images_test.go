@@ -13,6 +13,7 @@ import (
 
 // A tiny 1x1 GIF
 const testGifBase64 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+
 // A tiny 2x2 GIF
 const testGif2x2Base64 = "R0lGODlhAgACAPAAAP///wAAACwAAAAAAgACAAACAkQBADs="
 
@@ -61,10 +62,10 @@ func TestImagesRule(t *testing.T) {
 
 	client := &mockHTTPClient{
 		responses: map[string]*http.Response{
-			"http://example.com/1x1.gif": makeGIFResponse(testGifBase64, "image/gif"),
-			"http://example.com/2x2.gif": makeGIFResponse(testGif2x2Base64, "image/gif"),
+			"http://example.com/1x1.gif":   makeGIFResponse(testGifBase64, "image/gif"),
+			"http://example.com/2x2.gif":   makeGIFResponse(testGif2x2Base64, "image/gif"),
 			"http://example.com/badct.gif": makeGIFResponse(testGifBase64, "text/html"),
-			"http://example.com/noct.gif": makeGIFResponse(testGifBase64, ""),
+			"http://example.com/noct.gif":  makeGIFResponse(testGifBase64, ""),
 		},
 		errs: map[string]error{},
 	}
@@ -77,20 +78,20 @@ func TestImagesRule(t *testing.T) {
 		{
 			name: "Valid Image",
 			info: &header.PageInfo{
-				OGImage:        "http://example.com/1x1.gif",
-				OGImageWidth:   "1",
-				OGImageHeight:  "1",
-				OGImageType:    "image/gif",
+				OGImage:       "http://example.com/1x1.gif",
+				OGImageWidth:  "1",
+				OGImageHeight: "1",
+				OGImageType:   "image/gif",
 			},
 			expected: nil,
 		},
 		{
 			name: "Mismatched Width",
 			info: &header.PageInfo{
-				OGImage:        "http://example.com/1x1.gif",
-				OGImageWidth:   "2",
-				OGImageHeight:  "1",
-				OGImageType:    "image/gif",
+				OGImage:       "http://example.com/1x1.gif",
+				OGImageWidth:  "2",
+				OGImageHeight: "1",
+				OGImageType:   "image/gif",
 			},
 			expected: []lint.Result{
 				{Severity: lint.SeverityWarning, Message: "Image at http://example.com/1x1.gif width mismatch: metadata says 2, actual is 1"},
@@ -99,10 +100,10 @@ func TestImagesRule(t *testing.T) {
 		{
 			name: "Mismatched Height",
 			info: &header.PageInfo{
-				OGImage:        "http://example.com/1x1.gif",
-				OGImageWidth:   "1",
-				OGImageHeight:  "2",
-				OGImageType:    "image/gif",
+				OGImage:       "http://example.com/1x1.gif",
+				OGImageWidth:  "1",
+				OGImageHeight: "2",
+				OGImageType:   "image/gif",
 			},
 			expected: []lint.Result{
 				{Severity: lint.SeverityWarning, Message: "Image at http://example.com/1x1.gif height mismatch: metadata says 2, actual is 1"},

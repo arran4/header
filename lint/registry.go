@@ -1,3 +1,4 @@
+// Package lint provides a framework for analyzing extracted HTML metadata.
 package lint
 
 import (
@@ -11,6 +12,7 @@ import (
 // Severity indicates the level of a lint result.
 type Severity int
 
+// The available severities for a lint result.
 const (
 	SeverityInfo Severity = iota
 	SeverityWarning

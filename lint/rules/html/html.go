@@ -29,7 +29,7 @@ type htmlRule struct{}
 func (r htmlRule) ID() string   { return RuleID }
 func (r htmlRule) Name() string { return "HTML Good Practices" }
 
-func (r htmlRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+func (r htmlRule) Check(info *header.PageInfo, _ ...any) []lint.Result {
 	var results []lint.Result
 
 	if info.Title == "" {

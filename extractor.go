@@ -3,10 +3,17 @@ package header
 
 import "golang.org/x/net/html"
 
-// Extractor is an interface for extracting metadata from an HTML document.
+// Extractor creates a stateful Processor for extracting metadata from a stream.
 type Extractor interface {
 	Name() string
-	Extract(n *html.Node, info *PageInfo) error
+	Init(info *PageInfo) Processor
+}
+
+// Processor receives a stream of HTML tokens and extracts metadata into PageInfo.
+type Processor interface {
+	// ProcessToken processes a single HTML token. It returns true if the processor
+	// has finished and no longer needs to receive tokens.
+	ProcessToken(t html.Token) (stop bool)
 }
 
 var extractorRegistry []Extractor

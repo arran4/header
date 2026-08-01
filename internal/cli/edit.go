@@ -11,6 +11,7 @@ import (
 	"golang.org/x/net/html"
 )
 
+// EditCmd handles the edit subcommands (e.g., editing head or meta tags).
 func EditCmd(args []string) int {
 	if len(args) < 1 {
 		fmt.Fprintf(os.Stderr, "Usage:\n")
@@ -33,13 +34,13 @@ func EditCmd(args []string) int {
 		return 2
 	}
 
-	var hasS, hasS_upper, hasR bool
+	var hasS, hasSUpper, hasR bool
 	fs.Visit(func(f *flag.Flag) {
 		switch f.Name {
 		case "s":
 			hasS = true
 		case "S":
-			hasS_upper = true
+			hasSUpper = true
 		case "r":
 			hasR = true
 		}
@@ -53,7 +54,7 @@ func EditCmd(args []string) int {
 	if hasS {
 		opts.SetVal = setVal
 	}
-	if hasS_upper {
+	if hasSUpper {
 		opts.AddVal = addVal
 	}
 	if hasR {
@@ -64,20 +65,21 @@ func EditCmd(args []string) int {
 	var targetFile string
 	var metaName string
 
-	if commandType == "head" {
+	switch commandType {
+	case "head":
 		if len(parsedArgs) < 1 {
 			fmt.Fprintf(os.Stderr, "Usage: header edit head [flags] <file>\n")
 			return 2
 		}
 		targetFile = parsedArgs[0]
-	} else if commandType == "meta" {
+	case "meta":
 		if len(parsedArgs) < 2 {
 			fmt.Fprintf(os.Stderr, "Usage: header edit meta [flags] <name> <file>\n")
 			return 2
 		}
 		metaName = parsedArgs[0]
 		targetFile = parsedArgs[1]
-	} else {
+	default:
 		fmt.Fprintf(os.Stderr, "Unknown edit type: %s\n", commandType)
 		return 2
 	}

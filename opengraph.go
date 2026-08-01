@@ -10,12 +10,19 @@ type openGraphExtractor struct{}
 
 func (e openGraphExtractor) Name() string { return "OpenGraph" }
 
-func (e openGraphExtractor) Extract(n *html.Node, info *PageInfo) error {
-	var walk func(*html.Node)
-	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "meta" {
+func (e openGraphExtractor) Init(info *PageInfo) Processor {
+	return &openGraphProcessor{info: info}
+}
+
+type openGraphProcessor struct {
+	info *PageInfo
+}
+
+func (p *openGraphProcessor) ProcessToken(t html.Token) bool {
+	if t.Type == html.StartTagToken || t.Type == html.SelfClosingTagToken {
+		if t.Data == "meta" {
 			var property, content string
-			for _, attr := range n.Attr {
+			for _, attr := range t.Attr {
 				switch attr.Key {
 				case "property":
 					property = attr.Val
@@ -24,7 +31,7 @@ func (e openGraphExtractor) Extract(n *html.Node, info *PageInfo) error {
 				}
 			}
 
-			info.Mutate(func(i *PageInfo) {
+			p.info.Mutate(func(i *PageInfo) {
 				if strings.HasPrefix(property, "og:") {
 					switch property {
 					case "og:type":
@@ -63,15 +70,11 @@ func (e openGraphExtractor) Extract(n *html.Node, info *PageInfo) error {
 					}
 				}
 			})
-		}
-
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			walk(c)
+		} else if t.Data == "body" {
+			return true
 		}
 	}
-
-	walk(n)
-	return nil
+	return false
 }
 
 func init() {

@@ -11,41 +11,46 @@ type jsonldExtractor struct{}
 
 func (e jsonldExtractor) Name() string { return "JSON-LD" }
 
-func (e jsonldExtractor) Extract(n *html.Node, info *PageInfo) error {
-	var walk func(*html.Node)
-	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "script" {
-			var isJSONLD bool
-			for _, attr := range n.Attr {
+func (e jsonldExtractor) Init(info *PageInfo) Processor {
+	return &jsonldProcessor{info: info}
+}
+
+type jsonldProcessor struct {
+	info     *PageInfo
+	inScript bool
+}
+
+func (p *jsonldProcessor) ProcessToken(t html.Token) bool {
+	if t.Type == html.StartTagToken {
+		if t.Data == "script" {
+			for _, attr := range t.Attr {
 				if attr.Key == "type" && attr.Val == "application/ld+json" {
-					isJSONLD = true
+					p.inScript = true
 					break
 				}
 			}
-
-			if isJSONLD && n.FirstChild != nil && n.FirstChild.Type == html.TextNode {
-				content := strings.TrimSpace(n.FirstChild.Data)
-				if strings.HasPrefix(content, "[") {
-					var data []map[string]interface{}
-					if err := json.Unmarshal([]byte(content), &data); err == nil && len(data) > 0 {
-						extractDataFromMap(data[0], info)
-					}
-				} else {
-					var data map[string]interface{}
-					if err := json.Unmarshal([]byte(content), &data); err == nil {
-						extractDataFromMap(data, info)
-					}
-				}
+		} else if t.Data == "body" {
+			return true // stop
+		}
+	} else if t.Type == html.TextToken && p.inScript {
+		content := strings.TrimSpace(t.Data)
+		if strings.HasPrefix(content, "[") {
+			var data []map[string]interface{}
+			if err := json.Unmarshal([]byte(content), &data); err == nil && len(data) > 0 {
+				extractDataFromMap(data[0], p.info)
+			}
+		} else {
+			var data map[string]interface{}
+			if err := json.Unmarshal([]byte(content), &data); err == nil {
+				extractDataFromMap(data, p.info)
 			}
 		}
-
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			walk(c)
+	} else if t.Type == html.EndTagToken {
+		if t.Data == "script" {
+			p.inScript = false
 		}
 	}
-
-	walk(n)
-	return nil
+	return false
 }
 
 func extractDataFromMap(data map[string]interface{}, info *PageInfo) {

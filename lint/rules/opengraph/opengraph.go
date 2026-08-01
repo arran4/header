@@ -22,7 +22,7 @@ type opengraphRule struct{}
 func (r opengraphRule) ID() string   { return RuleID }
 func (r opengraphRule) Name() string { return "OpenGraph Basic Checks" }
 
-func (r opengraphRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+func (r opengraphRule) Check(info *header.PageInfo, _ ...any) []lint.Result {
 	var results []lint.Result
 
 	// These are typically required OpenGraph fields

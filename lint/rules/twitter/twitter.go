@@ -62,16 +62,15 @@ func (r twitterRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 
 	// Discord inline video check: Discord heavily relies on twitter:player for inline playback.
 	// If a page has video intent (og:video or Instagram reel/short), it should include twitter:player.
-	isVideoIntent := false
-	if info.OGVideo != "" {
-		isVideoIntent = true
-	}
-	if strings.Contains(info.URL, "/reels/") || strings.Contains(info.URL, "/reel/") || strings.Contains(info.URL, "/shorts/") {
-		isVideoIntent = true
-	}
-	for _, al := range info.AlternateLinks {
-		if strings.Contains(al.URL, "/reels/") || strings.Contains(al.URL, "/reel/") || strings.Contains(al.URL, "/shorts/") {
-			isVideoIntent = true
+	isVideoIntent := info.OGVideo != "" ||
+		strings.Contains(info.URL, "/reels/") || strings.Contains(info.URL, "/reel/") || strings.Contains(info.URL, "/shorts/")
+
+	if !isVideoIntent {
+		for _, al := range info.AlternateLinks {
+			if strings.Contains(al.URL, "/reels/") || strings.Contains(al.URL, "/reel/") || strings.Contains(al.URL, "/shorts/") {
+				isVideoIntent = true
+				break
+			}
 		}
 	}
 
