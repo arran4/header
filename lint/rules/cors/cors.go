@@ -1,3 +1,4 @@
+// Package cors provides lint rules for Cross-Origin Resource Sharing.
 package cors
 
 import (
