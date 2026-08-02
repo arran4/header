@@ -1,3 +1,4 @@
+// Package facebook contains lint rules for Facebook specific tags.
 package facebook
 
 import (
@@ -5,6 +6,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the facebook lint rule.
 const RuleID = "facebook"
 
 // facebookRule is a lint rule placeholder for checking Facebook-specific metadata.

@@ -66,7 +66,7 @@ func (r cloudflareRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 		results = append(results, lint.Result{Severity: lint.SeverityError, Message: fmt.Sprintf("Unreachable URL %s: %v", info.URL, err)})
 		return results
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	server := resp.Header.Get("Server")
 	if strings.Contains(strings.ToLower(server), "cloudflare") && resp.StatusCode == http.StatusForbidden {

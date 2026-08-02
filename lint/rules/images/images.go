@@ -128,7 +128,7 @@ func (r imagesRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 				mu.Unlock()
 				return
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode >= 400 {
 				mu.Lock()

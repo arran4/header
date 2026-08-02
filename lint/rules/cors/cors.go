@@ -61,9 +61,9 @@ func (r corsRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 		if info.URL != "" {
 			base, err := url.Parse(info.URL)
 			if err == nil {
-				parsedUrl, err := url.Parse(u)
+				parsedURL, err := url.Parse(u)
 				if err == nil {
-					u = base.ResolveReference(parsedUrl).String()
+					u = base.ResolveReference(parsedURL).String()
 				}
 			}
 		}
@@ -115,7 +115,7 @@ func (r corsRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 				mu.Unlock()
 				return
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode >= 400 {
 				mu.Lock()
