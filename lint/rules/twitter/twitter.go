@@ -1,3 +1,4 @@
+// Package twitter contains lint rules for Twitter Card metadata.
 package twitter
 
 import (

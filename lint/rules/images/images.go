@@ -18,6 +18,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the images lint rule.
 const RuleID = "images"
 
 // imagesRule is a lint rule that checks the validity and metadata of referenced images.

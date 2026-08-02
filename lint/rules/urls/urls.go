@@ -1,3 +1,4 @@
+// Package urls provides lint rules for validating URLs referenced in metadata.
 package urls
 
 import (

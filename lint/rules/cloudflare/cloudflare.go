@@ -1,3 +1,4 @@
+// Package cloudflare provides lint rules to detect Cloudflare blocking.
 package cloudflare
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the cloudflare lint rule.
 const RuleID = "cloudflare"
 
 // cloudflareRule is a lint rule that checks if the URL is blocked by Cloudflare's security mechanisms.

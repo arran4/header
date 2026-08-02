@@ -12,6 +12,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the cors lint rule.
 const RuleID = "cors"
 
 // corsRule is a lint rule that checks if referenced resources support Cross-Origin Resource Sharing (CORS).
