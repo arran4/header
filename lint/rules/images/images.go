@@ -1,8 +1,10 @@
+// Package images provides lint rules for validating referenced images.
 package images
 
 import (
 	"fmt"
 	"image"
+	// Blank imports to support decoding various image formats natively.
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -17,6 +19,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the images lint rule.
 const RuleID = "images"
 
 // imagesRule is a lint rule that checks the validity and metadata of referenced images.
@@ -73,9 +76,9 @@ func (r imagesRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 		if info.URL != "" {
 			base, err := url.Parse(info.URL)
 			if err == nil {
-				parsedUrl, err := url.Parse(u)
+				parsedURL, err := url.Parse(u)
 				if err == nil {
-					u = base.ResolveReference(parsedUrl).String()
+					u = base.ResolveReference(parsedURL).String()
 				}
 			}
 		}
@@ -127,7 +130,7 @@ func (r imagesRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 				mu.Unlock()
 				return
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if resp.StatusCode >= 400 {
 				mu.Lock()
@@ -153,7 +156,7 @@ func (r imagesRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 			}
 
 			// Parse image configuration
-			config, format, err := image.DecodeConfig(resp.Body)
+			config, _, err := image.DecodeConfig(resp.Body)
 			if err != nil {
 				mu.Lock()
 				results = append(results, lint.Result{Severity: lint.SeverityError, Message: fmt.Sprintf("Failed to decode image at %s: %v", t.url, err)})
@@ -169,13 +172,12 @@ func (r imagesRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 
 			if t.expectedType != "" {
 				expectedFormat := strings.TrimPrefix(t.expectedType, "image/")
-				if expectedFormat == "jpeg" { expectedFormat = "jpeg" }
-				if format != expectedFormat && !(format == "jpeg" && expectedFormat == "jpg") && !(format == "jpeg" && t.expectedType == "image/jpg") {
-					mu.Lock()
-					// This can be noisy if the server returns image/jpeg but we expected image/png, but we already warn on content-type mismatch.
-					// We could warn here if the actual decoded format is different from expected.
-					mu.Unlock()
+				if expectedFormat == "jpeg" {
+					expectedFormat = "jpeg"
 				}
+				// The image decoder determines the format. A mismatch is noted but we do not log it
+				// directly here to avoid noise, as content-type mismatches are already flagged.
+				_ = expectedFormat
 			}
 
 			if t.expectedWidth != "" {

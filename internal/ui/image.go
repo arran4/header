@@ -1,3 +1,4 @@
+// Package ui provides image display utilities.
 package ui
 
 import (
@@ -16,6 +17,7 @@ func isCommandAvailable(name string) bool {
 	return err == nil
 }
 
+// DisplayImage displays an image from the given URL using the specified viewer.
 func DisplayImage(urlStr string, viewer string) {
 	if viewer == "print-url" {
 		fmt.Println(urlStr)

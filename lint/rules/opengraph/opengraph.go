@@ -1,3 +1,4 @@
+// Package opengraph contains lint rules for OpenGraph tags.
 package opengraph
 
 import (
@@ -5,6 +6,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the opengraph lint rule.
 const RuleID = "opengraph"
 
 // opengraphRule is a lint rule that checks for the presence of basic OpenGraph metadata.
@@ -22,7 +24,7 @@ type opengraphRule struct{}
 func (r opengraphRule) ID() string   { return RuleID }
 func (r opengraphRule) Name() string { return "OpenGraph Basic Checks" }
 
-func (r opengraphRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+func (r opengraphRule) Check(info *header.PageInfo, _ ...any) []lint.Result {
 	var results []lint.Result
 
 	// These are typically required OpenGraph fields

@@ -2,7 +2,6 @@ package header
 
 import (
 	"encoding/json"
-	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -14,60 +13,64 @@ type youtubeExtractor struct{}
 
 func (e youtubeExtractor) Name() string { return "YouTube" }
 
-func (e youtubeExtractor) Extract(r io.Reader, info *PageInfo) error {
+func (e youtubeExtractor) Init(info *PageInfo) Processor {
 	if !isYouTubeURL(info.URL) {
-		return nil
+		return &noopProcessor{}
 	}
+	return &youtubeProcessor{info: info}
+}
 
-	z := html.NewTokenizer(r)
+type noopProcessor struct{}
 
-	for {
-		tt := z.Next()
-		if tt == html.ErrorToken {
-			if z.Err() == io.EOF {
-				return nil
-			}
-			return z.Err()
-		}
+func (p *noopProcessor) ProcessToken(_ html.Token) bool { return true }
 
-		if tt == html.StartTagToken {
-			t := z.Token()
-			if t.Data == "script" {
-				var isJSONLD bool
-				for _, attr := range t.Attr {
-					if attr.Key == "type" && attr.Val == "application/ld+json" {
-						isJSONLD = true
-						break
-					}
+type youtubeProcessor struct {
+	info     *PageInfo
+	inScript bool
+}
+
+func (p *youtubeProcessor) ProcessToken(t html.Token) bool {
+	if t.Type == html.StartTagToken {
+		if t.Data == "script" {
+			var isJSONLD bool
+			for _, attr := range t.Attr {
+				if attr.Key == "type" && attr.Val == "application/ld+json" {
+					isJSONLD = true
+					break
 				}
-
-				if !isJSONLD {
-					tt = z.Next()
-					if tt == html.TextToken {
-						script := z.Token().Data
-						jsonText, ok := extractAssignedJSONObject(script, "ytInitialPlayerResponse")
-						if ok {
-							var pr playerResponse
-							if err := json.Unmarshal([]byte(jsonText), &pr); err == nil {
-								if pr.VideoDetails.LengthSeconds != "" {
-									sec, _ := strconv.Atoi(pr.VideoDetails.LengthSeconds)
-									info.Mutate(func(i *PageInfo) {
-										i.YouTubeVideoID = pr.VideoDetails.VideoID
-										if i.Title == "" && pr.VideoDetails.Title != "" {
-											i.Title = pr.VideoDetails.Title
-										}
-										i.YouTubeLengthSeconds = sec
-										i.YouTubeDuration = time.Duration(sec) * time.Second
-									})
-									return nil // We found what we need, stop parsing early
-								}
-							}
+			}
+			if !isJSONLD {
+				p.inScript = true
+			}
+		} else if t.Data == "body" {
+			return true // No player response script inside body needed usually, but could be safe to not break on body.
+		}
+	} else if t.Type == html.TextToken && p.inScript {
+		script := t.Data
+		jsonText, ok := extractAssignedJSONObject(script, "ytInitialPlayerResponse")
+		if ok {
+			var pr playerResponse
+			if err := json.Unmarshal([]byte(jsonText), &pr); err == nil {
+				if pr.VideoDetails.LengthSeconds != "" {
+					sec, _ := strconv.Atoi(pr.VideoDetails.LengthSeconds)
+					p.info.Mutate(func(i *PageInfo) {
+						i.YouTubeVideoID = pr.VideoDetails.VideoID
+						if i.Title == "" && pr.VideoDetails.Title != "" {
+							i.Title = pr.VideoDetails.Title
 						}
-					}
+						i.YouTubeLengthSeconds = sec
+						i.YouTubeDuration = time.Duration(sec) * time.Second
+					})
+					return true // We found what we need, stop processing
 				}
 			}
 		}
+	} else if t.Type == html.EndTagToken {
+		if t.Data == "script" {
+			p.inScript = false
+		}
 	}
+	return false
 }
 
 func init() {

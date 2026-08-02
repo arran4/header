@@ -5,6 +5,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the consistency lint rule.
 const RuleID = "consistency"
 
 // consistencyRule is a lint rule that checks for parity between different metadata ecosystems.
@@ -21,7 +22,7 @@ type consistencyRule struct{}
 func (r consistencyRule) ID() string   { return RuleID }
 func (r consistencyRule) Name() string { return "Metadata Consistency Checks" }
 
-func (r consistencyRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+func (r consistencyRule) Check(info *header.PageInfo, _ ...any) []lint.Result {
 	var results []lint.Result
 
 	if info.OGTitle != "" && info.TwitterTitle != "" && info.OGTitle != info.TwitterTitle {

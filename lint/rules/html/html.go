@@ -1,3 +1,4 @@
+// Package html contains lint rules for standard HTML metadata.
 package html
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the html lint rule.
 const RuleID = "html"
 
 // htmlRule is a lint rule that checks for HTML best practices and Progressive Web App (PWA) recommendations.
@@ -29,7 +31,7 @@ type htmlRule struct{}
 func (r htmlRule) ID() string   { return RuleID }
 func (r htmlRule) Name() string { return "HTML Good Practices" }
 
-func (r htmlRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+func (r htmlRule) Check(info *header.PageInfo, _ ...any) []lint.Result {
 	var results []lint.Result
 
 	if info.Title == "" {

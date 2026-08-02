@@ -1,3 +1,4 @@
+// Package facebook contains lint rules for Facebook specific tags.
 package facebook
 
 import (
@@ -5,6 +6,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the facebook lint rule.
 const RuleID = "facebook"
 
 // facebookRule is a lint rule placeholder for checking Facebook-specific metadata.
@@ -21,7 +23,7 @@ type facebookRule struct{}
 func (r facebookRule) ID() string   { return RuleID }
 func (r facebookRule) Name() string { return "Facebook Specific Checks" }
 
-func (r facebookRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+func (r facebookRule) Check(_ *header.PageInfo, _ ...any) []lint.Result {
 	var results []lint.Result
 
 	// Basic facebook rules - often they want fb:app_id or similar.

@@ -1,3 +1,4 @@
+// Package cloudflare provides lint rules to detect Cloudflare blocking.
 package cloudflare
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the cloudflare lint rule.
 const RuleID = "cloudflare"
 
 // cloudflareRule is a lint rule that checks if the URL is blocked by Cloudflare's security mechanisms.
@@ -66,7 +68,7 @@ func (r cloudflareRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 		results = append(results, lint.Result{Severity: lint.SeverityError, Message: fmt.Sprintf("Unreachable URL %s: %v", info.URL, err)})
 		return results
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	server := resp.Header.Get("Server")
 	if strings.Contains(strings.ToLower(server), "cloudflare") && resp.StatusCode == http.StatusForbidden {
