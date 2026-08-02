@@ -1,3 +1,4 @@
+// Package twitter contains lint rules for Twitter Card metadata.
 package twitter
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the twitter lint rule.
 const RuleID = "twitter"
 
 // twitterRule is a lint rule that validates the structure and requirements of Twitter Card metadata.
@@ -27,7 +29,7 @@ type twitterRule struct{}
 func (r twitterRule) ID() string   { return RuleID }
 func (r twitterRule) Name() string { return "Twitter Card Checks" }
 
-func (r twitterRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
+func (r twitterRule) Check(info *header.PageInfo, _ ...any) []lint.Result {
 	var results []lint.Result
 
 	if info.TwitterCard != "" {
@@ -62,16 +64,15 @@ func (r twitterRule) Check(info *header.PageInfo, ops ...any) []lint.Result {
 
 	// Discord inline video check: Discord heavily relies on twitter:player for inline playback.
 	// If a page has video intent (og:video or Instagram reel/short), it should include twitter:player.
-	isVideoIntent := false
-	if info.OGVideo != "" {
-		isVideoIntent = true
-	}
-	if strings.Contains(info.URL, "/reels/") || strings.Contains(info.URL, "/reel/") || strings.Contains(info.URL, "/shorts/") {
-		isVideoIntent = true
-	}
-	for _, al := range info.AlternateLinks {
-		if strings.Contains(al.URL, "/reels/") || strings.Contains(al.URL, "/reel/") || strings.Contains(al.URL, "/shorts/") {
-			isVideoIntent = true
+	isVideoIntent := info.OGVideo != "" ||
+		strings.Contains(info.URL, "/reels/") || strings.Contains(info.URL, "/reel/") || strings.Contains(info.URL, "/shorts/")
+
+	if !isVideoIntent {
+		for _, al := range info.AlternateLinks {
+			if strings.Contains(al.URL, "/reels/") || strings.Contains(al.URL, "/reel/") || strings.Contains(al.URL, "/shorts/") {
+				isVideoIntent = true
+				break
+			}
 		}
 	}
 

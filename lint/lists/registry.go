@@ -1,3 +1,4 @@
+// Package lists provides a registry for grouped collections of lint rules.
 package lists
 
 var listRegistry = make(map[string][]string)

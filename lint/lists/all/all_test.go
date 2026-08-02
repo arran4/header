@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestAllRulesLoaded(t *testing.T) {
+func TestAllRulesLoaded(_ *testing.T) {
 	// Register will happen in init() of the imported packages
 	// Create a dummy page info to trigger rules
 	info := &header.PageInfo{}

@@ -8,12 +8,13 @@ import (
 	"testing"
 
 	"github.com/rogpeppe/go-internal/txtar"
+	"golang.org/x/net/html"
 )
 
 //go:embed testdata/extractor/*.txtar
 var testDataFS embed.FS
 
-func TestExtractOpenGraph(t *testing.T) {
+func TestExtractors(t *testing.T) {
 	err := fs.WalkDir(testDataFS, "testdata/extractor", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -32,9 +33,10 @@ func TestExtractOpenGraph(t *testing.T) {
 			var htmlContent, expectedJSON string
 
 			for _, file := range archive.Files {
-				if file.Name == "example.html" {
+				switch file.Name {
+				case "example.html":
 					htmlContent = string(file.Data)
-				} else if file.Name == "expected.json" {
+				case "expected.json":
 					expectedJSON = string(file.Data)
 				}
 			}
@@ -46,11 +48,37 @@ func TestExtractOpenGraph(t *testing.T) {
 				t.Fatalf("expected.json not found in archive")
 			}
 
-			info := &PageInfo{}
-			extractor := openGraphExtractor{}
-			err = extractor.Extract(strings.NewReader(htmlContent), info)
-			if err != nil {
-				t.Fatalf("Extractor returned error: %v", err)
+			info := &PageInfo{
+				URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Ensure youtube extractor works if needed
+			}
+
+			extractors := extractorRegistry
+			processors := make([]Processor, len(extractors))
+			active := make([]bool, len(extractors))
+			activeCount := len(extractors)
+
+			for i, ext := range extractors {
+				processors[i] = ext.Init(info)
+				active[i] = true
+			}
+
+			z := html.NewTokenizer(strings.NewReader(htmlContent))
+			for activeCount > 0 {
+				tt := z.Next()
+				if tt == html.ErrorToken {
+					break
+				}
+
+				tk := z.Token()
+				for i, p := range processors {
+					if active[i] {
+						stop := p.ProcessToken(tk)
+						if stop {
+							active[i] = false
+							activeCount--
+						}
+					}
+				}
 			}
 
 			// Verify fields using JSON comparison for exact match

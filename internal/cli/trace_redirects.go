@@ -8,6 +8,7 @@ import (
 	"github.com/arran4/header"
 )
 
+// TraceRedirectsCmd handles the trace-redirects subcommand.
 func TraceRedirectsCmd(args []string) int {
 	fs := flag.NewFlagSet("header trace-redirects", flag.ContinueOnError)
 	followMetaRefresh := fs.Bool("follow-meta-redirects", true, "Follow meta refresh redirects")

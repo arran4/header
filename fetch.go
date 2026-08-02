@@ -7,10 +7,10 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/henvic/httpretty"
+	"golang.org/x/net/html"
 )
 
 // FetchOptions contains configuration for fetching a URL.
@@ -25,19 +25,6 @@ type FetchOptions struct {
 	Timeout           time.Duration
 	MaxBodySize       int64
 	Httpretty         bool
-}
-
-// Extractor is an interface for extracting metadata from an HTML document.
-type Extractor interface {
-	Name() string
-	Extract(r io.Reader, info *PageInfo) error
-}
-
-var extractorRegistry []Extractor
-
-// RegisterExtractor adds an extractor to the list of extractors used when fetching a URL.
-func RegisterExtractor(e Extractor) {
-	extractorRegistry = append(extractorRegistry, e)
 }
 
 // FetchURL retrieves a URL and extracts metadata from it.
@@ -61,7 +48,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 	client := &http.Client{
 		Timeout: timeout,
 		Jar:     jar,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
 	}
@@ -140,7 +127,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 		if !isRedirect {
 			// Extract HTML content
 			err = extractFromResponse(resp, info, opts.MaxBodySize)
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			if err != nil {
 				return info, err
 			}
@@ -161,7 +148,7 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 				}
 			}
 		} else {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		}
 
 		if !isRedirect {
@@ -181,62 +168,46 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 }
 
 func extractFromResponse(resp *http.Response, info *PageInfo, maxBodySize int64) error {
-	// Revert return nil inside extractFromResponse
-
-	// Set up multicast reading
 	extractors := extractorRegistry
 	if len(extractors) == 0 {
 		return nil
 	}
 
-	writers := make([]*io.PipeWriter, len(extractors))
-	readers := make([]*io.PipeReader, len(extractors))
-
-	for i := range extractors {
-		r, w := io.Pipe()
-		readers[i] = r
-		writers[i] = w
-	}
-
-	var wg sync.WaitGroup
-	for i, ext := range extractors {
-		wg.Add(1)
-		go func(e Extractor, r *io.PipeReader) {
-			defer wg.Done()
-			// Extract handles its own reading from the pipe
-			_ = e.Extract(r, info)
-			_ = r.Close() // Ensure the reader is closed when the extractor finishes or errors out
-		}(ext, readers[i])
-	}
-
-	// Read from resp.Body and broadcast to all writers
-	// Use a limited reader so we don't download infinite files
 	if maxBodySize <= 0 {
 		maxBodySize = 2 * 1024 * 1024 // 2MB default
 	}
 	limitedBody := io.LimitReader(resp.Body, maxBodySize)
-	buf := make([]byte, 32*1024)
-	for {
-		n, err := limitedBody.Read(buf)
-		if n > 0 {
-			for _, w := range writers {
-				// We ignore write errors. A write error just means the specific extractor
-				// closed its reader early (e.g. it found what it needed).
-				_, _ = w.Write(buf[:n])
+
+	processors := make([]Processor, len(extractors))
+	active := make([]bool, len(extractors))
+	activeCount := len(extractors)
+
+	for i, ext := range extractors {
+		processors[i] = ext.Init(info)
+		active[i] = true
+	}
+
+	z := html.NewTokenizer(limitedBody)
+	for activeCount > 0 {
+		tt := z.Next()
+		if tt == html.ErrorToken {
+			if z.Err() == io.EOF {
+				break
+			}
+			return z.Err()
+		}
+
+		t := z.Token()
+		for i, p := range processors {
+			if active[i] {
+				stop := p.ProcessToken(t)
+				if stop {
+					active[i] = false
+					activeCount--
+				}
 			}
 		}
-		if err != nil {
-			break
-		}
 	}
-
-	// Close all writers to signal EOF to the extractors
-	for _, w := range writers {
-		_ = w.Close()
-	}
-
-	// Wait for all extractors to finish
-	wg.Wait()
 
 	return nil
 }

@@ -25,6 +25,7 @@ func importLint(info *header.PageInfo, lists, rules []string) {
 	lint.Run(info, lists, rules)
 }
 
+// ExtractCmd handles the extraction subcommand.
 func ExtractCmd(args []string) int {
 	fs := flag.NewFlagSet("header extract", flag.ContinueOnError)
 	testMode := fs.Bool("test", false, "Run in test mode to show diagnostics/missing data")

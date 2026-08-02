@@ -18,6 +18,7 @@ func printAvailableLintRules() {
 	PrintRules()
 }
 
+// LintCmd handles the lint subcommand.
 func LintCmd(args []string) int {
 	// First check if the user is calling `header lint list` or `header lint list-rules` as a pseudo-subcommand
 	if len(args) > 0 && (args[0] == "list" || args[0] == "list-rules") {
