@@ -7,6 +7,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the twitter lint rule.
 const RuleID = "twitter"
 
 // twitterRule is a lint rule that validates the structure and requirements of Twitter Card metadata.

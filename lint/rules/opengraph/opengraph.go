@@ -1,3 +1,4 @@
+// Package opengraph contains lint rules for OpenGraph tags.
 package opengraph
 
 import (
@@ -5,6 +6,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the opengraph lint rule.
 const RuleID = "opengraph"
 
 // opengraphRule is a lint rule that checks for the presence of basic OpenGraph metadata.

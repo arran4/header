@@ -21,7 +21,8 @@ func (e youtubeExtractor) Init(info *PageInfo) Processor {
 }
 
 type noopProcessor struct{}
-func (p *noopProcessor) ProcessToken(t html.Token) bool { return true }
+
+func (p *noopProcessor) ProcessToken(_ html.Token) bool { return true }
 
 type youtubeProcessor struct {
 	info     *PageInfo

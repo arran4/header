@@ -11,6 +11,6 @@ func HasShiny() bool {
 }
 
 // ShowShiny displays an image using the shiny viewer, if available.
-func ShowShiny(r io.Reader, urlStr string) bool {
+func ShowShiny(_ io.Reader, _ string) bool {
 	return false
 }

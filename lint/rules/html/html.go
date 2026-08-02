@@ -1,3 +1,4 @@
+// Package html contains lint rules for standard HTML metadata.
 package html
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/arran4/header/lint"
 )
 
+// RuleID is the unique identifier for the html lint rule.
 const RuleID = "html"
 
 // htmlRule is a lint rule that checks for HTML best practices and Progressive Web App (PWA) recommendations.

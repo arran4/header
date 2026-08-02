@@ -20,7 +20,8 @@ type twitterProcessor struct {
 
 func (p *twitterProcessor) ProcessToken(t html.Token) bool {
 	if t.Type == html.StartTagToken || t.Type == html.SelfClosingTagToken {
-		if t.Data == "meta" {
+		switch t.Data {
+		case "meta":
 			var name, content string
 			for _, attr := range t.Attr {
 				switch attr.Key {
@@ -56,7 +57,7 @@ func (p *twitterProcessor) ProcessToken(t html.Token) bool {
 					}
 				}
 			})
-		} else if t.Data == "body" {
+		case "body":
 			return true
 		}
 	}

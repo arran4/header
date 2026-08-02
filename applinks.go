@@ -20,7 +20,8 @@ type appLinksProcessor struct {
 
 func (p *appLinksProcessor) ProcessToken(t html.Token) bool {
 	if t.Type == html.StartTagToken || t.Type == html.SelfClosingTagToken {
-		if t.Data == "meta" {
+		switch t.Data {
+		case "meta":
 			var property, content string
 			for _, attr := range t.Attr {
 				switch attr.Key {
@@ -55,7 +56,7 @@ func (p *appLinksProcessor) ProcessToken(t html.Token) bool {
 					i.InstagramOwnerUserID = content
 				}
 			})
-		} else if t.Data == "body" {
+		case "body":
 			return true
 		}
 	}
