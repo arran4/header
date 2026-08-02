@@ -1,3 +1,4 @@
+// Package images provides lint rules for validating referenced images.
 package images
 
 import (
