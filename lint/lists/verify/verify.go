@@ -1,3 +1,4 @@
+// Package verify provides a list of rules for verifying metadata.
 package verify
 
 import (
