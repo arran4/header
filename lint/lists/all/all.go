@@ -1,3 +1,4 @@
+// Package all provides a list containing all available lint rules.
 package all
 
 import (
