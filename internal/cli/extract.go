@@ -36,6 +36,8 @@ func ExtractCmd(args []string) int {
 	showImage := fs.Bool("show-image", false, "Display the cover image (if available)")
 	style := fs.String("style", "default", "The output style template to use (e.g. default, plain)")
 	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
+	showUnknown := fs.Bool("show-unknown", false, "Show unknown metadata tags")
+	excludeUnknown := fs.String("exclude-unknown", "", "Comma-separated list of unknown tags to exclude")
 	traceRedirects := fs.Bool("trace-redirects", false, "Trace redirects like trace-redirects tool")
 	followMetaRefresh := fs.Bool("follow-meta-redirects", false, "Follow meta refresh redirects")
 	updateReferer := fs.Bool("update-referer", true, "Update Referer header on redirect")
@@ -81,6 +83,19 @@ func ExtractCmd(args []string) int {
 			fmt.Printf("%d: %s\n", i+1, url)
 		}
 		fmt.Println("Done")
+	}
+
+	if *showUnknown {
+		var excluded []string
+		if *excludeUnknown != "" {
+			parts := strings.Split(*excludeUnknown, ",")
+			for _, p := range parts {
+				excluded = append(excluded, strings.TrimSpace(p))
+			}
+		}
+		info.Mutate(func(i *header.PageInfo) {
+			i.UnknownMeta = i.KnownMetaTracker.ProcessUnknown(excluded)
+		})
 	}
 
 	tmplContent, err := templates.FS.ReadFile(*style + ".tmpl")
