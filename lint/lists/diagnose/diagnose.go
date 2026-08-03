@@ -1,3 +1,4 @@
+// Package diagnose provides a list of rules for diagnosing issues.
 package diagnose
 
 import (

@@ -1,3 +1,4 @@
+// Package consistency provides rules checking metadata consistency.
 package consistency
 
 import (
