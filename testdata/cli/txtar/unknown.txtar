@@ -1,0 +1,15 @@
+test: unknown metadata flags
+
+exec header -show-unknown -style plain $TEST_SERVER_URL/unknown
+stdout 'Title: Unknown Meta Test'
+stdout 'Unknown custom-author: Jane Doe'
+stdout 'Unknown custom:og:category: Science'
+stdout 'Unknown X-UA-Compatible: IE=edge'
+stdout 'Unknown datePublished: 2023-01-01'
+
+exec header -show-unknown -exclude-unknown "X-UA-Compatible,datePublished" -style plain $TEST_SERVER_URL/unknown
+stdout 'Title: Unknown Meta Test'
+stdout 'Unknown custom-author: Jane Doe'
+stdout 'Unknown custom:og:category: Science'
+! stdout 'Unknown X-UA-Compatible'
+! stdout 'Unknown datePublished'

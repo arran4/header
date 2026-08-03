@@ -36,23 +36,31 @@ func (p *twitterProcessor) ProcessToken(t html.Token) bool {
 				if strings.HasPrefix(name, "twitter:") {
 					switch name {
 					case "twitter:card":
+						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterCard = content
 					case "twitter:image":
+						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterImage = content
 					case "twitter:image:alt":
+						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterImageAlt = content
 					case "twitter:title":
+						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterTitle = content
 						if i.Title == "" {
 							i.Title = content
 						}
 					case "twitter:description":
+						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterDescription = content
 					case "twitter:player":
+						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterPlayer = content
 					case "twitter:player:width":
+						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterPlayerWidth = content
 					case "twitter:player:height":
+						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterPlayerHeight = content
 					}
 				}

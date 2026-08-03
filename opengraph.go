@@ -36,37 +36,52 @@ func (p *openGraphProcessor) ProcessToken(t html.Token) bool {
 				if strings.HasPrefix(property, "og:") {
 					switch property {
 					case "og:type":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGType = content
 					case "og:image":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGImage = content
 					case "og:image:secure_url":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGImageSecureURL = content
 					case "og:image:type":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGImageType = content
 					case "og:image:width":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGImageWidth = content
 					case "og:image:height":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGImageHeight = content
 					case "og:image:alt":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGImageAlt = content
 					case "og:description":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGDescription = content
 					case "og:title":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGTitle = content
 						if i.Title == "" {
 							i.Title = content
 						}
 					case "og:video", "og:video:url":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGVideo = content
 					case "og:video:secure_url":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGVideoSecureURL = content
 					case "og:video:type":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGVideoType = content
 					case "og:video:width":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGVideoWidth = content
 					case "og:video:height":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGVideoHeight = content
 					case "og:video:alt":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.OGVideoAlt = content
 					}
 				}

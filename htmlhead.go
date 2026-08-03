@@ -25,20 +25,42 @@ func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
 		case "meta":
 			var httpEquiv string
 			var name, content string
+			var property string
+			var itemprop string
 			for _, attr := range t.Attr {
 				switch attr.Key {
 				case "http-equiv":
 					httpEquiv = attr.Val
 				case "name":
 					name = attr.Val
+				case "property":
+					property = attr.Val
+				case "itemprop":
+					itemprop = attr.Val
 				case "content":
 					content = attr.Val
 				}
 			}
 
 			p.info.Mutate(func(i *PageInfo) {
+				var tagKey string
+				if name != "" {
+					tagKey = name
+				} else if property != "" {
+					tagKey = property
+				} else if itemprop != "" {
+					tagKey = itemprop
+				} else if httpEquiv != "" {
+					tagKey = httpEquiv
+				}
+
+				if tagKey != "" {
+					i.KnownMetaTracker.AddRaw(tagKey, content)
+				}
+
 				// Meta Refresh
 				if strings.EqualFold(httpEquiv, "refresh") {
+					i.KnownMetaTracker.MarkKnown(httpEquiv)
 					if i.MetaRefresh == "" {
 						i.MetaRefresh = content
 					}
@@ -46,12 +68,15 @@ func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
 
 				// Standard Metadata
 				if strings.EqualFold(name, "keywords") {
+					i.KnownMetaTracker.MarkKnown(name)
 					i.Keywords = content
 				}
 				if strings.EqualFold(name, "theme-color") {
+					i.KnownMetaTracker.MarkKnown(name)
 					i.ThemeColor = content
 				}
 				if strings.EqualFold(name, "application-title") {
+					i.KnownMetaTracker.MarkKnown(name)
 					i.ApplicationTitle = content
 				}
 			})
@@ -76,14 +101,21 @@ func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
 				}
 			}
 			p.info.Mutate(func(i *PageInfo) {
+				if rel != "" && href != "" {
+					i.KnownMetaTracker.AddRaw("link:"+rel, href)
+				}
+
 				if strings.EqualFold(rel, "canonical") && href != "" {
+					i.KnownMetaTracker.MarkKnown("link:"+rel)
 					i.CanonicalLink = href
 				}
 				if strings.EqualFold(rel, "shortlink") && href != "" {
+					i.KnownMetaTracker.MarkKnown("link:"+rel)
 					i.ShortLink = href
 				}
 				// Support non-standard shortlinkUrl variant often found in the wild (e.g. YouTube)
 				if strings.EqualFold(rel, "shortlinkurl") && href != "" {
+					i.KnownMetaTracker.MarkKnown("link:"+rel)
 					i.ShortLink = href
 				}
 
@@ -96,6 +128,7 @@ func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
 				}
 
 				if isAlternate && href != "" {
+					i.KnownMetaTracker.MarkKnown("link:"+rel)
 					typeLower := strings.ToLower(typ)
 					hrefLower := strings.ToLower(href)
 					isFeed := strings.Contains(typeLower, "rss") || strings.Contains(typeLower, "atom") || strings.Contains(typeLower, "json")
@@ -128,6 +161,7 @@ func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
 					}
 				}
 				if href != "" && strings.Contains(strings.ToLower(rel), "icon") {
+					i.KnownMetaTracker.MarkKnown("link:"+rel)
 					found := false
 					for _, existing := range i.Icons {
 						if existing.URL == href && existing.Sizes == sizes {
