@@ -12,6 +12,9 @@ import (
 type PageInfo struct {
 	mu sync.Mutex
 
+	// Tracker for unknown metadata
+	KnownMetaTracker KnownMetaTracker `json:"-"`
+
 	// General Information
 	URL         string   `json:",omitempty"`
 	Trace       []string `json:",omitempty"`
@@ -76,6 +79,15 @@ type PageInfo struct {
 	AlternateLinks []AlternateLink `json:",omitempty"`
 	FeedLinks      []FeedLink      `json:",omitempty"`
 	Icons          []Icon          `json:",omitempty"`
+
+	// Unknown Metadata
+	UnknownMeta []UnknownMeta `json:",omitempty"`
+}
+
+// UnknownMeta represents metadata that was found but not extracted into specific fields.
+type UnknownMeta struct {
+	Key   string `json:",omitempty"`
+	Value string `json:",omitempty"`
 }
 
 // FeedLink represents a parsed RSS, Atom or JSON feed link.
@@ -227,6 +239,10 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	}
 	add("JSON-LD", "Type", "Type", p.JSONLDType)
 	add("JSON-LD", "Name", "Name", p.JSONLDName)
+
+	for _, um := range p.UnknownMeta {
+		add("Unknown", um.Key, "UnknownMeta_"+um.Key, um.Value)
+	}
 
 	type groupKey struct {
 		Key   string

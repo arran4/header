@@ -37,16 +37,22 @@ func (p *appLinksProcessor) ProcessToken(t html.Token) bool {
 				if strings.HasPrefix(property, "al:") {
 					switch property {
 					case "al:ios:app_name":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.AppLinksIOSName = content
 					case "al:ios:app_store_id":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.AppLinksIOSAppStoreID = content
 					case "al:ios:url":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.AppLinksIOSURL = content
 					case "al:android:app_name":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.AppLinksAndroidName = content
 					case "al:android:package":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.AppLinksAndroidPackage = content
 					case "al:android:url":
+						i.KnownMetaTracker.MarkKnown(property)
 						i.AppLinksAndroidURL = content
 					}
 				}
