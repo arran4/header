@@ -1,3 +1,4 @@
+// Package recommended provides the default recommended rule list.
 package recommended
 
 import (

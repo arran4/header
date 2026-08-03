@@ -34,10 +34,16 @@ var mediaHTML []byte
 //go:embed testdata/server/instagram.html
 var instagramHTML []byte
 
+//go:embed testdata/server/unknown.html
+var unknownHTML []byte
+
 func TestMain(m *testing.M) {
 	// Start server that runs for the entire duration of the tests, including child processes!
 	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/unknown":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write(unknownHTML)
 		case "/instagram":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(instagramHTML)
