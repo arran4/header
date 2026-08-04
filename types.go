@@ -70,8 +70,15 @@ type PageInfo struct {
 	ThemeColor       string `json:",omitempty"`
 
 	// JSON-LD (First found entity or merged data)
-	JSONLDType string `json:",omitempty"`
-	JSONLDName string `json:",omitempty"`
+	JSONLDType         string `json:",omitempty"`
+	JSONLDID           string `json:",omitempty"`
+	JSONLDName         string `json:",omitempty"`
+	JSONLDDescription  string `json:",omitempty"`
+	JSONLDUploadDate   string `json:",omitempty"`
+	JSONLDDuration     string `json:",omitempty"`
+	JSONLDThumbnailURL string `json:",omitempty"`
+	JSONLDAuthor       string `json:",omitempty"`
+	JSONLDPublisher    string `json:",omitempty"`
 
 	// HTML Links
 	CanonicalLink  string          `json:",omitempty"`
@@ -238,7 +245,14 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 		add("YouTube", "Duration", "Duration", p.YouTubeDuration)
 	}
 	add("JSON-LD", "Type", "Type", p.JSONLDType)
+	add("JSON-LD", "ID", "ID", p.JSONLDID)
 	add("JSON-LD", "Name", "Name", p.JSONLDName)
+	add("JSON-LD", "Description", "Description", p.JSONLDDescription)
+	add("JSON-LD", "Upload Date", "UploadDate", p.JSONLDUploadDate)
+	add("JSON-LD", "Duration", "Duration", p.JSONLDDuration)
+	add("JSON-LD", "Thumbnail URL", "ThumbnailURL", p.JSONLDThumbnailURL)
+	add("JSON-LD", "Author", "Author", p.JSONLDAuthor)
+	add("JSON-LD", "Publisher", "Publisher", p.JSONLDPublisher)
 
 	for _, um := range p.UnknownMeta {
 		add("Unknown", um.Key, "UnknownMeta_"+um.Key, um.Value)
