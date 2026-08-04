@@ -74,9 +74,10 @@ type PageInfo struct {
 	JSONLDID           string        `json:",omitempty"`
 	JSONLDName         string        `json:",omitempty"`
 	JSONLDDescription  string        `json:",omitempty"`
-	JSONLDUploadDate   string        `json:",omitempty"`
-	JSONLDDuration     string        `json:",omitempty"`
-	JSONLDDurationTime time.Duration `json:",omitempty"`
+	JSONLDUploadDate       string        `json:",omitempty"`
+	JSONLDUploadDateParsed time.Time     `json:",omitempty"`
+	JSONLDDuration         string        `json:",omitempty"`
+	JSONLDDurationTime     time.Duration `json:",omitempty"`
 	JSONLDThumbnailURL string        `json:",omitempty"`
 	JSONLDAuthor       string        `json:",omitempty"`
 	JSONLDPublisher    string        `json:",omitempty"`
@@ -249,7 +250,11 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("JSON-LD", "ID", "ID", p.JSONLDID)
 	add("JSON-LD", "Name", "Name", p.JSONLDName)
 	add("JSON-LD", "Description", "Description", p.JSONLDDescription)
-	add("JSON-LD", "Upload Date", "UploadDate", p.JSONLDUploadDate)
+	if !p.JSONLDUploadDateParsed.IsZero() {
+		add("JSON-LD", "Upload Date", "UploadDate", p.JSONLDUploadDateParsed.Format("2006-01-02 15:04:05 MST"))
+	} else {
+		add("JSON-LD", "Upload Date", "UploadDate", p.JSONLDUploadDate)
+	}
 	if p.JSONLDDurationTime > 0 {
 		add("JSON-LD", "Duration", "Duration", p.JSONLDDurationTime)
 	} else {

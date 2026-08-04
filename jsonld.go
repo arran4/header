@@ -56,6 +56,21 @@ func (p *jsonldProcessor) ProcessToken(t html.Token) bool {
 	return false
 }
 
+func parseISO8601Time(timeStr string) time.Time {
+	layouts := []string{
+		time.RFC3339,
+		time.RFC3339Nano,
+		"2006-01-02T15:04:05-0700",
+		"2006-01-02",
+	}
+	for _, l := range layouts {
+		if t, err := time.Parse(l, timeStr); err == nil {
+			return t
+		}
+	}
+	return time.Time{}
+}
+
 func parseISO8601Duration(isoDuration string) time.Duration {
 	re := regexp.MustCompile(`^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$`)
 	matches := re.FindStringSubmatch(isoDuration)
@@ -144,6 +159,9 @@ func extractDataFromMap(data map[string]interface{}, info *PageInfo) {
 		}
 		if uploadDate != "" && i.JSONLDUploadDate == "" {
 			i.JSONLDUploadDate = uploadDate
+			if t := parseISO8601Time(uploadDate); !t.IsZero() {
+				i.JSONLDUploadDateParsed = t
+			}
 		}
 
 		if d, ok := data["duration"].(string); ok {
