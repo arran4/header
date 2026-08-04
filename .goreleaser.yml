@@ -1,3 +1,5 @@
+version: 2
+
 project_name: header
 
 before:
@@ -12,10 +14,10 @@ builds:
       - CGO_ENABLED=0
 
 archives:
-  - formats: [tar.gz]
+  - format: tar.gz
     format_overrides:
       - goos: windows
-        formats: [zip]
+        format: zip
 
 checksum:
   name_template: checksums.txt
@@ -36,7 +38,7 @@ nfpms:
     section: default
     priority: optional
 
-homebrew_casks:
+brews:
   -
     repository:
       owner: arran4
