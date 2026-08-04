@@ -2,8 +2,6 @@
 
 `header` is a Go command-line application that extracts human-readable metadata from a given URL. It scrapes OpenGraph information, Twitter cards, JSON-LD, and YouTube specifics (watch time, video IDs, titles), displaying them nicely on the terminal.
 
-It also supports checking for missing information (`--test` mode) and displaying cover images directly (`--show-image`).
-
 ## Installation
 
 ### GitHub Releases
@@ -20,38 +18,126 @@ brew install header
 go install github.com/arran4/header/cmd/header@latest
 ```
 
-## Usage
+## Commands
 
-Provide a URL to extract information:
+### `show` / `extract` (default)
+Extracts human-readable metadata from a given URL.
+
 ```bash
 header https://youtube.com/watch?v=dQw4w9WgXcQ
+header extract https://youtube.com/watch?v=dQw4w9WgXcQ
 ```
 
-### Display Cover Images
+Example Output:
+```
+URL: https://youtube.com/watch?v=dQw4w9WgXcQ
+Title: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster) - YouTube
+OpenGraph and Twitter Title: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
+OpenGraph and Twitter Description: The official video for “Never Gonna Give You Up” by Rick Astley. Never: The Autobiography 📚 OUT NOW! Follow this link to get your copy and listen to Rick’s ...
+HTML Canonical Link: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+HTML Short Link: https://youtu.be/dQw4w9WgXcQ
+HTML Alternate Link: https://m.youtube.com/watch?v=dQw4w9WgXcQ (handheld)
+...
+OpenGraph Type: video.other
+OpenGraph Image: https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+OpenGraph Video: https://www.youtube.com/embed/dQw4w9WgXcQ
+Twitter Card: summary_large_image
+JSON-LD Type: VideoObject
+JSON-LD Name: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
+JSON-LD Duration: 3M33S
+JSON-LD Author: Rick Astley
+Cover Images:
+  - https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+```
 
-By default, the `--show-image` flag will download the image and use your system's default image viewer (`xdg-open`, `open`, or `start`) to display it.
-
+**Display Cover Images**
+By default, the `-show-image` flag will download the image and use your system's default image viewer (`xdg-open`, `open`, or `start`) to display it.
 ```bash
-header --show-image https://example.com/some/article
+header extract -show-image https://example.com/some/article
 ```
-
-**Experimental Shiny UI:**
-You can build the app with the `shiny` tag to display the image using an experimental UI window, instead of spawning an external executable:
-
+*Experimental Shiny UI:* You can build the app with the `shiny` tag to display the image using an experimental UI window:
 ```bash
 go build -tags shiny ./cmd/header
-./header --show-image https://example.com/some/article
+./header extract -show-image https://example.com/some/article
 ```
 
-### Test Diagnostics
+**Test Diagnostics**
+If you want to debug what metadata a site is missing, you can use `-test`:
+```bash
+header extract -test https://example.com
+```
 
-If you want to debug what metadata a site is missing, you can use `--test`:
+### `edit`
+Edits HTML file head/meta fields.
 
 ```bash
-header --test https://example.com
+header edit head -S '<link rel="canonical" href="https://example.com/"/>' index.html
+header edit meta -s "new value" "description" index.html
 ```
 
-This will print out a list of any missing common fields (like no OpenGraph Data, no Title, etc.).
+The `edit` command operates in two modes: `head` and `meta`.
+- `header edit head [flags] <file>` targets the root `<head>` block, allowing you to manipulate standard HTML links and elements.
+- `header edit meta [flags] <name> <file>` specifically targets a `<meta name="...">` or `<meta property="...">` tag for modification.
+
+Options:
+- `-s`: set (removes all existing occurrences of this tag and inserts the new one).
+- `-S`: add to set (appends a new one, does not remove existing tags).
+- `-r`: replace (replaces exactly 1 existing value).
+- `-n`: replace number x (only works with `-r`, specifies which index to replace).
+
+Use `-` as the filename to read from `stdin` and write to `stdout`, which is useful for chaining in pipes.
+
+### `trace-redirects`
+Traces URL HTTP standard redirects as well as HTML meta-refresh redirects.
+
+```bash
+header trace-redirects https://example.com/redirect
+```
+Customization flags include `-store-cookies`, `-redirect-limit`, `-update-referer`, and `-redirect-delay`.
+
+### `verify`
+Checks all URLs and other details; a subset of lint rules mostly concerned with valid info (URL reachability and image validity).
+
+```bash
+header verify https://example.com
+```
+
+### `lint`
+Lints the metadata of a URL.
+
+```bash
+header lint https://example.com
+header lint -list all https://example.com
+header lint -rule twitter,opengraph https://example.com
+```
+
+### `lint-rule-lists`
+Lists available lint rule lists.
+
+```bash
+header lint-rule-lists
+```
+
+### `lint-rules`
+Lists available lint rules.
+
+```bash
+header lint-rules
+```
+
+### `view`
+Views images or icons from a URL.
+
+```bash
+header view https://example.com/image.png
+```
+
+### `httpretty`
+Fetches a URL and prints HTTP requests and responses using httpretty.
+
+```bash
+header httpretty https://example.com
+```
 
 ## Development & Testing
 
@@ -60,15 +146,3 @@ Run unit and integration tests using:
 ```bash
 go test ./...
 ```
-
-### Redirect Tracing
-
-`header` replaces the `trace-redirects` application and supports tracing HTTP standard redirects as well as HTML meta-refresh redirects.
-
-```bash
-header trace-redirects https://example.com/redirect
-```
-
-You can customize the behaviour using various flags like `-store-cookies`, `-redirect-limit`, `-update-referer`, and `-redirect-delay`.
-
-Alternatively, use the `-trace-redirects` and `-follow-meta-redirects` flags on the default `extract` command to trace redirects before extracting the metadata.
