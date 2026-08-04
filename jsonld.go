@@ -2,7 +2,10 @@ package header
 
 import (
 	"encoding/json"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -51,6 +54,45 @@ func (p *jsonldProcessor) ProcessToken(t html.Token) bool {
 		}
 	}
 	return false
+}
+
+func parseISO8601Duration(isoDuration string) time.Duration {
+	re := regexp.MustCompile(`^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$`)
+	matches := re.FindStringSubmatch(isoDuration)
+	if matches == nil {
+		return 0
+	}
+
+	var d time.Duration
+
+	// Approximations for years, months, days
+	if matches[1] != "" {
+		years, _ := strconv.Atoi(matches[1])
+		d += time.Duration(years) * 365 * 24 * time.Hour
+	}
+	if matches[2] != "" {
+		months, _ := strconv.Atoi(matches[2])
+		d += time.Duration(months) * 30 * 24 * time.Hour
+	}
+	if matches[3] != "" {
+		days, _ := strconv.Atoi(matches[3])
+		d += time.Duration(days) * 24 * time.Hour
+	}
+
+	if matches[4] != "" {
+		hours, _ := strconv.Atoi(matches[4])
+		d += time.Duration(hours) * time.Hour
+	}
+	if matches[5] != "" {
+		minutes, _ := strconv.Atoi(matches[5])
+		d += time.Duration(minutes) * time.Minute
+	}
+	if matches[6] != "" {
+		seconds, _ := strconv.ParseFloat(matches[6], 64)
+		d += time.Duration(seconds * float64(time.Second))
+	}
+
+	return d
 }
 
 func extractPersonOrOrgName(val interface{}) string {
@@ -107,6 +149,9 @@ func extractDataFromMap(data map[string]interface{}, info *PageInfo) {
 		if d, ok := data["duration"].(string); ok {
 			if i.JSONLDDuration == "" {
 				i.JSONLDDuration = d
+				if td := parseISO8601Duration(d); td > 0 {
+					i.JSONLDDurationTime = td
+				}
 			}
 		}
 		if u, ok := data["thumbnailUrl"].(string); ok {

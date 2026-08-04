@@ -28,6 +28,7 @@ All fields populated
   "YouTubeDuration": 212000000000,
   "JSONLDType": "VideoObject",
   "JSONLDName": "Rick Astley",
+  "JSONLDDurationTime": 213000000000,
   "FeedLinks": [
     {
       "URL": "https://example.com/rss",
@@ -73,6 +74,7 @@ YouTube Video ID: jNQXAC9IVRw
 YouTube Duration: 3m32s
 JSON-LD Type: VideoObject
 JSON-LD Name: Rick Astley
+JSON-LD Duration: 3m33s
 Cover Images:
   - http://example.com/og.jpg
   - http://example.com/tw.jpg
