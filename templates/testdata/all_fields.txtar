@@ -27,7 +27,15 @@ All fields populated
   "YouTubeLengthSeconds": 212,
   "YouTubeDuration": 212000000000,
   "JSONLDType": "VideoObject",
+  "JSONLDID": "https://example.com/article/1",
   "JSONLDName": "Rick Astley",
+  "JSONLDDescription": "JSON-LD Test Description",
+  "JSONLDUploadDate": "2023-10-24T23:57:33-07:00",
+  "JSONLDUploadDateParsed": "2023-10-24T23:57:33-07:00",
+  "JSONLDDurationTime": 213000000000,
+  "JSONLDThumbnailURL": "https://example.com/thumbnail.jpg",
+  "JSONLDAuthor": "John Doe",
+  "JSONLDPublisher": "Example News",
   "FeedLinks": [
     {
       "URL": "https://example.com/rss",
@@ -72,7 +80,14 @@ Twitter Player Height: 360
 YouTube Video ID: jNQXAC9IVRw
 YouTube Duration: 3m32s
 JSON-LD Type: VideoObject
+JSON-LD ID: https://example.com/article/1
 JSON-LD Name: Rick Astley
+JSON-LD Description: JSON-LD Test Description
+JSON-LD Upload Date: 2023-10-24 23:57:33 -0700
+JSON-LD Duration: 3m33s
+JSON-LD Thumbnail URL: https://example.com/thumbnail.jpg
+JSON-LD Author: John Doe
+JSON-LD Publisher: Example News
 Cover Images:
   - http://example.com/og.jpg
   - http://example.com/tw.jpg
