@@ -28,6 +28,26 @@ header https://youtube.com/watch?v=dQw4w9WgXcQ
 header extract https://youtube.com/watch?v=dQw4w9WgXcQ
 ```
 
+Example Output:
+```
+URL: https://youtube.com/watch?v=dQw4w9WgXcQ
+Title: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster) - YouTube
+OpenGraph and Twitter Title: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
+OpenGraph and Twitter Description: The official video for “Never Gonna Give You Up” by Rick Astley. Never: The Autobiography 📚 OUT NOW! Follow this link to get your copy and listen to Rick’s ...
+HTML Canonical Link: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+HTML Short Link: https://youtu.be/dQw4w9WgXcQ
+HTML Alternate Link: https://m.youtube.com/watch?v=dQw4w9WgXcQ (handheld)
+...
+OpenGraph Type: video.other
+OpenGraph Image: https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+OpenGraph Video: https://www.youtube.com/embed/dQw4w9WgXcQ
+Twitter Card: summary_large_image
+JSON-LD Type: VideoObject
+JSON-LD Name: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
+Cover Images:
+  - https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+```
+
 **Display Cover Images**
 By default, the `-show-image` flag will download the image and use your system's default image viewer (`xdg-open`, `open`, or `start`) to display it.
 ```bash
@@ -52,11 +72,18 @@ Edits HTML file head/meta fields.
 header edit head -S '<link rel="canonical" href="https://example.com/"/>' index.html
 header edit meta -s "new value" "description" index.html
 ```
+
+The `edit` command operates in two modes: `head` and `meta`.
+- `header edit head [flags] <file>` targets the root `<head>` block, allowing you to manipulate standard HTML links and elements.
+- `header edit meta [flags] <name> <file>` specifically targets a `<meta name="...">` or `<meta property="...">` tag for modification.
+
 Options:
-- `-s`: set (remove other versions if any)
-- `-S`: add to set (add a new one, only works where valid)
-- `-r`: replace (only works if replacing 1 value)
-- `-n`: replace number x, only works with -r
+- `-s`: set (removes all existing occurrences of this tag and inserts the new one).
+- `-S`: add to set (appends a new one, does not remove existing tags).
+- `-r`: replace (replaces exactly 1 existing value).
+- `-n`: replace number x (only works with `-r`, specifies which index to replace).
+
+Use `-` as the filename to read from `stdin` and write to `stdout`, which is useful for chaining in pipes.
 
 ### `trace-redirects`
 Traces URL HTTP standard redirects as well as HTML meta-refresh redirects.
