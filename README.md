@@ -44,6 +44,8 @@ OpenGraph Video: https://www.youtube.com/embed/dQw4w9WgXcQ
 Twitter Card: summary_large_image
 JSON-LD Type: VideoObject
 JSON-LD Name: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
+JSON-LD Duration: 3M33S
+JSON-LD Author: Rick Astley
 Cover Images:
   - https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
 ```
