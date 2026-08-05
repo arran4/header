@@ -1,0 +1,20 @@
+# {{.Title}}
+
+**URL:** {{.URL}}
+{{if and .CanonicalLink (ne .URL .CanonicalLink)}}
+**Canonical Link:** {{.CanonicalLink}}
+{{- end}}
+
+{{- if .GroupedProperties}}
+## Properties
+{{range .GroupedProperties}}
+- **{{.Label}}:** {{.Value}}
+{{- end}}
+{{- end}}
+
+{{- if .CoverImages}}
+## Cover Images
+{{range .CoverImages}}
+- {{.}}
+{{- end}}
+{{- end}}

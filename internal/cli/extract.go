@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -109,6 +110,10 @@ func ExtractCmd(args []string) int {
 		"green":  color.New(color.FgGreen).SprintFunc(),
 		"cyan":   color.New(color.FgCyan).SprintFunc(),
 		"yellow": color.New(color.FgYellow).SprintFunc(),
+		"json": func(v interface{}) string {
+			b, _ := json.MarshalIndent(v, "", "  ")
+			return string(b)
+		},
 	}
 
 	tmpl, err := template.New("output").Funcs(funcMap).Parse(string(tmplContent))

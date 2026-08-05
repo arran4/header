@@ -15,3 +15,29 @@ Tests that Alternate Link is rendered correctly in the output.
 URL: https://example.com/desktop
 Title: Example
 HTML Alternate Link: https://m.example.com/mobile (handheld)
+-- expected_default.txt --
+URL: https://example.com/desktop
+Title: Example
+-- expected_plain.txt --
+URL: https://example.com/desktop
+Title: Example
+-- expected_json.txt --
+{
+  "URL": "https://example.com/desktop",
+  "Title": "Example",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z",
+  "AlternateLinks": [
+    {
+      "URL": "https://m.example.com/mobile",
+      "Media": "handheld"
+    }
+  ]
+}
+-- expected_markdown.txt --
+# Example
+
+**URL:** https://example.com/desktop
+
+## Properties
+
+- **HTML Alternate Link:** https://m.example.com/mobile (handheld)

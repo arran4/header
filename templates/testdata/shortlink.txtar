@@ -10,3 +10,24 @@ Short Link is parsed and displayed
 URL: https://example.com/some-page?utm_source=test
 Title: Test Title
 HTML Short Link: https://example.com/sp
+-- expected_default.txt --
+URL: https://example.com/some-page?utm_source=test
+Title: Test Title
+-- expected_plain.txt --
+URL: https://example.com/some-page?utm_source=test
+Title: Test Title
+-- expected_json.txt --
+{
+  "URL": "https://example.com/some-page?utm_source=test",
+  "Title": "Test Title",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z",
+  "ShortLink": "https://example.com/sp"
+}
+-- expected_markdown.txt --
+# Test Title
+
+**URL:** https://example.com/some-page?utm_source=test
+
+## Properties
+
+- **HTML Short Link:** https://example.com/sp
