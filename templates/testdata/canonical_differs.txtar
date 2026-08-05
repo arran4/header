@@ -25,12 +25,8 @@ Title: Test Title
 URL: https://example.com/some-page?utm_source=test
 Title: Test Title
 -- expected_jsonld.txt --
-{
-  "URL": "https://example.com/some-page?utm_source=test",
-  "Title": "Test Title",
-  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z",
-  "CanonicalLink": "https://example.com/some-page"
-}
+
+URL: https://example.com/some-page?utm_source=test
 -- expected_opengraph.txt --
 
 URL: https://example.com/some-page?utm_source=test

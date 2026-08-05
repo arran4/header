@@ -28,13 +28,9 @@ Title: Test Title
 URL: https://example.com
 Title: Test Title
 -- expected_jsonld.txt --
-{
-  "URL": "https://example.com",
-  "Title": "Test Title",
-  "TwitterCard": "summary",
-  "JSONLDType": "Article",
-  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
-}
+
+URL: https://example.com
+JSON-LD Type: Article
 -- expected_opengraph.txt --
 
 URL: https://example.com
