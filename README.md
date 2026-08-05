@@ -44,7 +44,10 @@ The tool supports multiple output formatting templates using the `-style` flag:
 - `all_fields`: A detailed format printing all captured metadata grouped logically.
 - `all_fields_plain`: A detailed plain text format.
 - `json`: Prints the raw page metadata as JSON.
-- `markdown`: Prints all extracted fields formatted as a Markdown list.
+- `discord`: A format tailored for Discord metadata embedding.
+- `jsonld`: Prints human readable JSON-LD metadata.
+- `opengraph`: Prints OpenGraph metadata only.
+- `twitter`: Prints Twitter card metadata only.
 
 Example of retrieving all fields in JSON:
 ```bash
