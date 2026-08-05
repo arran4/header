@@ -24,10 +24,6 @@ JSON-LD Name: Same Title
 URL: https://example.com
 Title: Test Title
 Description: Same description
--- expected_plain.txt --
-URL: https://example.com
-Title: Test Title
-Description: Same description
 -- expected_json.txt --
 {
   "URL": "https://example.com",
@@ -42,14 +38,34 @@ Description: Same description
   "JSONLDName": "Same Title",
   "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
 }
--- expected_markdown.txt --
-# Test Title
+-- expected_discord.txt --
 
-**URL:** https://example.com
+URL: https://example.com
+Title: Same Title
+Description: Same description
+-- expected_jsonld.txt --
+{
+  "URL": "https://example.com",
+  "Title": "Test Title",
+  "OGTitle": "Same Title",
+  "OGType": "website",
+  "OGDescription": "Same description",
+  "TwitterCard": "website",
+  "TwitterTitle": "Same Title",
+  "TwitterDescription": "Same description",
+  "JSONLDType": "website",
+  "JSONLDName": "Same Title",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
+}
+-- expected_opengraph.txt --
 
-## Properties
+URL: https://example.com
+OpenGraph Type: website
+OpenGraph Title: Same Title
+OpenGraph Description: Same description
+-- expected_twitter.txt --
 
-- **OpenGraph, Twitter and JSON-LD Type/Card:** website
-- **OpenGraph and Twitter Title:** Same Title
-- **OpenGraph and Twitter Description:** Same description
-- **JSON-LD Name:** Same Title
+URL: https://example.com
+Twitter Card: website
+Twitter Title: Same Title
+Twitter Description: Same description

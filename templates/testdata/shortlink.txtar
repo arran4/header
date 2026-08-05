@@ -13,9 +13,6 @@ HTML Short Link: https://example.com/sp
 -- expected_default.txt --
 URL: https://example.com/some-page?utm_source=test
 Title: Test Title
--- expected_plain.txt --
-URL: https://example.com/some-page?utm_source=test
-Title: Test Title
 -- expected_json.txt --
 {
   "URL": "https://example.com/some-page?utm_source=test",
@@ -23,11 +20,20 @@ Title: Test Title
   "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z",
   "ShortLink": "https://example.com/sp"
 }
--- expected_markdown.txt --
-# Test Title
+-- expected_discord.txt --
 
-**URL:** https://example.com/some-page?utm_source=test
+URL: https://example.com/some-page?utm_source=test
+Title: Test Title
+-- expected_jsonld.txt --
+{
+  "URL": "https://example.com/some-page?utm_source=test",
+  "Title": "Test Title",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z",
+  "ShortLink": "https://example.com/sp"
+}
+-- expected_opengraph.txt --
 
-## Properties
+URL: https://example.com/some-page?utm_source=test
+-- expected_twitter.txt --
 
-- **HTML Short Link:** https://example.com/sp
+URL: https://example.com/some-page?utm_source=test

@@ -11,16 +11,25 @@ Title: Test Title
 -- expected_default.txt --
 URL: https://example.com
 Title: Test Title
--- expected_plain.txt --
-URL: https://example.com
-Title: Test Title
 -- expected_json.txt --
 {
   "URL": "https://example.com",
   "Title": "Test Title",
   "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
 }
--- expected_markdown.txt --
-# Test Title
+-- expected_discord.txt --
 
-**URL:** https://example.com
+URL: https://example.com
+Title: Test Title
+-- expected_jsonld.txt --
+{
+  "URL": "https://example.com",
+  "Title": "Test Title",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
+}
+-- expected_opengraph.txt --
+
+URL: https://example.com
+-- expected_twitter.txt --
+
+URL: https://example.com
