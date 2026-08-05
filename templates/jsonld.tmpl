@@ -13,12 +13,12 @@ JSON-LD Name: {{.JSONLDName}}
 {{- if .JSONLDDescription}}
 JSON-LD Description: {{.JSONLDDescription}}
 {{- end}}
-{{- if not .JSONLDUploadDateParsed.IsZero}}
-JSON-LD Upload Date: {{.JSONLDUploadDateParsed.Format "2006-01-02 15:04:05 MST"}}
+{{- if .JSONLDUploadDateParsed.IsZero | not}}
+JSON-LD Upload Date: {{.JSONLDUploadDateParsed.Format "2006-01-02 15:04:05 -0700"}}
 {{- else if .JSONLDUploadDate}}
 JSON-LD Upload Date: {{.JSONLDUploadDate}}
 {{- end}}
-{{- if gt .JSONLDDurationTime 0}}
+{{- if .JSONLDDurationTime}}
 JSON-LD Duration: {{.JSONLDDurationTime}}
 {{- else if .JSONLDDuration}}
 JSON-LD Duration: {{.JSONLDDuration}}
