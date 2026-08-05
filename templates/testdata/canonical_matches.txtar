@@ -9,3 +9,26 @@ Canonical Link matches URL
 -- expected.txt --
 URL (canonical): https://example.com
 Title: Test Title
+-- expected_default.txt --
+URL (canonical): https://example.com
+Title: Test Title
+-- expected_json.txt --
+{
+  "URL": "https://example.com",
+  "Title": "Test Title",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z",
+  "CanonicalLink": "https://example.com"
+}
+-- expected_discord.txt --
+
+URL: https://example.com
+Title: Test Title
+-- expected_jsonld.txt --
+
+URL: https://example.com
+-- expected_opengraph.txt --
+
+URL: https://example.com
+-- expected_twitter.txt --
+
+URL: https://example.com

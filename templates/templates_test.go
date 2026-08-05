@@ -3,6 +3,7 @@ package templates_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -22,6 +23,11 @@ func TestTemplates(t *testing.T) {
 		"green":  color.New(color.FgGreen).SprintFunc(),
 		"cyan":   color.New(color.FgCyan).SprintFunc(),
 		"yellow": color.New(color.FgYellow).SprintFunc(),
+		"json": func(v interface{}) (string, error) {
+			b, err := json.MarshalIndent(v, "", "  ")
+			if err != nil { return "", fmt.Errorf("failed to marshal json: %w", err) }
+			return string(b), nil
+		},
 	}
 
 	testFiles, err := filepath.Glob("testdata/*.txtar")
@@ -40,7 +46,6 @@ func TestTemplates(t *testing.T) {
 			}
 
 			var inputJSON []byte
-			var expectedOutput string
 			var description string
 
 			for _, f := range archive.Files {
@@ -49,8 +54,6 @@ func TestTemplates(t *testing.T) {
 					description = strings.TrimSpace(string(f.Data))
 				case "input.json":
 					inputJSON = f.Data
-				case "expected.txt":
-					expectedOutput = string(f.Data)
 				}
 			}
 
@@ -63,9 +66,21 @@ func TestTemplates(t *testing.T) {
 				t.Fatalf("Failed to unmarshal input.json: %v", err)
 			}
 
-			tmplFiles := []string{"default.tmpl", "plain.tmpl"}
+			tmplFiles := []string{"all_fields.tmpl", "all_fields_plain.tmpl", "default.tmpl", "discord.tmpl", "json.tmpl", "jsonld.tmpl", "opengraph.tmpl", "twitter.tmpl"}
 			for _, tmplName := range tmplFiles {
 				t.Run(tmplName, func(t *testing.T) {
+					expectedOutputName := "expected_" + strings.TrimSuffix(tmplName, ".tmpl") + ".txt"
+					if tmplName == "all_fields.tmpl" || tmplName == "all_fields_plain.tmpl" {
+						expectedOutputName = "expected.txt"
+					}
+					var expectedOutput string
+					for _, f := range archive.Files {
+						if f.Name == expectedOutputName {
+							expectedOutput = string(f.Data)
+							break
+						}
+					}
+
 					tmplContent, err := templates.FS.ReadFile(tmplName)
 					if err != nil {
 						t.Fatalf("Failed to load template %s: %v", tmplName, err)

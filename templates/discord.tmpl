@@ -1,0 +1,23 @@
+{{- if .URL}}
+URL: {{.URL}}
+{{- end}}
+{{- if .OGTitle}}
+Title: {{.OGTitle}}
+{{- else if .Title}}
+Title: {{.Title}}
+{{- end}}
+{{- if .OGDescription}}
+Description: {{.OGDescription}}
+{{- else if .TwitterDescription}}
+Description: {{.TwitterDescription}}
+{{- end}}
+{{- if .OGImage}}
+Image: {{.OGImage}}
+{{- else if .TwitterImage}}
+Image: {{.TwitterImage}}
+{{- end}}
+{{- if .TwitterPlayer}}
+Player: {{.TwitterPlayer}}
+{{- else if .OGVideo}}
+Player: {{.OGVideo}}
+{{- end}}

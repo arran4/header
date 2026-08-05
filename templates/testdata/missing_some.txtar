@@ -12,3 +12,29 @@ URL: https://example.com
 Title: Test Title
 Twitter Card: summary
 JSON-LD Type: Article
+-- expected_default.txt --
+URL: https://example.com
+Title: Test Title
+-- expected_json.txt --
+{
+  "URL": "https://example.com",
+  "Title": "Test Title",
+  "TwitterCard": "summary",
+  "JSONLDType": "Article",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
+}
+-- expected_discord.txt --
+
+URL: https://example.com
+Title: Test Title
+-- expected_jsonld.txt --
+
+URL: https://example.com
+JSON-LD Type: Article
+-- expected_opengraph.txt --
+
+URL: https://example.com
+-- expected_twitter.txt --
+
+URL: https://example.com
+Twitter Card: summary
