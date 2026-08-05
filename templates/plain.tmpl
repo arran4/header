@@ -4,8 +4,10 @@ URL (canonical): {{.URL}}
 URL: {{.URL}}
 {{- end}}
 Title: {{.Title}}
-{{- range .GroupedProperties}}
-{{.Label}}: {{.Value}}
+{{- if .OGDescription}}
+Description: {{.OGDescription}}
+{{- else if .TwitterDescription}}
+Description: {{.TwitterDescription}}
 {{- end}}
 {{- if .CoverImages}}
 Cover Images:

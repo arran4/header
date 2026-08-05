@@ -1,0 +1,15 @@
+{{- if and .CanonicalLink (eq .URL .CanonicalLink) -}}
+URL (canonical): {{.URL}}
+{{- else -}}
+URL: {{.URL}}
+{{- end}}
+Title: {{.Title}}
+{{- range .GroupedProperties}}
+{{.Label}}: {{.Value}}
+{{- end}}
+{{- if .CoverImages}}
+Cover Images:
+{{- range .CoverImages}}
+  - {{.}}
+{{- end}}
+{{- end}}

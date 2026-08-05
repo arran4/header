@@ -4,8 +4,10 @@
 {{bold "URL:"}} {{cyan .URL}}
 {{- end}}
 {{bold "Title:"}} {{green .Title}}
-{{- range .GroupedProperties}}
-{{bold .Label}}{{bold ":"}} {{.Value}}
+{{- if .OGDescription}}
+{{bold "Description:"}} {{.OGDescription}}
+{{- else if .TwitterDescription}}
+{{bold "Description:"}} {{.TwitterDescription}}
 {{- end}}
 {{- if .CoverImages}}
 {{bold "Cover Images:"}}
