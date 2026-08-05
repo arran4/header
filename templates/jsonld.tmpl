@@ -1,1 +1,34 @@
-{{json .}}
+{{- if .URL}}
+URL: {{.URL}}
+{{- end}}
+{{- if .JSONLDType}}
+JSON-LD Type: {{.JSONLDType}}
+{{- end}}
+{{- if .JSONLDID}}
+JSON-LD ID: {{.JSONLDID}}
+{{- end}}
+{{- if .JSONLDName}}
+JSON-LD Name: {{.JSONLDName}}
+{{- end}}
+{{- if .JSONLDDescription}}
+JSON-LD Description: {{.JSONLDDescription}}
+{{- end}}
+{{- if not .JSONLDUploadDateParsed.IsZero}}
+JSON-LD Upload Date: {{.JSONLDUploadDateParsed.Format "2006-01-02 15:04:05 MST"}}
+{{- else if .JSONLDUploadDate}}
+JSON-LD Upload Date: {{.JSONLDUploadDate}}
+{{- end}}
+{{- if gt .JSONLDDurationTime 0}}
+JSON-LD Duration: {{.JSONLDDurationTime}}
+{{- else if .JSONLDDuration}}
+JSON-LD Duration: {{.JSONLDDuration}}
+{{- end}}
+{{- if .JSONLDThumbnailURL}}
+JSON-LD Thumbnail URL: {{.JSONLDThumbnailURL}}
+{{- end}}
+{{- if .JSONLDAuthor}}
+JSON-LD Author: {{.JSONLDAuthor}}
+{{- end}}
+{{- if .JSONLDPublisher}}
+JSON-LD Publisher: {{.JSONLDPublisher}}
+{{- end}}

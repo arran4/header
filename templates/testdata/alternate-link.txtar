@@ -35,17 +35,8 @@ Title: Example
 URL: https://example.com/desktop
 Title: Example
 -- expected_jsonld.txt --
-{
-  "URL": "https://example.com/desktop",
-  "Title": "Example",
-  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z",
-  "AlternateLinks": [
-    {
-      "URL": "https://m.example.com/mobile",
-      "Media": "handheld"
-    }
-  ]
-}
+
+URL: https://example.com/desktop
 -- expected_opengraph.txt --
 
 URL: https://example.com/desktop

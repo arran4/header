@@ -44,19 +44,10 @@ URL: https://example.com
 Title: Same Title
 Description: Same description
 -- expected_jsonld.txt --
-{
-  "URL": "https://example.com",
-  "Title": "Test Title",
-  "OGTitle": "Same Title",
-  "OGType": "website",
-  "OGDescription": "Same description",
-  "TwitterCard": "website",
-  "TwitterTitle": "Same Title",
-  "TwitterDescription": "Same description",
-  "JSONLDType": "website",
-  "JSONLDName": "Same Title",
-  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
-}
+
+URL: https://example.com
+JSON-LD Type: website
+JSON-LD Name: Same Title
 -- expected_opengraph.txt --
 
 URL: https://example.com
