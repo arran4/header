@@ -18,9 +18,6 @@ HTML Alternate Link: https://m.example.com/mobile (handheld)
 -- expected_default.txt --
 URL: https://example.com/desktop
 Title: Example
--- expected_plain.txt --
-URL: https://example.com/desktop
-Title: Example
 -- expected_json.txt --
 {
   "URL": "https://example.com/desktop",
@@ -33,11 +30,25 @@ Title: Example
     }
   ]
 }
--- expected_markdown.txt --
-# Example
+-- expected_discord.txt --
 
-**URL:** https://example.com/desktop
+URL: https://example.com/desktop
+Title: Example
+-- expected_jsonld.txt --
+{
+  "URL": "https://example.com/desktop",
+  "Title": "Example",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z",
+  "AlternateLinks": [
+    {
+      "URL": "https://m.example.com/mobile",
+      "Media": "handheld"
+    }
+  ]
+}
+-- expected_opengraph.txt --
 
-## Properties
+URL: https://example.com/desktop
+-- expected_twitter.txt --
 
-- **HTML Alternate Link:** https://m.example.com/mobile (handheld)
+URL: https://example.com/desktop

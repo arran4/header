@@ -3,6 +3,7 @@ package templates_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -22,9 +23,10 @@ func TestTemplates(t *testing.T) {
 		"green":  color.New(color.FgGreen).SprintFunc(),
 		"cyan":   color.New(color.FgCyan).SprintFunc(),
 		"yellow": color.New(color.FgYellow).SprintFunc(),
-		"json": func(v interface{}) string {
-			b, _ := json.MarshalIndent(v, "", "  ")
-			return string(b)
+		"json": func(v interface{}) (string, error) {
+			b, err := json.MarshalIndent(v, "", "  ")
+			if err != nil { return "", fmt.Errorf("failed to marshal json: %w", err) }
+			return string(b), nil
 		},
 	}
 
@@ -64,7 +66,7 @@ func TestTemplates(t *testing.T) {
 				t.Fatalf("Failed to unmarshal input.json: %v", err)
 			}
 
-			tmplFiles := []string{"all_fields.tmpl", "all_fields_plain.tmpl", "default.tmpl", "plain.tmpl", "json.tmpl", "markdown.tmpl"}
+			tmplFiles := []string{"all_fields.tmpl", "all_fields_plain.tmpl", "default.tmpl", "discord.tmpl", "json.tmpl", "jsonld.tmpl", "opengraph.tmpl", "twitter.tmpl"}
 			for _, tmplName := range tmplFiles {
 				t.Run(tmplName, func(t *testing.T) {
 					expectedOutputName := "expected_" + strings.TrimSuffix(tmplName, ".tmpl") + ".txt"

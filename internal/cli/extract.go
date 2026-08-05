@@ -110,9 +110,10 @@ func ExtractCmd(args []string) int {
 		"green":  color.New(color.FgGreen).SprintFunc(),
 		"cyan":   color.New(color.FgCyan).SprintFunc(),
 		"yellow": color.New(color.FgYellow).SprintFunc(),
-		"json": func(v interface{}) string {
-			b, _ := json.MarshalIndent(v, "", "  ")
-			return string(b)
+		"json": func(v interface{}) (string, error) {
+			b, err := json.MarshalIndent(v, "", "  ")
+			if err != nil { return "", fmt.Errorf("failed to marshal json: %w", err) }
+			return string(b), nil
 		},
 	}
 
