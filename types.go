@@ -3,6 +3,7 @@ package header
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -219,6 +220,10 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("AppLinks", "Android Name", "AppLinksAndroidName", p.AppLinksAndroidName)
 	add("AppLinks", "Android Package", "AppLinksAndroidPackage", p.AppLinksAndroidPackage)
 	add("AppLinks", "Android URL", "AppLinksAndroidURL", p.AppLinksAndroidURL)
+	if p.MetaRefresh != "" {
+		add("HTML", "Meta Refresh", "MetaRefresh", p.MetaRefresh)
+	}
+
 	add("Instagram", "Owner User ID", "InstagramOwnerUserID", p.InstagramOwnerUserID)
 	add("OpenGraph", "Title", "Title", p.OGTitle)
 	add("OpenGraph", "Type", "Type", p.OGType)
@@ -237,12 +242,16 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 	add("OpenGraph", "Video Alt", "VideoAlt", p.OGVideoAlt)
 	add("Twitter", "Title", "Title", p.TwitterTitle)
 	add("Twitter", "Card", "Type", p.TwitterCard)
+	add("Twitter", "Image", "Image", p.TwitterImage)
 	add("Twitter", "Description", "Description", p.TwitterDescription)
 	add("Twitter", "Image Alt", "ImageAlt", p.TwitterImageAlt)
 	add("Twitter", "Player", "Player", p.TwitterPlayer)
 	add("Twitter", "Player Width", "PlayerWidth", p.TwitterPlayerWidth)
 	add("Twitter", "Player Height", "PlayerHeight", p.TwitterPlayerHeight)
 	add("YouTube", "Video ID", "VideoID", p.YouTubeVideoID)
+	if p.YouTubeLengthSeconds > 0 {
+		add("YouTube", "Length Seconds", "LengthSeconds", strconv.Itoa(p.YouTubeLengthSeconds))
+	}
 	if p.YouTubeDuration > 0 {
 		add("YouTube", "Duration", "Duration", p.YouTubeDuration)
 	}

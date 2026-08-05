@@ -32,22 +32,26 @@ Example Output:
 ```
 URL: https://youtube.com/watch?v=dQw4w9WgXcQ
 Title: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster) - YouTube
-OpenGraph and Twitter Title: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
-OpenGraph and Twitter Description: The official video for “Never Gonna Give You Up” by Rick Astley. Never: The Autobiography 📚 OUT NOW! Follow this link to get your copy and listen to Rick’s ...
-HTML Canonical Link: https://www.youtube.com/watch?v=dQw4w9WgXcQ
-HTML Short Link: https://youtu.be/dQw4w9WgXcQ
-HTML Alternate Link: https://m.youtube.com/watch?v=dQw4w9WgXcQ (handheld)
-...
-OpenGraph Type: video.other
-OpenGraph Image: https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
-OpenGraph Video: https://www.youtube.com/embed/dQw4w9WgXcQ
-Twitter Card: summary_large_image
-JSON-LD Type: VideoObject
-JSON-LD Name: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
-JSON-LD Duration: 3M33S
-JSON-LD Author: Rick Astley
+Description: The official video for “Never Gonna Give You Up” by Rick Astley. Never: The Autobiography 📚 OUT NOW! Follow this link to get your copy and listen to Rick’s ...
 Cover Images:
   - https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+```
+
+**Output Formats**
+The tool supports multiple output formatting templates using the `-style` flag:
+- `default`: The default format printing concise, highlighted essential fields (URL, title, description, cover images).
+- `plain`: The same as `default` but without color highlights.
+- `all_fields`: A detailed format printing all captured metadata grouped logically.
+- `all_fields_plain`: A detailed plain text format.
+- `json`: Prints the raw page metadata as JSON.
+- `discord`: A format tailored for Discord metadata embedding.
+- `jsonld`: Prints human readable JSON-LD metadata.
+- `opengraph`: Prints OpenGraph metadata only.
+- `twitter`: Prints Twitter card metadata only.
+
+Example of retrieving all fields in JSON:
+```bash
+header extract -style json https://example.com
 ```
 
 **Display Cover Images**
