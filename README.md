@@ -130,11 +130,11 @@ header lint-rules
 ```
 
 ### `card`
-Exports a "card" (as an image) including the image, description and a couple other things from a URL. Output can be to a file, clipboard, or stdout.
+Exports a "card" (as an image) including the image, description and a couple other things from a URL. Output can be to a file, clipboard, or stdout (must specify exactly one output flag).
 
 ```bash
-header card -output card.png https://example.com
-header card -output clipboard https://example.com
+header card -file card.png https://example.com
+header card -clipboard https://example.com
 ```
 
 ### `view`
