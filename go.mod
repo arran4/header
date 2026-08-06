@@ -20,6 +20,7 @@ require (
 	github.com/jezek/xgb v1.1.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	golang.design/x/clipboard v0.8.0 // indirect
 	golang.design/x/x11 v0.2.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect

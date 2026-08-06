@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/arran4/header"
+	"github.com/skip2/go-qrcode"
 	"golang.design/x/clipboard"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
@@ -104,6 +105,43 @@ func createCardImage(info *header.PageInfo) image.Image {
 	// Background
 	draw.Draw(img, img.Bounds(), &image.Uniform{color.RGBA{R: 245, G: 245, B: 245, A: 255}}, image.Point{}, draw.Src)
 
+	// Fetch Favicon
+	var faviconImg image.Image
+	if len(info.Icons) > 0 {
+		faviconURL := info.Icons[0].URL
+		if !strings.HasPrefix(faviconURL, "http://") && !strings.HasPrefix(faviconURL, "https://") {
+			base, err := url.Parse(info.URL)
+			if err == nil {
+				parsedURL, err := url.Parse(faviconURL)
+				if err == nil {
+					faviconURL = base.ResolveReference(parsedURL).String()
+				}
+			}
+		}
+
+		client := &http.Client{Timeout: 5 * time.Second}
+		resp, err := client.Get(faviconURL)
+		if err == nil {
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				decoded, _, err := image.Decode(resp.Body)
+				if err == nil {
+					faviconImg = decoded
+				}
+			}
+		}
+	}
+
+	// Fetch QR Code
+	var qrImg image.Image
+	qrCode, err := qrcode.Encode(info.URL, qrcode.Medium, 256)
+	if err == nil {
+		qrDecoded, _, err := image.Decode(bytes.NewReader(qrCode))
+		if err == nil {
+			qrImg = qrDecoded
+		}
+	}
+
 	// Try to get an image
 	var coverImg image.Image
 	images := info.CoverImages()
@@ -145,7 +183,7 @@ func createCardImage(info *header.PageInfo) image.Image {
 	if coverImg == nil {
 		textX = 20
 	}
-	textY := 40
+	textY := 60
 
 	title := info.Title
 	if title == "" {
@@ -165,7 +203,24 @@ func createCardImage(info *header.PageInfo) image.Image {
 
 	drawText(img, textX, textY, "Title: "+title, color.RGBA{0, 0, 0, 255}, width-20)
 	drawText(img, textX, textY+30, "Description: "+desc, color.RGBA{100, 100, 100, 255}, width-20)
-	drawText(img, textX, textY+150, "URL: "+info.URL, color.RGBA{0, 0, 255, 255}, width-20)
+
+	// Draw QR Code in bottom right
+	if qrImg != nil {
+		qrRect := image.Rect(width-100, height-100, width-20, height-20)
+		scaleImage(img, qrRect, qrImg)
+	}
+
+	// Draw Footer/Header (URL + Favicon)
+	footerY := height - 20
+	footerX := 20
+
+	if faviconImg != nil {
+		favRect := image.Rect(footerX, footerY-16, footerX+16, footerY)
+		scaleImage(img, favRect, faviconImg)
+		footerX += 25
+	}
+
+	drawText(img, footerX, footerY-4, info.URL, color.RGBA{100, 100, 100, 255}, width-120)
 
 	return img
 }
