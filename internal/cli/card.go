@@ -28,16 +28,35 @@ import (
 func CardCmd(args []string) int {
 	fs := flag.NewFlagSet("header card", flag.ContinueOnError)
 	userAgent := fs.String("user-agent", "Mozilla/5.0", "The User-Agent header to use when fetching URLs")
-	output := fs.String("output", "", "Output destination: file path, 'clipboard', or '-' for stdout (default stdout)")
+	outputFile := fs.String("file", "", "Output destination: file path")
+	outputClipboard := fs.Bool("clipboard", false, "Output destination: copy to system clipboard")
+	outputStdout := fs.Bool("stdout", false, "Output destination: standard output (pipe)")
 
 	if err := fs.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
 		return 2
 	}
 
+	numOutputs := 0
+	if *outputFile != "" {
+		numOutputs++
+	}
+	if *outputClipboard {
+		numOutputs++
+	}
+	if *outputStdout {
+		numOutputs++
+	}
+
+	if numOutputs != 1 {
+		fmt.Fprintf(os.Stderr, "Error: exactly one output flag (-file, -clipboard, or -stdout) must be provided.\n")
+		return 2
+	}
+
 	pargs := fs.Args()
 	if len(pargs) < 1 {
 		fmt.Fprintf(os.Stderr, "Usage: header card [flags] <url>\n")
+		fs.PrintDefaults()
 		return 2
 	}
 
@@ -55,12 +74,7 @@ func CardCmd(args []string) int {
 
 	cardImg := createCardImage(info)
 
-	outTarget := *output
-	if outTarget == "" {
-		outTarget = "-"
-	}
-
-	if outTarget == "clipboard" {
+	if *outputClipboard {
 		err = clipboard.Init()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error initializing clipboard: %v\n", err)
@@ -74,14 +88,14 @@ func CardCmd(args []string) int {
 		}
 		clipboard.Write(clipboard.FmtImage, buf.Bytes())
 		fmt.Println("Card copied to clipboard.")
-	} else if outTarget == "-" {
+	} else if *outputStdout {
 		err = png.Encode(os.Stdout, cardImg)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error writing to stdout: %v\n", err)
 			return 1
 		}
-	} else {
-		f, err := os.Create(outTarget)
+	} else if *outputFile != "" {
+		f, err := os.Create(*outputFile)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating output file: %v\n", err)
 			return 1
@@ -92,7 +106,7 @@ func CardCmd(args []string) int {
 			fmt.Fprintf(os.Stderr, "Error encoding png: %v\n", err)
 			return 1
 		}
-		fmt.Printf("Card written to %s\n", outTarget)
+		fmt.Printf("Card written to %s\n", *outputFile)
 	}
 
 	return 0
