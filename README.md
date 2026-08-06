@@ -129,6 +129,14 @@ Lists available lint rules.
 header lint-rules
 ```
 
+### `card`
+Exports a "card" (as an image) including the image, description and a couple other things from a URL. Output can be to a file, clipboard, or stdout.
+
+```bash
+header card -output card.png https://example.com
+header card -output clipboard https://example.com
+```
+
 ### `view`
 Views images or icons from a URL.
 
