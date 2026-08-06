@@ -1,5 +1,7 @@
 # header
 
+![Header Project Card](header-card.png)
+
 `header` is a Go command-line application that extracts human-readable metadata from a given URL. It scrapes OpenGraph information, Twitter cards, JSON-LD, and YouTube specifics (watch time, video IDs, titles), displaying them nicely on the terminal.
 
 ## Installation
