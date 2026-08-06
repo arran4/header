@@ -21,7 +21,9 @@ import (
 	"golang.design/x/clipboard"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/math/fixed"
+	"github.com/golang/freetype/truetype"
 )
 
 // CardCmd handles the card subcommand.
@@ -117,6 +119,12 @@ func CardCmd(args []string) int {
 	return 0
 }
 
+func createPlaceholderImage(w, h int, color color.RGBA) image.Image {
+	img := image.NewRGBA(image.Rect(0, 0, w, h))
+	draw.Draw(img, img.Bounds(), &image.Uniform{color}, image.Point{}, draw.Src)
+	return img
+}
+
 func createCardImage(info *header.PageInfo) image.Image {
 	width, height := 800, 400
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -149,6 +157,9 @@ func createCardImage(info *header.PageInfo) image.Image {
 				}
 			}
 		}
+	}
+	if faviconImg == nil {
+		faviconImg = createPlaceholderImage(16, 16, color.RGBA{150, 150, 150, 255})
 	}
 
 	// Fetch QR Code
@@ -190,18 +201,16 @@ func createCardImage(info *header.PageInfo) image.Image {
 			}
 		}
 	}
+	if coverImg == nil {
+		coverImg = createPlaceholderImage(380, 380, color.RGBA{200, 200, 200, 255})
+	}
 
 	// Draw cover image (scaled to fit left half)
-	if coverImg != nil {
-		imgRect := image.Rect(20, 20, 380, 380)
-		scaleImage(img, imgRect, coverImg)
-	}
+	imgRect := image.Rect(20, 20, 380, 380)
+	scaleImage(img, imgRect, coverImg)
 
 	// Draw texts
 	textX := 400
-	if coverImg == nil {
-		textX = 20
-	}
 	textY := 60
 
 	title := info.Title
@@ -220,8 +229,22 @@ func createCardImage(info *header.PageInfo) image.Image {
 		desc = info.TwitterDescription
 	}
 
-	drawText(img, textX, textY, "Title: "+title, color.RGBA{0, 0, 0, 255}, width-20)
-	drawText(img, textX, textY+30, "Description: "+desc, color.RGBA{100, 100, 100, 255}, width-20)
+	f, err := truetype.Parse(goregular.TTF)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error parsing font: %v\n", err)
+	}
+	var fce font.Face
+	if f != nil {
+		fce = truetype.NewFace(f, &truetype.Options{Size: 20})
+	}
+
+	drawTextWrap(img, textX, textY, "Title: "+title, color.RGBA{0, 0, 0, 255}, width-20, fce)
+
+	yOff := 30
+	if fce != nil {
+		yOff = 45
+	}
+	drawTextWrap(img, textX, textY+yOff, "Description: "+desc, color.RGBA{100, 100, 100, 255}, width-20, fce)
 
 	// Draw QR Code in bottom right
 	if qrImg != nil {
@@ -239,7 +262,12 @@ func createCardImage(info *header.PageInfo) image.Image {
 		footerX += 25
 	}
 
-	drawText(img, footerX, footerY-4, info.URL, color.RGBA{100, 100, 100, 255}, width-120)
+	fceSmall := fce
+	if f != nil {
+		fceSmall = truetype.NewFace(f, &truetype.Options{Size: 14})
+	}
+
+	drawTextWrap(img, footerX, footerY, info.URL, color.RGBA{100, 100, 100, 255}, width-120, fceSmall)
 
 	return img
 }
@@ -285,39 +313,67 @@ func scaleImage(dst draw.Image, r image.Rectangle, src image.Image) {
 	}
 }
 
-func drawText(img draw.Image, x, y int, label string, col color.Color, maxX int) {
+func drawTextWrap(img draw.Image, x, y int, label string, col color.Color, maxX int, fce font.Face) {
+	if fce == nil {
+		// fallback to basic font without real wordwrap package if font failed
+		d := &font.Drawer{
+			Dst:  img,
+			Src:  image.NewUniform(col),
+			Face: basicfont.Face7x13,
+		}
+
+		words := strings.Split(label, " ")
+		line := ""
+		currentY := y
+		for _, word := range words {
+			testLine := line
+			if testLine != "" { testLine += " " }
+			testLine += word
+			d.Dot = fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(currentY * 64)}
+			width := d.MeasureString(testLine).Ceil()
+			if x + width > maxX && line != "" {
+				d.Dot = fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(currentY * 64)}
+				d.DrawString(line)
+				line = word
+				currentY += 15
+			} else {
+				line = testLine
+			}
+		}
+		if line != "" {
+			d.Dot = fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(currentY * 64)}
+			d.DrawString(line)
+		}
+		return
+	}
+
 	d := &font.Drawer{
 		Dst:  img,
 		Src:  image.NewUniform(col),
-		Face: basicfont.Face7x13,
+		Face: fce,
 	}
 
-	// basic word wrap
+	// Use our own simple basic wordwrap but with the true type font
 	words := strings.Split(label, " ")
 	line := ""
 	currentY := y
+	height := int(fce.Metrics().Height.Ceil())
 
 	for _, word := range words {
 		testLine := line
-		if testLine != "" {
-			testLine += " "
-		}
+		if testLine != "" { testLine += " " }
 		testLine += word
-
 		d.Dot = fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(currentY * 64)}
 		width := d.MeasureString(testLine).Ceil()
-
 		if x + width > maxX && line != "" {
-			// Draw previous line
 			d.Dot = fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(currentY * 64)}
 			d.DrawString(line)
 			line = word
-			currentY += 15
+			currentY += height + 5
 		} else {
 			line = testLine
 		}
 	}
-
 	if line != "" {
 		d.Dot = fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(currentY * 64)}
 		d.DrawString(line)
