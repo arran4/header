@@ -26,37 +26,38 @@ import (
 
 // CardCmd handles the card subcommand.
 func CardCmd(args []string) int {
-	fs := flag.NewFlagSet("header card", flag.ContinueOnError)
-	userAgent := fs.String("user-agent", "Mozilla/5.0", "The User-Agent header to use when fetching URLs")
-	outputFile := fs.String("file", "", "Output destination: file path")
-	outputClipboard := fs.Bool("clipboard", false, "Output destination: copy to system clipboard")
-	outputStdout := fs.Bool("stdout", false, "Output destination: standard output (pipe)")
-
-	if err := fs.Parse(args); err != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
+	if len(args) < 1 {
+		fmt.Fprintf(os.Stderr, "Usage: header card <subcommand> [flags] <url>\n")
+		fmt.Fprintf(os.Stderr, "\nSubcommands:\n")
+		fmt.Fprintf(os.Stderr, "  file        Output destination: file path\n")
+		fmt.Fprintf(os.Stderr, "  clipboard   Output destination: copy to system clipboard\n")
+		fmt.Fprintf(os.Stderr, "  stdout      Output destination: standard output (pipe)\n")
 		return 2
 	}
 
-	numOutputs := 0
-	if *outputFile != "" {
-		numOutputs++
-	}
-	if *outputClipboard {
-		numOutputs++
-	}
-	if *outputStdout {
-		numOutputs++
+	subcommand := args[0]
+	fs := flag.NewFlagSet("header card "+subcommand, flag.ContinueOnError)
+	userAgent := fs.String("user-agent", "Mozilla/5.0", "The User-Agent header to use when fetching URLs")
+
+	var outputFile *string
+	if subcommand == "file" {
+		outputFile = fs.String("out", "", "Output file path (required)")
 	}
 
-	if numOutputs != 1 {
-		fmt.Fprintf(os.Stderr, "Error: exactly one output flag (-file, -clipboard, or -stdout) must be provided.\n")
+	if err := fs.Parse(args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
 		return 2
 	}
 
 	pargs := fs.Args()
 	if len(pargs) < 1 {
-		fmt.Fprintf(os.Stderr, "Usage: header card [flags] <url>\n")
+		fmt.Fprintf(os.Stderr, "Usage: header card %s [flags] <url>\n", subcommand)
 		fs.PrintDefaults()
+		return 2
+	}
+
+	if subcommand == "file" && *outputFile == "" {
+		fmt.Fprintf(os.Stderr, "Error: -out flag is required for file subcommand\n")
 		return 2
 	}
 
@@ -74,7 +75,8 @@ func CardCmd(args []string) int {
 
 	cardImg := createCardImage(info)
 
-	if *outputClipboard {
+	switch subcommand {
+	case "clipboard":
 		err = clipboard.Init()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error initializing clipboard: %v\n", err)
@@ -88,13 +90,13 @@ func CardCmd(args []string) int {
 		}
 		clipboard.Write(clipboard.FmtImage, buf.Bytes())
 		fmt.Println("Card copied to clipboard.")
-	} else if *outputStdout {
+	case "stdout":
 		err = png.Encode(os.Stdout, cardImg)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error writing to stdout: %v\n", err)
 			return 1
 		}
-	} else if *outputFile != "" {
+	case "file":
 		f, err := os.Create(*outputFile)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating output file: %v\n", err)
@@ -107,6 +109,9 @@ func CardCmd(args []string) int {
 			return 1
 		}
 		fmt.Printf("Card written to %s\n", *outputFile)
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown subcommand: %s\n", subcommand)
+		return 2
 	}
 
 	return 0
