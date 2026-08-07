@@ -67,15 +67,3 @@ func Lint(listFlag string, ruleFlag string, listRulesFlag bool, userAgent string
 
 	return nil
 }
-
-// LintList is a subcommand `header lint list` -- List available lint lists.
-func LintList() error {
-	printAvailableLintRules()
-	return nil
-}
-
-// LintListRules is a subcommand `header lint list-rules` -- List available lint rules.
-func LintListRules() error {
-	printAvailableLintRules()
-	return nil
-}
