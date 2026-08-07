@@ -15,11 +15,21 @@ func TestLintRuleLists_Execute(t *testing.T) {
 	}
 	cmd := parent.NewLintRuleLists()
 
+	called := false
+	cmd.CommandAction = func(c *LintRuleLists) error {
+		called = true
+		return nil
+	}
+
 	args := []string{}
 
 	err := cmd.Execute(args)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
+	}
+
+	if !called {
+		t.Error("CommandAction was not called")
 	}
 
 }

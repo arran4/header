@@ -3,8 +3,11 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"github.com/arran4/header/cmd"
+	"github.com/arran4/header/internal/cli"
 	"os"
 	"slices"
 	"strings"
@@ -92,7 +95,13 @@ func (c *LintRuleLists) Execute(args []string) error {
 		}
 	}
 
-	c.Usage()
+	if c.CommandAction != nil {
+		if err := c.CommandAction(c); err != nil {
+			return fmt.Errorf("lint-rule-lists failed: %w", err)
+		}
+	} else {
+		c.Usage()
+	}
 
 	return nil
 }
@@ -106,16 +115,24 @@ func (c *RootCmd) NewLintRuleLists() *LintRuleLists {
 	}
 	set.Usage = v.Usage
 
-	{
-		subCmd := NewLazyCommand(func() Cmd { return v.NewLintRuleListsList() })
-		v.SubCommands["list"] = subCmd
+	v.CommandAction = func(c *LintRuleLists) error {
 
-	}
-
-	{
-		subCmd := NewLazyCommand(func() Cmd { return v.NewLintRuleListsListRules() })
-		v.SubCommands["list-rules"] = subCmd
-
+		err := cli.LintRuleLists()
+		if err != nil {
+			if errors.Is(err, cmd.ErrPrintHelp) {
+				c.Usage()
+				return nil
+			}
+			if errors.Is(err, cmd.ErrHelp) {
+				fmt.Fprintf(os.Stderr, "Use '%s help' for more information.\n", os.Args[0])
+				return nil
+			}
+			if e, ok := err.(*cmd.ErrExitCode); ok {
+				return e
+			}
+			return fmt.Errorf("lint-rule-lists failed: %w", err)
+		}
+		return nil
 	}
 
 	v.SubCommands["help"] = func() Cmd {
