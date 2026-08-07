@@ -21,12 +21,15 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  lint-rule-lists  List available lint rule lists\n")
 		fmt.Fprintf(os.Stderr, "  lint-rules       List available lint rules\n")
 		fmt.Fprintf(os.Stderr, "  view             View images or icons from a URL (e.g. view image <url>)\n")
+		fmt.Fprintf(os.Stderr, "  card             Export a card (as an image) including the image, description and a couple other things\n")
 		os.Exit(2)
 	}
 
 	command := os.Args[1]
 
 	switch command {
+	case "card":
+		os.Exit(cli.CardCmd(os.Args[2:]))
 	case "edit":
 		os.Exit(cli.EditCmd(os.Args[2:]))
 	case "show", "extract":

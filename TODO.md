@@ -1,2 +1,0 @@
-- Add future modes to the CLI, such as: lite, advanced/everything, opengraph-only, facebook diagnostic, twitter diagnostic.
-- Point trace-redirects at header
