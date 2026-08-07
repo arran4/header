@@ -26,20 +26,16 @@ func PrintRules() {
 	}
 }
 
-// LintRuleListsList is a subcommand `header lint-rule-lists list` -- List available lint lists.
-func LintRuleListsList() error {
+// LintRuleLists is a subcommand `header lint-rule-lists` -- List available lint lists and rules.
+func LintRuleLists() error {
 	PrintLists()
-	return nil
-}
-
-// LintRuleListsListRules is a subcommand `header lint-rule-lists list-rules` -- List available lint rules.
-func LintRuleListsListRules() error {
+	fmt.Println()
 	PrintRules()
 	return nil
 }
 
-// LintRulesList is a subcommand `header lint-rules list` -- List available lint rules.
-func LintRulesList() error {
+// LintRules is a subcommand `header lint-rules` -- List available lint rules.
+func LintRules() error {
 	PrintRules()
 	return nil
 }

@@ -5,12 +5,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/arran4/header/internal/cli"
 	"io"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 
+	"errors"
+	"github.com/arran4/header/cmd"
 	"github.com/arran4/header/cmd/header/templates"
 )
 
@@ -65,11 +70,28 @@ func executeUsage(out io.Writer, templateName string, data any) error {
 
 type RootCmd struct {
 	*flag.FlagSet
-	Commands      map[string]func() Cmd
-	Version       string
-	Commit        string
-	Date          string
-	CommandAction func(c *RootCmd) error
+	Commands          map[string]func() Cmd
+	Version           string
+	Commit            string
+	Date              string
+	testMode          bool
+	lintListFlags     string
+	lintRuleFlags     string
+	lintRun           bool
+	showImage         bool
+	style             string
+	userAgent         string
+	showUnknown       bool
+	excludeUnknown    string
+	traceRedirects    bool
+	followMetaRefresh bool
+	updateReferer     bool
+	storeCookies      bool
+	redirectLimit     int
+	redirectDelay     time.Duration
+	httprettyFlag     bool
+	urlStr            string
+	CommandAction     func(c *RootCmd) error
 }
 
 func (c *RootCmd) Usage() {
@@ -100,6 +122,64 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 		Date:     date,
 	}
 	c.FlagSet.Usage = c.Usage
+
+	c.BoolVar(&c.testMode, "test", false, "Run in test mode to show diagnostics/missing data")
+
+	c.StringVar(&c.lintListFlags, "lint-list", "", "Run linting with specific lists (comma separated). Default is 'recommended' if flag is used")
+
+	c.StringVar(&c.lintRuleFlags, "lint-rule", "", "Run linting with specific rules (comma separated).")
+
+	c.BoolVar(&c.lintRun, "lint-run", false, "Run default linting")
+
+	c.BoolVar(&c.showImage, "show-image", false, "Display the cover image (if available)")
+
+	c.StringVar(&c.style, "style", "default", "The output style template to use (e.g. default, plain)")
+
+	c.StringVar(&c.userAgent, "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
+	c.StringVar(&c.userAgent, "Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
+
+	c.BoolVar(&c.showUnknown, "show-unknown", false, "Show unknown metadata tags")
+
+	c.StringVar(&c.excludeUnknown, "exclude-unknown", "", "Comma separated list of unknown tags to exclude")
+
+	c.BoolVar(&c.traceRedirects, "trace-redirects", false, "Trace redirects like trace tool")
+	c.BoolVar(&c.traceRedirects, "redirects", false, "Trace redirects like trace tool")
+
+	c.BoolVar(&c.followMetaRefresh, "follow-meta-redirects", false, "Follow meta refresh redirects")
+
+	c.BoolVar(&c.updateReferer, "update-referer", true, "Update Referer header on redirect")
+
+	c.BoolVar(&c.storeCookies, "store-cookies", true, "Store cookies across redirects")
+
+	c.IntVar(&c.redirectLimit, "redirect-limit", 20, "Maximum number of redirects to follow")
+
+	if d, err := time.ParseDuration("0"); err == nil {
+		c.DurationVar(&c.redirectDelay, "redirect-delay", d, "Delay between redirects (e.g. 1s, 500ms)")
+	} else {
+		c.DurationVar(&c.redirectDelay, "redirect-delay", 0, "Delay between redirects (e.g. 1s, 500ms)")
+	}
+
+	c.BoolVar(&c.httprettyFlag, "httpretty", false, "Print HTTP requests and responses")
+
+	c.CommandAction = func(c *RootCmd) error {
+
+		err := cli.Root(c.testMode, c.lintListFlags, c.lintRuleFlags, c.lintRun, c.showImage, c.style, c.userAgent, c.showUnknown, c.excludeUnknown, c.traceRedirects, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.httprettyFlag, c.urlStr)
+		if err != nil {
+			if errors.Is(err, cmd.ErrPrintHelp) {
+				c.Usage()
+				return nil
+			}
+			if errors.Is(err, cmd.ErrHelp) {
+				fmt.Fprintf(os.Stderr, "Use '%s help' for more information.\n", os.Args[0])
+				return nil
+			}
+			if e, ok := err.(*cmd.ErrExitCode); ok {
+				return e
+			}
+			return fmt.Errorf("header failed: %w", err)
+		}
+		return nil
+	}
 
 	{
 		subCmd := NewLazyCommand(func() Cmd { return c.NewCard() })
@@ -227,6 +307,190 @@ func (c *RootCmd) Execute(args []string) error {
 			_ = value
 			_ = hasValue
 			switch name {
+
+			case "testMode", "test":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.testMode = b
+				} else {
+					c.testMode = true
+				}
+
+			case "lintListFlags", "lint-list":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.lintListFlags = value
+
+			case "lintRuleFlags", "lint-rule":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.lintRuleFlags = value
+
+			case "lintRun", "lint-run":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.lintRun = b
+				} else {
+					c.lintRun = true
+				}
+
+			case "showImage", "show-image":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.showImage = b
+				} else {
+					c.showImage = true
+				}
+
+			case "style":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.style = value
+
+			case "userAgent", "user-agent", "Agent":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.userAgent = value
+
+			case "showUnknown", "show-unknown":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.showUnknown = b
+				} else {
+					c.showUnknown = true
+				}
+
+			case "excludeUnknown", "exclude-unknown":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.excludeUnknown = value
+
+			case "traceRedirects", "trace-redirects", "redirects":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.traceRedirects = b
+				} else {
+					c.traceRedirects = true
+				}
+
+			case "followMetaRefresh", "follow-meta-redirects":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.followMetaRefresh = b
+				} else {
+					c.followMetaRefresh = true
+				}
+
+			case "updateReferer", "update-referer":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.updateReferer = b
+				} else {
+					c.updateReferer = true
+				}
+
+			case "storeCookies", "store-cookies":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.storeCookies = b
+				} else {
+					c.storeCookies = true
+				}
+
+			case "redirectLimit", "redirect-limit":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				iv, err := strconv.Atoi(value)
+				if err != nil {
+					return fmt.Errorf("invalid integer value for flag %s: %s", name, value)
+				}
+				c.redirectLimit = iv
+
+			case "redirectDelay", "redirect-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				d, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.redirectDelay = d
+
+			case "httprettyFlag", "httpretty":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.httprettyFlag = b
+				} else {
+					c.httprettyFlag = true
+				}
 			default:
 				return fmt.Errorf("unknown flag: --%s", name)
 			}
@@ -240,6 +504,7 @@ func (c *RootCmd) Execute(args []string) error {
 					return nil
 				}
 				found := false
+
 				if !found {
 					return fmt.Errorf("unknown flag: -%s", char)
 				}
@@ -249,15 +514,29 @@ func (c *RootCmd) Execute(args []string) error {
 			break
 		}
 	}
+	if len(remainingArgs) < 1 {
+		return fmt.Errorf("expected at least 1 positional arguments, got %d", len(remainingArgs))
+	}
+	// Handle positional argument urlStr
+	{
+		argIndex := 0
+		if argIndex >= 0 && argIndex < len(remainingArgs) {
+			argVal := remainingArgs[argIndex]
+			c.urlStr = argVal
+		} else {
+		}
+	}
+
+	if c.CommandAction != nil {
+		if err := c.CommandAction(c); err != nil {
+			return fmt.Errorf("header failed: %w", err)
+		}
+	}
 
 	if len(remainingArgs) > 0 {
 		if cmd, ok := c.Commands[remainingArgs[0]]; ok {
 			return cmd().Execute(remainingArgs[1:])
 		}
-	}
-	c.Usage()
-	if len(remainingArgs) > 0 {
-		return fmt.Errorf("unknown command: %s", remainingArgs[0])
 	}
 	return nil
 }
