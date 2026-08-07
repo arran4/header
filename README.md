@@ -1,5 +1,7 @@
 # header
 
+![Header Project Card](header-card.png)
+
 `header` is a Go command-line application that extracts human-readable metadata from a given URL. It scrapes OpenGraph information, Twitter cards, JSON-LD, and YouTube specifics (watch time, video IDs, titles), displaying them nicely on the terminal.
 
 ## Installation
@@ -127,6 +129,14 @@ Lists available lint rules.
 
 ```bash
 header lint-rules
+```
+
+### `card`
+Exports a "card" (as an image) including the image, description and a couple other things from a URL. Output can be to a file, clipboard, or stdout (must specify exactly one output target via subcommands).
+
+```bash
+header card file -out card.png https://example.com
+header card clipboard https://example.com
 ```
 
 ### `view`
