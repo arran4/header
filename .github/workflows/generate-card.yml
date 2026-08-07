@@ -1,0 +1,40 @@
+name: Generate Header Card
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'internal/cli/card.go'
+      - 'internal/cli/cards/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-card:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Generate Card
+        run: |
+          go build -o header ./cmd/header
+          ./header card file -out header-card.png https://github.com/arran4/header
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs: regenerate header-card.png"
+          title: "docs: Update header-card.png"
+          body: "Automated PR to update the `header-card.png` preview in the README after changes to the card generation logic."
+          branch: "update-header-card"
+          add-paths: header-card.png
