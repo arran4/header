@@ -3,7 +3,6 @@ package cli
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -12,81 +11,49 @@ import (
 	"golang.org/x/net/html"
 )
 
-// EditCmd handles the edit subcommands (e.g., editing head or meta tags).
-func EditCmd(args []string) int {
-	if len(args) < 1 {
-		fmt.Fprintf(os.Stderr, "Usage:\n")
-		fmt.Fprintf(os.Stderr, "  header edit head [flags] <file>\n")
-		fmt.Fprintf(os.Stderr, "  header edit meta [flags] <name> <file>\n")
-		return 2
-	}
-
-	commandType := args[0]
-
-	fs := flag.NewFlagSet("header edit", flag.ContinueOnError)
-
-	setVal := fs.String("s", "", "set (remove other versions if any)")
-	addVal := fs.String("S", "", "add to set (add a new one, only works where valid)")
-	replaceVal := fs.String("r", "", "replace (only works if replacing 1 value)")
-	replaceIndex := fs.Int("n", -1, "replace number x, only works with -r")
-
-	if err := fs.Parse(args[1:]); err != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing edit flags: %v\n", err)
-		return 2
-	}
-
-	var hasS, hasSUpper, hasR bool
-	fs.Visit(func(f *flag.Flag) {
-		switch f.Name {
-		case "s":
-			hasS = true
-		case "S":
-			hasSUpper = true
-		case "r":
-			hasR = true
-		}
-	})
-
+// EditHead is a subcommand `header edit head` -- Edit HTML file head fields.
+//
+// Flags:
+//   setVal:       -s         set (remove other versions if any)
+//   addVal:       -S         add to set (add a new one, only works where valid)
+//   replaceVal:   -r         replace (only works if replacing 1 value)
+//   replaceIndex: -n (default: -1) replace number x
+//   targetFile:   @1 (required)    Target file to edit or - for stdin
+func EditHead(setVal *string, addVal *string, replaceVal *string, replaceIndex int, targetFile string) error {
 	opts := header.EditOptions{
-		CommandType:  commandType,
-		ReplaceIndex: *replaceIndex,
+		CommandType:  "head",
+		ReplaceIndex: replaceIndex,
+		SetVal:       setVal,
+		AddVal:       addVal,
+		ReplaceVal:   replaceVal,
 	}
 
-	if hasS {
-		opts.SetVal = setVal
-	}
-	if hasSUpper {
-		opts.AddVal = addVal
-	}
-	if hasR {
-		opts.ReplaceVal = replaceVal
-	}
+	return applyEdit(targetFile, opts)
+}
 
-	parsedArgs := fs.Args()
-	var targetFile string
-	var metaName string
-
-	switch commandType {
-	case "head":
-		if len(parsedArgs) < 1 {
-			fmt.Fprintf(os.Stderr, "Usage: header edit head [flags] <file>\n")
-			return 2
-		}
-		targetFile = parsedArgs[0]
-	case "meta":
-		if len(parsedArgs) < 2 {
-			fmt.Fprintf(os.Stderr, "Usage: header edit meta [flags] <name> <file>\n")
-			return 2
-		}
-		metaName = parsedArgs[0]
-		targetFile = parsedArgs[1]
-	default:
-		fmt.Fprintf(os.Stderr, "Unknown edit type: %s\n", commandType)
-		return 2
+// EditMeta is a subcommand `header edit meta` -- Edit HTML file meta fields.
+//
+// Flags:
+//   setVal:       -s         set (remove other versions if any)
+//   addVal:       -S         add to set (add a new one, only works where valid)
+//   replaceVal:   -r         replace (only works if replacing 1 value)
+//   replaceIndex: -n (default: -1) replace number x
+//   metaName:     @1 (required)    Meta name to edit
+//   targetFile:   @2 (required)    Target file to edit or - for stdin
+func EditMeta(setVal *string, addVal *string, replaceVal *string, replaceIndex int, metaName string, targetFile string) error {
+	opts := header.EditOptions{
+		CommandType:  "meta",
+		ReplaceIndex: replaceIndex,
+		SetVal:       setVal,
+		AddVal:       addVal,
+		ReplaceVal:   replaceVal,
+		MetaName:     metaName,
 	}
 
-	opts.MetaName = metaName
+	return applyEdit(targetFile, opts)
+}
 
+func applyEdit(targetFile string, opts header.EditOptions) error {
 	var inputData []byte
 	var err error
 	if targetFile == "-" {
@@ -95,33 +62,28 @@ func EditCmd(args []string) int {
 		inputData, err = os.ReadFile(targetFile)
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
-		return 1
+		return fmt.Errorf("Error reading input: %w", err)
 	}
 
 	doc, err := header.ApplyEdit(bytes.NewReader(inputData), opts)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error applying edit: %v\n", err)
-		return 1
+		return fmt.Errorf("Error applying edit: %w", err)
 	}
 
 	var buf bytes.Buffer
 	if err := html.Render(&buf, doc); err != nil {
-		fmt.Fprintf(os.Stderr, "Error rendering HTML: %v\n", err)
-		return 1
+		return fmt.Errorf("Error rendering HTML: %w", err)
 	}
 
 	if targetFile == "-" {
 		if _, err := os.Stdout.Write(buf.Bytes()); err != nil {
-			fmt.Fprintf(os.Stderr, "Error writing to stdout: %v\n", err)
-			return 1
+			return fmt.Errorf("Error writing to stdout: %w", err)
 		}
 	} else {
 		if err := os.WriteFile(targetFile, buf.Bytes(), 0644); err != nil {
-			fmt.Fprintf(os.Stderr, "Error writing output: %v\n", err)
-			return 1
+			return fmt.Errorf("Error writing output: %w", err)
 		}
 	}
 
-	return 0
+	return nil
 }

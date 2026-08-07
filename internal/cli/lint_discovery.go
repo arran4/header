@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/arran4/header/lint"
@@ -27,39 +26,20 @@ func PrintRules() {
 	}
 }
 
-// LintRuleListsCmd handles the lint-rule-lists subcommand.
-func LintRuleListsCmd(args []string) int {
-	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "Usage: header lint-rule-lists <command>\n\nCommands:\n  list        List available lint lists\n  list-rules  List available lint rules\n")
-		return 2
-	}
-
-	switch args[0] {
-	case "list":
-		PrintLists()
-		return 0
-	case "list-rules":
-		PrintRules()
-		return 0
-	default:
-		fmt.Fprintf(os.Stderr, "Unknown command '%s' for lint-rule-lists.\n", args[0])
-		return 2
-	}
+// LintRuleListsList is a subcommand `header lint-rule-lists list` -- List available lint lists.
+func LintRuleListsList() error {
+	PrintLists()
+	return nil
 }
 
-// LintRulesCmd handles the lint-rules subcommand.
-func LintRulesCmd(args []string) int {
-	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "Usage: header lint-rules <command>\n\nCommands:\n  list        List available lint rules\n")
-		return 2
-	}
+// LintRuleListsListRules is a subcommand `header lint-rule-lists list-rules` -- List available lint rules.
+func LintRuleListsListRules() error {
+	PrintRules()
+	return nil
+}
 
-	switch args[0] {
-	case "list":
-		PrintRules()
-		return 0
-	default:
-		fmt.Fprintf(os.Stderr, "Unknown command '%s' for lint-rules.\n", args[0])
-		return 2
-	}
+// LintRulesList is a subcommand `header lint-rules list` -- List available lint rules.
+func LintRulesList() error {
+	PrintRules()
+	return nil
 }
