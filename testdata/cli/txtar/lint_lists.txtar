@@ -1,16 +1,16 @@
-exec header lint -list=recommended $TEST_SERVER_URL/mock.html
+exec header lint --list=recommended $TEST_SERVER_URL/mock.html
 stdout '--- Lint ---'
 stdout 'Missing og:title'
 stdout 'Missing HTML <title>'
 stdout '------------'
 
-exec header -lint-list=recommended $TEST_SERVER_URL/mock.html
+exec header extract --lint-list=recommended $TEST_SERVER_URL/mock.html
 stdout '--- Lint ---'
 stdout 'Missing og:title'
 stdout 'Missing HTML <title>'
 stdout '------------'
 
-exec header lint -list=all $TEST_SERVER_URL/mock.html
+exec header lint --list=all $TEST_SERVER_URL/mock.html
 stdout '--- Lint ---'
 stdout 'Missing og:title'
 stdout 'Missing HTML <title>'

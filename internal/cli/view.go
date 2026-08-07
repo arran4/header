@@ -1,45 +1,30 @@
 package cli
 
 import (
-	"flag"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/arran4/header"
 	"github.com/arran4/header/internal/ui"
 )
 
-// ViewCmd handles the view subcommand.
-func ViewCmd(args []string) int {
-	fs := flag.NewFlagSet("header view", flag.ContinueOnError)
-	userAgent := fs.String("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User-Agent header to use when fetching URLs")
-	viewer := fs.String("viewer", "default", "The viewer to use (e.g., open, xdg-open, shiny, mock, export, print-url, default)")
-	httprettyFlag := fs.Bool("httpretty", false, "Print HTTP requests and responses")
-
-	if err := fs.Parse(args); err != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
-		return 2
-	}
-
-	pargs := fs.Args()
-	if len(pargs) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: header view [flags] <type> <url>\n")
-		return 2
-	}
-
-	viewType := pargs[0]
-	urlStr := pargs[1]
-
+// View is a subcommand `header view` -- View images or icons from a URL (e.g. view image <url>).
+//
+// Flags:
+//   userAgent:     --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
+//   viewer:        --viewer (default: "default")            The viewer to use (e.g., open, xdg-open, shiny, mock, export, print-url, default)
+//   httprettyFlag: --httpretty                              Print HTTP requests and responses
+//   viewType:      @1 (required)                            Type of image to view
+//   urlStr:        @2 (required)                            URL to fetch
+func View(userAgent string, viewer string, httprettyFlag bool, viewType string, urlStr string) error {
 	opts := header.FetchOptions{
-		UserAgent: *userAgent,
-		Httpretty: *httprettyFlag,
+		UserAgent: userAgent,
+		Httpretty: httprettyFlag,
 	}
 
 	info, err := header.FetchURL(urlStr, opts)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error fetching URL: %v\n", err)
-		return 1
+		return fmt.Errorf("Error fetching URL: %w", err)
 	}
 
 	var targetURL string
@@ -80,10 +65,9 @@ func ViewCmd(args []string) int {
 	}
 
 	if targetURL == "" {
-		fmt.Fprintf(os.Stderr, "No image found for type '%s'.\n", viewType)
-		return 1
+		return fmt.Errorf("No image found for type '%s'.", viewType)
 	}
 
-	ui.DisplayImage(targetURL, *viewer)
-	return 0
+	ui.DisplayImage(targetURL, viewer)
+	return nil
 }
