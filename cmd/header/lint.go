@@ -221,18 +221,6 @@ func (c *RootCmd) NewLint() *Lint {
 		return nil
 	}
 
-	{
-		subCmd := NewLazyCommand(func() Cmd { return v.NewLintList() })
-		v.SubCommands["list"] = subCmd
-
-	}
-
-	{
-		subCmd := NewLazyCommand(func() Cmd { return v.NewLintListRules() })
-		v.SubCommands["list-rules"] = subCmd
-
-	}
-
 	v.SubCommands["help"] = func() Cmd {
 		return &InternalCommand{
 			Exec: func(args []string) error {

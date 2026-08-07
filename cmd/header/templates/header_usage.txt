@@ -16,8 +16,6 @@ Subcommands:
     extract                                  Extract metadata from URL.
     httpretty                                Fetch a URL and print HTTP requests and responses using httpretty.
     lint                                     Lint the metadata of a URL.
-    lint list                                List available lint lists.
-    lint list-rules                          List available lint rules.
     lint-rule-lists                          List available lint lists and rules.
     lint-rules                               List available lint rules.
     trace-redirects                          Trace URL redirects.
