@@ -8,6 +8,15 @@ on:
       - 'internal/cli/card.go'
       - 'internal/cli/cards/**'
   workflow_dispatch:
+    inputs:
+      card_type:
+        description: 'Type of card to generate (basic or darkmode)'
+        required: true
+        default: 'basic'
+        type: choice
+        options:
+          - basic
+          - darkmode
 
 permissions:
   contents: write
@@ -28,7 +37,7 @@ jobs:
       - name: Generate Card
         run: |
           go build -o header ./cmd/header
-          ./header card file -out header-card.png https://github.com/arran4/header
+          ./header card file -type ${{ github.event.inputs.card_type || 'basic' }} -out header-card.png https://github.com/arran4/header
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
