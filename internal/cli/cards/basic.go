@@ -1,4 +1,3 @@
-// Package cards provides generators for social media summary cards.
 package cards
 
 import (
@@ -29,17 +28,14 @@ func init() {
 // BasicCard represents the basic card generator
 type BasicCard struct{}
 
-// Name returns the name of the basic card generator
 func (b *BasicCard) Name() string {
 	return "basic"
 }
 
-// Description returns a description of the basic card generator
 func (b *BasicCard) Description() string {
 	return "A basic card containing the title, description, cover image, favicon and a QR code"
 }
 
-// Generate creates a basic card image from the given PageInfo
 func (b *BasicCard) Generate(info *header.PageInfo) (image.Image, error) {
 	width, height := 800, 400
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -64,7 +60,7 @@ func (b *BasicCard) Generate(info *header.PageInfo) (image.Image, error) {
 		client := &http.Client{Timeout: 5 * time.Second}
 		resp, err := client.Get(faviconURL)
 		if err == nil {
-			defer func() { _ = resp.Body.Close() }()
+			defer resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
 				decoded, _, err := image.Decode(resp.Body)
 				if err == nil {
@@ -107,7 +103,7 @@ func (b *BasicCard) Generate(info *header.PageInfo) (image.Image, error) {
 		client := &http.Client{Timeout: 10 * time.Second}
 		resp, err := client.Get(imgURL)
 		if err == nil {
-			defer func() { _ = resp.Body.Close() }()
+			defer resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
 				decoded, _, err := image.Decode(resp.Body)
 				if err == nil {

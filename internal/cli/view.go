@@ -65,7 +65,7 @@ func View(userAgent string, viewer string, httprettyFlag bool, viewType string, 
 	}
 
 	if targetURL == "" {
-		return fmt.Errorf("no image found for type '%s'", viewType)
+		return fmt.Errorf("No image found for type '%s'.", viewType)
 	}
 
 	ui.DisplayImage(targetURL, viewer)
