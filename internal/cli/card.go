@@ -27,36 +27,46 @@ func CardList() error {
 //   cardType:  --type (default: "basic")             The type of card generator to use
 //   out:       --out (required)                      Output file path
 //   urlStr:    @1 (required)                         URL to fetch
-func CardFile(userAgent string, cardType string, out string, urlStr string) error {
+func CardFile(userAgent string, cardType string, out string, urlStr string) (err error) {
 	opts := header.FetchOptions{
 		UserAgent: userAgent,
 	}
 
 	info, err := header.FetchURL(urlStr, opts)
 	if err != nil {
-		return fmt.Errorf("Error fetching URL: %w", err)
+		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
 	generator, err := cards.Get(cardType)
 	if err != nil {
-		return fmt.Errorf("Error getting card generator: %w", err)
+		return fmt.Errorf("error getting card generator: %w", err)
 	}
 
 	cardImg, err := generator.Generate(info)
 	if err != nil {
-		return fmt.Errorf("Error generating card: %w", err)
+		return fmt.Errorf("error generating card: %w", err)
 	}
 
 	f, err := os.Create(out)
 	if err != nil {
-		return fmt.Errorf("Error creating output file: %w", err)
+		return fmt.Errorf("error creating output file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		cerr := f.Close()
+		if err == nil {
+			if cerr != nil {
+				err = fmt.Errorf("error closing output file: %w", cerr)
+			} else {
+				fmt.Printf("Card written to %s\n", out)
+			}
+		}
+	}()
+
 	err = png.Encode(f, cardImg)
 	if err != nil {
-		return fmt.Errorf("Error encoding png: %w", err)
+		return fmt.Errorf("error encoding png: %w", err)
 	}
-	fmt.Printf("Card written to %s\n", out)
+
 	return nil
 }
 
@@ -73,27 +83,27 @@ func CardClipboard(userAgent string, cardType string, urlStr string) error {
 
 	info, err := header.FetchURL(urlStr, opts)
 	if err != nil {
-		return fmt.Errorf("Error fetching URL: %w", err)
+		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
 	generator, err := cards.Get(cardType)
 	if err != nil {
-		return fmt.Errorf("Error getting card generator: %w", err)
+		return fmt.Errorf("error getting card generator: %w", err)
 	}
 
 	cardImg, err := generator.Generate(info)
 	if err != nil {
-		return fmt.Errorf("Error generating card: %w", err)
+		return fmt.Errorf("error generating card: %w", err)
 	}
 
 	err = clipboard.Init()
 	if err != nil {
-		return fmt.Errorf("Error initializing clipboard: %w", err)
+		return fmt.Errorf("error initializing clipboard: %w", err)
 	}
 	var buf bytes.Buffer
 	err = png.Encode(&buf, cardImg)
 	if err != nil {
-		return fmt.Errorf("Error encoding png: %w", err)
+		return fmt.Errorf("error encoding png: %w", err)
 	}
 	clipboard.Write(clipboard.FmtImage, buf.Bytes())
 	fmt.Println("Card copied to clipboard.")
@@ -113,22 +123,22 @@ func CardStdout(userAgent string, cardType string, urlStr string) error {
 
 	info, err := header.FetchURL(urlStr, opts)
 	if err != nil {
-		return fmt.Errorf("Error fetching URL: %w", err)
+		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
 	generator, err := cards.Get(cardType)
 	if err != nil {
-		return fmt.Errorf("Error getting card generator: %w", err)
+		return fmt.Errorf("error getting card generator: %w", err)
 	}
 
 	cardImg, err := generator.Generate(info)
 	if err != nil {
-		return fmt.Errorf("Error generating card: %w", err)
+		return fmt.Errorf("error generating card: %w", err)
 	}
 
 	err = png.Encode(os.Stdout, cardImg)
 	if err != nil {
-		return fmt.Errorf("Error writing to stdout: %w", err)
+		return fmt.Errorf("error writing to stdout: %w", err)
 	}
 	return nil
 }
