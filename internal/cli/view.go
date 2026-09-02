@@ -24,7 +24,7 @@ func View(userAgent string, viewer string, httprettyFlag bool, viewType string, 
 
 	info, err := header.FetchURL(urlStr, opts)
 	if err != nil {
-		return fmt.Errorf("Error fetching URL: %w", err)
+		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
 	var targetURL string
@@ -65,7 +65,7 @@ func View(userAgent string, viewer string, httprettyFlag bool, viewType string, 
 	}
 
 	if targetURL == "" {
-		return fmt.Errorf("No image found for type '%s'.", viewType)
+		return fmt.Errorf("no image found for type '%s'", viewType)
 	}
 
 	ui.DisplayImage(targetURL, viewer)
