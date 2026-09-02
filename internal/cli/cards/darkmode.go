@@ -26,17 +26,14 @@ func init() {
 // DarkmodeCard represents the basic card generator
 type DarkmodeCard struct{}
 
-// Name returns the name of the darkmode card generator
 func (b *DarkmodeCard) Name() string {
 	return "darkmode"
 }
 
-// Description returns a description of the darkmode card generator
 func (b *DarkmodeCard) Description() string {
 	return "A darkmode card containing the title, description, cover image, favicon and a QR code"
 }
 
-// Generate creates a darkmode card image from the given PageInfo
 func (b *DarkmodeCard) Generate(info *header.PageInfo) (image.Image, error) {
 	width, height := 800, 400
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -61,7 +58,7 @@ func (b *DarkmodeCard) Generate(info *header.PageInfo) (image.Image, error) {
 		client := &http.Client{Timeout: 5 * time.Second}
 		resp, err := client.Get(faviconURL)
 		if err == nil {
-			defer func() { _ = resp.Body.Close() }()
+			defer resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
 				decoded, _, err := image.Decode(resp.Body)
 				if err == nil {
@@ -104,7 +101,7 @@ func (b *DarkmodeCard) Generate(info *header.PageInfo) (image.Image, error) {
 		client := &http.Client{Timeout: 10 * time.Second}
 		resp, err := client.Get(imgURL)
 		if err == nil {
-			defer func() { _ = resp.Body.Close() }()
+			defer resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
 				decoded, _, err := image.Decode(resp.Body)
 				if err == nil {
