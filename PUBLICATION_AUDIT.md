@@ -4,6 +4,11 @@ Assessment: **CONDITIONAL GO after the conditions below are satisfied.**
 No confirmed credential exposure was found. The proposed tree is ready for code
 review; this is not approval to change visibility, merge, or publish a release.
 
+The targeted [final blocker follow-up](RELEASE_BLOCKERS.md) refines the initial
+history and CI conditions below. It includes exact remote/PR-ref reachability,
+a retention plan with version-specific notices for the old header binary, and
+separate merge/publication/release gates. It does not repeat this broad audit.
+
 ## Publication conditions
 
 1. Review the historical third-party artwork and committed executables described
@@ -192,10 +197,14 @@ contains a 65,593,496-byte `goreleaser` binary (blob
 12,698,143-byte `header` binary (blob
 `3f970d60bdc421675864fe5291e5ddec7256ad2e`, introduced by `a46541d`, later
 removed by `4f9f310`). They are not in the proposed tree, but remain reachable.
-Their source/dependency attribution and redistribution terms are not proven by
-this PR's current notices. Review retention/removal explicitly. Removing a
-branch alone may leave PR refs reachable. No malware analysis or execution of
-historical executables was performed.
+The final blocker follow-up now matches all nine dependency-module checksums
+from the header executable to versioned source downloads and includes their
+historical license texts in THIRD_PARTY_NOTICES.md. Retention with those notices
+is recommended for that executable. The unrelated GoReleaser executable records
+283 dependencies and is not covered by header's notices; removing its abandoned
+branch is recommended, subject to approval. Exact reachability, PR/cache effects
+and the Octocat permission/removal alternatives are in RELEASE_BLOCKERS.md.
+No malware analysis or execution of historical executables was performed.
 
 ## CI, release and deployment concerns
 

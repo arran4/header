@@ -1177,3 +1177,68 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
+
+## Historical header executable
+
+The historical `header` blob `3f970d60bdc421675864fe5291e5ddec7256ad2e`
+(12,698,143 bytes) is retained in Git history, not shipped as a supported release.
+Its build information records Go 1.24.3, the `shiny` build tag, and these modules:
+
+| Module | Historical version | Applicable notice |
+| --- | --- | --- |
+| `github.com/fatih/color` | `v1.16.0` | Existing MIT/BSD text for this module above |
+| `github.com/jezek/xgb` | `v1.1.1` | Existing MIT/BSD text for this module above |
+| `github.com/mattn/go-colorable` | `v0.1.13` | Existing MIT/BSD text for this module above |
+| `github.com/mattn/go-isatty` | `v0.0.20` | Existing MIT/BSD text for this module above |
+| `golang.org/x/exp/shiny` | `v0.0.0-20240222234643-814bf88cf225` | Historical Go module BSD text below |
+| `golang.org/x/image` | `v0.15.0` | Historical Go module BSD text below |
+| `golang.org/x/mobile` | `v0.0.0-20231127183840-76ac6878050a` | Historical Go module BSD text below |
+| `golang.org/x/net` | `v0.22.0` | Historical Go module BSD text below |
+| `golang.org/x/sys` | `v0.18.0` | Historical Go module BSD text below |
+
+All nine module checksums in the executable's build information match the
+versioned source downloads used to obtain these notices. The four GitHub-module
+license texts are already reproduced above. The following text is shared by
+all five historical golang.org/x modules; preserve it separately from the newer
+Google LLC wording in the current dependency notices. The Go 1.24.3 runtime's
+license is identical to the Go runtime notice above.
+
+The executable records a dirty source tree. It is not claimed reproducible or
+safe to execute. Its original project code is covered by the project's MIT
+license; third-party rights remain as stated here. These notices accompany the
+retained history and must also accompany any separate redistribution of that
+old executable. Checking out an old commit does not add this later notice file
+to that commit. This inventory does not cover the unrelated historical
+GoReleaser executable or GitHub artwork; see RELEASE_BLOCKERS.md.
+
+Historical Go module BSD license:
+
+```text
+Copyright (c) 2009 The Go Authors. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
