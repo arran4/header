@@ -9,6 +9,6 @@
 
 - Regenerate files under `cmd/` from `internal/cli` definitions with `go generate ./...`; do not hand-edit generated files.
 
-## Engineering guidance and agent audit
+## Engineering guidance
 
-Use https://arran4.github.io/blog/post/2026/055-suggested-coding-standards-for-repositories-and-agents/ selectively, without superseding the more specific rules above. A coding agent must inspect implementation/tests, distinguish verified gaps from hypotheses, and record results and existing issue overlap at https://github.com/arran4/header/issues/53. Do not equate adding instructions with completing the implementation audit; do not merge automatically.
+Use https://arran4.github.io/blog/post/2026/055-suggested-coding-standards-for-repositories-and-agents/ selectively, without superseding the more specific rules above. Inspect implementation/tests, distinguish verified gaps from hypotheses, and record verification results and existing issue overlap in the relevant change or issue. Do not merge automatically.

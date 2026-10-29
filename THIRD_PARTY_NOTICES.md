@@ -1178,11 +1178,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## Historical header executable
+## Additional notices for archived dependency versions
 
-The historical `header` blob `3f970d60bdc421675864fe5291e5ddec7256ad2e`
-(12,698,143 bytes) is retained in Git history, not shipped as a supported release.
-Its build information records Go 1.24.3, the `shiny` build tag, and these modules:
+Older executables remain reachable through GitHub's archived pull-request refs,
+which are separate from maintained branch history. The following version-specific
+notices are retained for those artifacts and any separate redistribution.
 
 | Module | Historical version | Applicable notice |
 | --- | --- | --- |
@@ -1196,20 +1196,10 @@ Its build information records Go 1.24.3, the `shiny` build tag, and these module
 | `golang.org/x/net` | `v0.22.0` | Historical Go module BSD text below |
 | `golang.org/x/sys` | `v0.18.0` | Historical Go module BSD text below |
 
-All nine module checksums in the executable's build information match the
-versioned source downloads used to obtain these notices. The four GitHub-module
-license texts are already reproduced above. The following text is shared by
-all five historical golang.org/x modules; preserve it separately from the newer
-Google LLC wording in the current dependency notices. The Go 1.24.3 runtime's
-license is identical to the Go runtime notice above.
-
-The executable records a dirty source tree. It is not claimed reproducible or
-safe to execute. Its original project code is covered by the project's MIT
-license; third-party rights remain as stated here. These notices accompany the
-retained history and must also accompany any separate redistribution of that
-old executable. Checking out an old commit does not add this later notice file
-to that commit. This inventory does not cover the unrelated historical
-GoReleaser executable or GitHub artwork; see RELEASE_BLOCKERS.md.
+The four GitHub-module license texts already appear above. The five older
+Go modules share the BSD text below; its copyright and Google Inc. wording
+differs from the current versions. The Go 1.24.3 runtime license matches the
+Go runtime and standard-library notice above.
 
 Historical Go module BSD license:
 

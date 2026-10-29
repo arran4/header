@@ -185,4 +185,4 @@ The generator is pinned as a Go tool dependency in `go.mod`. The [generation not
 
 ## License
 
-This project is licensed under the MIT License; see [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md). Fetched website content and historical third-party artwork retain their owners’ rights. See [SECURITY.md](SECURITY.md) before using the fetcher in a privileged service.
+This project is licensed under the MIT License; see [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md). Fetched website content and third-party assets retain their owners’ rights. See [SECURITY.md](SECURITY.md) before using the fetcher in a privileged service.

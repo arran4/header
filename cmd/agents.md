@@ -11,18 +11,18 @@ Go Subcommand (`gosubc`) generates subcommand code for command-line interfaces (
 - **Zero Dependencies:** The generated code is self-contained and doesn't require any external libraries.
 - **Automatic Code Generation:** `gosubc` parses your Go files and generates a complete, ready-to-use CLI.
 
-## Installation
+## Repository generation
 
-`gosubc` is a standalone tool and should not be added as a dependency in your `go.mod`. Install it using:
+This repository pins `gosubc` as a Go tool dependency in `go.mod`. From the repository root, run:
 
 ```bash
-go install github.com/arran4/go-subcommand/cmd/gosubc@latest
+go generate ./...
 ```
 
 ## How it works
 
 1.  **Define Your Commands**: Create a Go file and define a function that will serve as your command. Add a comment above the function.
-2.  **Generate**: Run `gosubc generate` (or via `go generate`).
+2.  **Generate**: Run `go generate ./...` from the repository root.
 3.  **Result**: `gosubc` creates a `cmd/<app-name>` directory containing the generated CLI code.
 
 ## Comment Syntax
