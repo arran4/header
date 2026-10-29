@@ -1,0 +1,29 @@
+-- description --
+Absent AppLinks, Instagram and ThemeColor values have no placeholder rows or JSON keys
+-- input.json --
+{"URL":"https://example.com/empty","Title":"Empty metadata"}
+-- expected.txt --
+URL: https://example.com/empty
+Title: Empty metadata
+-- expected_default.txt --
+URL: https://example.com/empty
+Title: Empty metadata
+-- expected_discord.txt --
+
+URL: https://example.com/empty
+Title: Empty metadata
+-- expected_json.txt --
+{
+  "URL": "https://example.com/empty",
+  "Title": "Empty metadata",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
+}
+-- expected_jsonld.txt --
+
+URL: https://example.com/empty
+-- expected_opengraph.txt --
+
+URL: https://example.com/empty
+-- expected_twitter.txt --
+
+URL: https://example.com/empty

@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"time"
 	"os"
+	"time"
 
 	"github.com/arran4/header"
 )
@@ -11,14 +11,15 @@ import (
 // TraceRedirects is a subcommand `header trace-redirects` -- Trace URL redirects.
 //
 // Flags:
-//   followMetaRefresh: --follow-meta-redirects (default: true)  Follow meta refresh redirects
-//   updateReferer:     --update-referer (default: true)         Update Referer header on redirect
-//   storeCookies:      --store-cookies (default: true)          Store cookies across redirects
-//   redirectLimit:     --redirect-limit (default: 20)           Maximum number of redirects to follow
-//   redirectDelay:     --redirect-delay (default: 0)            Delay between redirects (e.g. 1s, 500ms)
-//   userAgent:         --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
-//   httprettyFlag:     --httpretty                              Print HTTP requests and responses
-//   urlStr:            @1 (required)                            URL to trace
+//
+//	followMetaRefresh: --follow-meta-redirects (default: true)  Follow meta refresh redirects
+//	updateReferer:     --update-referer (default: true)         Update Referer header on redirect
+//	storeCookies:      --store-cookies (default: true)          Store cookies across redirects
+//	redirectLimit:     --redirect-limit (default: 20)           Maximum number of redirects to follow
+//	redirectDelay:     --redirect-delay (default: 0)            Delay between redirects (e.g. 1s, 500ms)
+//	userAgent:         --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
+//	httprettyFlag:     --httpretty                              Print HTTP requests and responses
+//	urlStr:            @1 (required)                            URL to trace
 func TraceRedirects(
 	followMetaRefresh bool,
 	updateReferer bool,
@@ -57,7 +58,7 @@ func TraceRedirects(
 	}
 
 	if err != nil {
-		return fmt.Errorf("Error fetching URL: %w", err)
+		return fmt.Errorf("error fetching URL: %w", err)
 	}
 	return nil
 }

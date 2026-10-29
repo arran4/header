@@ -48,13 +48,8 @@ func splitArgs(s string) []string {
 	return args
 }
 
-func runTxtarScript(t *testing.T, dir string, env map[string]string) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatalf("failed to read dir: %v", err)
-	}
-
-	// Build the binary first
+func buildCLI(t *testing.T) string {
+	t.Helper()
 	binName := "header_bin"
 	if runtime.GOOS == "windows" {
 		binName += ".exe"
@@ -65,6 +60,17 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 	if out, err := buildCmd.CombinedOutput(); err != nil {
 		t.Fatalf("failed to build binary: %v\n%s", err, out)
 	}
+
+	return binPath
+}
+
+func runTxtarScript(t *testing.T, dir string, env map[string]string) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("failed to read dir: %v", err)
+	}
+
+	binPath := buildCLI(t)
 
 	for _, entry := range entries {
 		if entry.IsDir() || (!strings.HasSuffix(entry.Name(), ".txt") && !strings.HasSuffix(entry.Name(), ".txtar")) {
@@ -111,7 +117,7 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 			})
 
 			lines := strings.Split(commands, "\n")
-			var lastStdout string
+			var lastStdout, lastStderr string
 			var stdinFile string
 
 			for i, line := range lines {
@@ -209,21 +215,26 @@ func runTxtarScript(t *testing.T, dir string, env map[string]string) {
 						}
 					}
 					lastStdout = out.String()
+					lastStderr = stderrBuf.String()
 
-				case "stdout":
+				case "stdout", "stderr":
+					output := lastStdout
+					if args[0] == "stderr" {
+						output = lastStderr
+					}
 					if len(args) > 1 {
 						pattern := args[1]
-						matched, err := regexp.MatchString(pattern, lastStdout)
+						matched, err := regexp.MatchString(pattern, output)
 						if err != nil {
 							t.Fatalf("invalid regex at line %d %s: %v", i+1, pattern, err)
 						}
 						if negate {
 							if matched {
-								t.Fatalf("line %d: expected stdout to NOT match %q, but it did", i+1, pattern)
+								t.Fatalf("line %d: expected %s to NOT match %q, but it did", i+1, args[0], pattern)
 							}
 						} else {
 							if !matched {
-								t.Fatalf("line %d: expected stdout to match %q, but got %q", i+1, pattern, lastStdout)
+								t.Fatalf("line %d: expected %s to match %q, but got %q", i+1, args[0], pattern, output)
 							}
 						}
 					}

@@ -1,3 +1,3 @@
 package header
 
-//go:generate sh -c "command -v gosubc >/dev/null 2>&1 && gosubc generate || go run github.com/arran4/go-subcommand/cmd/gosubc@latest generate"
+//go:generate go tool gosubc generate --replace-template templates/cmd/main.go.gotmpl=internal/generate/templates/main.go.gotmpl --timestamp=false --project-provenance=false

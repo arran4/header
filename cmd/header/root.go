@@ -3,9 +3,9 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"github.com/arran4/header/internal/cli"
 	"io"
 	"os"
 	"slices"
@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"errors"
 	"github.com/arran4/header/cmd"
 	"github.com/arran4/header/cmd/header/templates"
+	"github.com/arran4/header/internal/cli"
 )
 
 type Cmd interface {
@@ -133,7 +133,7 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 
 	c.BoolVar(&c.showImage, "show-image", false, "Display the cover image (if available)")
 
-	c.StringVar(&c.style, "style", "default", "The output style template to use (e.g. default, plain)")
+	c.StringVar(&c.style, "style", "default", "The output style template to use (e.g. default, all_fields_plain)")
 
 	c.StringVar(&c.userAgent, "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
 	c.StringVar(&c.userAgent, "Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
@@ -173,8 +173,9 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 				fmt.Fprintf(os.Stderr, "Use '%s help' for more information.\n", os.Args[0])
 				return nil
 			}
-			if e, ok := err.(*cmd.ErrExitCode); ok {
-				return e
+			var exitCode *cmd.ErrExitCode
+			if errors.As(err, &exitCode) {
+				return exitCode
 			}
 			return fmt.Errorf("header failed: %w", err)
 		}
@@ -282,11 +283,13 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 	return c, nil
 }
 
-func (c *RootCmd) Execute(args []string) error {
+func (c *RootCmd) Execute(args []string) (err error) {
 	var remainingArgs []string
+	dashDashSeen := false
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		if arg == "--" {
+			dashDashSeen = true
 			remainingArgs = append(remainingArgs, args[i+1:]...)
 			break
 		}
@@ -460,11 +463,11 @@ func (c *RootCmd) Execute(args []string) error {
 						return fmt.Errorf("flag %s requires a value", name)
 					}
 				}
-				iv, err := strconv.Atoi(value)
+				v, err := strconv.Atoi(value)
 				if err != nil {
 					return fmt.Errorf("invalid integer value for flag %s: %s", name, value)
 				}
-				c.redirectLimit = iv
+				c.redirectLimit = v
 
 			case "redirectDelay", "redirect-delay":
 				if !hasValue {
@@ -475,11 +478,11 @@ func (c *RootCmd) Execute(args []string) error {
 						return fmt.Errorf("flag %s requires a value", name)
 					}
 				}
-				d, err := time.ParseDuration(value)
+				v, err := time.ParseDuration(value)
 				if err != nil {
 					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
 				}
-				c.redirectDelay = d
+				c.redirectDelay = v
 
 			case "httprettyFlag", "httpretty":
 				if hasValue {
@@ -514,6 +517,12 @@ func (c *RootCmd) Execute(args []string) error {
 			break
 		}
 	}
+
+	if !dashDashSeen && len(remainingArgs) > 0 {
+		if cmd, ok := c.Commands[remainingArgs[0]]; ok {
+			return cmd().Execute(remainingArgs[1:])
+		}
+	}
 	if len(remainingArgs) < 1 {
 		return fmt.Errorf("expected at least 1 positional arguments, got %d", len(remainingArgs))
 	}
@@ -526,16 +535,9 @@ func (c *RootCmd) Execute(args []string) error {
 		} else {
 		}
 	}
-
 	if c.CommandAction != nil {
 		if err := c.CommandAction(c); err != nil {
-			return fmt.Errorf("header failed: %w", err)
-		}
-	}
-
-	if len(remainingArgs) > 0 {
-		if cmd, ok := c.Commands[remainingArgs[0]]; ok {
-			return cmd().Execute(remainingArgs[1:])
+			return err
 		}
 	}
 	return nil

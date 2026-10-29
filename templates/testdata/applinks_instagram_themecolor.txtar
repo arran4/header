@@ -1,0 +1,56 @@
+-- description --
+AppLinks, Instagram, and ThemeColor metadata fields are displayed in full output and json, and omitted in concise and specific styles
+-- input.json --
+{
+  "URL": "https://example.com/app",
+  "Title": "App Title",
+  "ThemeColor": "#ff0000",
+  "AppLinksIOSName": "Test App",
+  "AppLinksIOSAppStoreID": "123456",
+  "AppLinksIOSURL": "example://ios",
+  "AppLinksAndroidName": "Test Android App",
+  "AppLinksAndroidPackage": "com.example.app",
+  "AppLinksAndroidURL": "example://android",
+  "InstagramOwnerUserID": "987654321"
+}
+-- expected.txt --
+URL: https://example.com/app
+Title: App Title
+HTML Theme Color: #ff0000
+AppLinks iOS Name: Test App
+AppLinks iOS App Store ID: 123456
+AppLinks iOS URL: example://ios
+AppLinks Android Name: Test Android App
+AppLinks Android Package: com.example.app
+AppLinks Android URL: example://android
+Instagram Owner User ID: 987654321
+-- expected_default.txt --
+URL: https://example.com/app
+Title: App Title
+-- expected_discord.txt --
+
+URL: https://example.com/app
+Title: App Title
+-- expected_json.txt --
+{
+  "URL": "https://example.com/app",
+  "Title": "App Title",
+  "AppLinksIOSName": "Test App",
+  "AppLinksIOSAppStoreID": "123456",
+  "AppLinksIOSURL": "example://ios",
+  "AppLinksAndroidName": "Test Android App",
+  "AppLinksAndroidPackage": "com.example.app",
+  "AppLinksAndroidURL": "example://android",
+  "InstagramOwnerUserID": "987654321",
+  "ThemeColor": "#ff0000",
+  "JSONLDUploadDateParsed": "0001-01-01T00:00:00Z"
+}
+-- expected_jsonld.txt --
+
+URL: https://example.com/app
+-- expected_opengraph.txt --
+
+URL: https://example.com/app
+-- expected_twitter.txt --
+
+URL: https://example.com/app

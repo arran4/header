@@ -11,9 +11,10 @@ import (
 // Verify is a subcommand `header verify` -- Checks all the urls, and other details, it's a subset of the lint rules that is mostly concerned with valid info.
 //
 // Flags:
-//   userAgent:     --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
-//   httprettyFlag: --httpretty                              Print HTTP requests and responses
-//   urlStr:        @1 (required)                            URL to verify
+//
+//	userAgent:     --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
+//	httprettyFlag: --httpretty                              Print HTTP requests and responses
+//	urlStr:        @1 (required)                            URL to verify
 func Verify(userAgent string, httprettyFlag bool, urlStr string) error {
 	opts := header.FetchOptions{
 		UserAgent:         userAgent,
@@ -28,7 +29,7 @@ func Verify(userAgent string, httprettyFlag bool, urlStr string) error {
 
 	info, err := header.FetchURL(urlStr, opts)
 	if err != nil {
-		return fmt.Errorf("Error fetching URL: %w", err)
+		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
 	lint.Run(info, []string{"verify"}, nil)

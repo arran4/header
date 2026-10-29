@@ -10,14 +10,26 @@ builds:
   - id: header
     binary: header
     main: ./cmd/header
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64, "386"]
+    ignore:
+      - goos: darwin
+        goarch: "386"
     env:
       - CGO_ENABLED=0
 
 archives:
-  - format: tar.gz
+  - formats:
+      - tar.gz
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
+    files:
+      - LICENSE
+      - THIRD_PARTY_NOTICES.md
+      - README.md
+      - SECURITY.md
 
 checksum:
   name_template: checksums.txt
@@ -35,11 +47,17 @@ nfpms:
       - rpm
       - apk
       - archlinux
+    contents:
+      - src: LICENSE
+        dst: /usr/share/licenses/header/LICENSE
+      - src: THIRD_PARTY_NOTICES.md
+        dst: /usr/share/licenses/header/THIRD_PARTY_NOTICES.md
     section: default
     priority: optional
 
-brews:
-  -
+homebrew_casks:
+  - description: Extract and inspect web metadata from your terminal.
+    homepage: https://github.com/arran4/header
     repository:
       owner: arran4
       name: homebrew-tap
