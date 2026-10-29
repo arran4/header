@@ -16,10 +16,10 @@ separate merge/publication/release gates. It does not repeat this broad audit.
    establish the required permissions/notices or approve a separately reviewed
    history-remediation plan before making the complete history public. Nothing
    in this PR rewrites history or deletes remote branches.
-2. Inspect the PR's hosted checks before merging. Local verification is recorded
-   below; historical failed hosted runs are not passing test evidence. If Actions
-   cannot start, restore its availability and rerun checks rather than treating
-   skipped jobs as successful.
+2. The owner has waived private hosted CI as a merge/publication gate and directed
+   work to proceed. Use the recorded local verification as implementation evidence;
+   historical failed/skipped hosted runs remain failed/skipped. The expectation
+   that public scheduling will work has not yet been verified.
 3. Confirm that exposing the existing maintainer commit identities, public sample
    social-media identifiers and past issue/review conversations is acceptable.
    No confidential customer data or non-test internal service endpoint was found.

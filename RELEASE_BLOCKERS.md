@@ -34,15 +34,13 @@ private usage draws on the owner's allowance and payment/budget controls.
 See [Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
 and [budget scopes and stopping usage](https://docs.github.com/en/billing/concepts/budgets-and-alerts).
 
-Owner action: read the two run annotations, then inspect the personal account's
-Billing & licensing usage, account/repository Actions budgets with stopping
-enabled, allowance exhaustion, and any payment restriction. Resolve the stated
-restriction or contact GitHub Support if none is shown, then rerun the failed
-jobs on the current PR head while the repository is still private. Increasing
-paid limits or changing a payment method is an owner decision. No speculative
-CI YAML edits or repeated reruns are warranted from the evidence available.
-The two annotation messages and a redacted account restriction status were
-requested from the owner because the available tools cannot read them.
+Owner decision: proceed without treating private hosted CI as a merge or
+publication blocker. The owner expects scheduling to work once the repository
+is public. The local verification remains the current implementation evidence;
+failed/skipped hosted jobs are not relabelled as successful. Billing investigation,
+annotation requests and private-CI reruns are no longer prerequisites. CI YAML
+is unchanged. Public scheduling remains an expectation to observe after any
+separately authorized visibility change.
 
 ## 2. Exact historical reachability
 
@@ -153,17 +151,18 @@ and proposed follow-ups are present in code and the issue report. #53 does not
 require a public-visibility change or a production release. It remains open until
 the PR is reviewed/merged; this report does not close it manually.
 
-- **Before merging #56:** restore private Actions scheduling, rerun the latest
-  head, inspect actual code checks and obtain normal review approval. The historical
-  retention/removal decisions need not be executed to merge this non-destructive PR.
+- **Before merging #56:** obtain normal review approval, using the recorded local
+  checks as implementation evidence. The owner has waived private hosted CI as a
+  gate. Historical retention/removal decisions need not be executed to merge this
+  non-destructive PR.
 - **Before changing the existing repository to public:** resolve the historical
   Octocat rights/removal path, approve the retained old header binary with notices,
   approve removal or fully attributed retention of the abandoned GoReleaser branch,
   and accept the already identified existing personal metadata. Recheck any approved
   cleanup against remote PR refs; a new file or ordinary branch rewrite is not proof
-  of complete removal. Do not change visibility as a billing workaround.
-- **Before the first binary release:** merge the reviewed changes with successful
-  checks; choose an explicit version/tag; validate the release token and tap token's
+  of complete removal. Hosted CI is not a publication gate under the owner's decision.
+- **Before the first binary release:** merge the reviewed changes; choose an explicit
+  version/tag; validate the release token and tap token's
   contents/PR grants without disclosing values; decide macOS signing/notarization
   and communicate any unsigned-install limitations; use fresh binaries, bundled
   license/third-party notices and verified checksums, not historical executables.
