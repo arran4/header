@@ -59,14 +59,16 @@ func TestMain(m *testing.M) {
 				panic(err)
 			}
 			html := string(b)
-			html = strings.ReplaceAll(html, "http://127.0.0.1:0", ts.URL)
+			serverURL := "http://" + r.Host
+			html = strings.ReplaceAll(html, "http://127.0.0.1:0", serverURL)
 			_, _ = w.Write([]byte(html))
 		case "/issue":
 			w.Header().Set("Content-Type", "text/html")
 			// We need to inject the actual URL into the HTML so they match
 			html := string(issueHTML)
+			serverURL := "http://" + r.Host
 			// Find "http://127.0.0.1:0/issue" and replace with actual server URL
-			html = strings.Replace(html, "http://127.0.0.1:0/issue", ts.URL+"/issue", 1)
+			html = strings.Replace(html, "http://127.0.0.1:0/issue", serverURL+"/issue", 1)
 			_, _ = w.Write([]byte(html))
 		case "/media":
 			w.Header().Set("Content-Type", "text/html")

@@ -23,10 +23,11 @@ func CardList() error {
 // CardFile is a subcommand `header card file` -- Output destination: file path.
 //
 // Flags:
-//   userAgent: --user-agent (default: "Mozilla/5.0") The User-Agent header to use when fetching URLs
-//   cardType:  --type (default: "basic")             The type of card generator to use
-//   out:       --out (required)                      Output file path
-//   urlStr:    @1 (required)                         URL to fetch
+//
+//	userAgent: --user-agent (default: "Mozilla/5.0") The User-Agent header to use when fetching URLs
+//	cardType:  --type (default: "basic")             The type of card generator to use
+//	out:       --out (required)                      Output file path
+//	urlStr:    @1 (required)                         URL to fetch
 func CardFile(userAgent string, cardType string, out string, urlStr string) (err error) {
 	opts := header.FetchOptions{
 		UserAgent: userAgent,
@@ -73,9 +74,10 @@ func CardFile(userAgent string, cardType string, out string, urlStr string) (err
 // CardClipboard is a subcommand `header card clipboard` -- Output destination: copy to system clipboard.
 //
 // Flags:
-//   userAgent: --user-agent (default: "Mozilla/5.0") The User-Agent header to use when fetching URLs
-//   cardType:  --type (default: "basic")             The type of card generator to use
-//   urlStr:    @1 (required)                         URL to fetch
+//
+//	userAgent: --user-agent (default: "Mozilla/5.0") The User-Agent header to use when fetching URLs
+//	cardType:  --type (default: "basic")             The type of card generator to use
+//	urlStr:    @1 (required)                         URL to fetch
 func CardClipboard(userAgent string, cardType string, urlStr string) error {
 	opts := header.FetchOptions{
 		UserAgent: userAgent,
@@ -113,9 +115,10 @@ func CardClipboard(userAgent string, cardType string, urlStr string) error {
 // CardStdout is a subcommand `header card stdout` -- Output destination: standard output (pipe).
 //
 // Flags:
-//   userAgent: --user-agent (default: "Mozilla/5.0") The User-Agent header to use when fetching URLs
-//   cardType:  --type (default: "basic")             The type of card generator to use
-//   urlStr:    @1 (required)                         URL to fetch
+//
+//	userAgent: --user-agent (default: "Mozilla/5.0") The User-Agent header to use when fetching URLs
+//	cardType:  --type (default: "basic")             The type of card generator to use
+//	urlStr:    @1 (required)                         URL to fetch
 func CardStdout(userAgent string, cardType string, urlStr string) error {
 	opts := header.FetchOptions{
 		UserAgent: userAgent,

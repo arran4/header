@@ -38,11 +38,13 @@ func (c *Card) UsageRecursive() {
 	}
 }
 
-func (c *Card) Execute(args []string) error {
+func (c *Card) Execute(args []string) (err error) {
 	var remainingArgs []string
+	dashDashSeen := false
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		if arg == "--" {
+			dashDashSeen = true
 			remainingArgs = append(remainingArgs, args[i+1:]...)
 			break
 		}
@@ -86,7 +88,7 @@ func (c *Card) Execute(args []string) error {
 		}
 	}
 
-	if len(remainingArgs) > 0 {
+	if !dashDashSeen && len(remainingArgs) > 0 {
 		if cmd, ok := c.SubCommands[remainingArgs[0]]; ok {
 			return cmd().Execute(remainingArgs[1:])
 		}

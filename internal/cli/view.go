@@ -11,11 +11,12 @@ import (
 // View is a subcommand `header view` -- View images or icons from a URL (e.g. view image <url>).
 //
 // Flags:
-//   userAgent:     --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
-//   viewer:        --viewer (default: "default")            The viewer to use (e.g., open, xdg-open, shiny, mock, export, print-url, default)
-//   httprettyFlag: --httpretty                              Print HTTP requests and responses
-//   viewType:      @1 (required)                            Type of image to view
-//   urlStr:        @2 (required)                            URL to fetch
+//
+//	userAgent:     --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
+//	viewer:        --viewer (default: "default")            The viewer to use (e.g., open, xdg-open, shiny, mock, export, print-url, default)
+//	httprettyFlag: --httpretty                              Print HTTP requests and responses
+//	viewType:      @1 (required)                            Type of image to view
+//	urlStr:        @2 (required)                            URL to fetch
 func View(userAgent string, viewer string, httprettyFlag bool, viewType string, urlStr string) error {
 	opts := header.FetchOptions{
 		UserAgent: userAgent,

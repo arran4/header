@@ -17,7 +17,7 @@ require (
 
 require (
 	dmitri.shuralyov.com/gpu/mtl v0.0.0-20221208032759-85de2813cf6b // indirect
-	github.com/arran4/go-subcommand v0.0.26 // indirect
+	github.com/arran4/go-subcommand v0.0.31 // indirect
 	github.com/arran4/strings2 v0.0.6 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20231223183121-56fa3ac82ce7 // indirect
@@ -30,3 +30,5 @@ require (
 	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/tools v0.48.0 // indirect
 )
+
+tool github.com/arran4/go-subcommand/cmd/gosubc
