@@ -1,0 +1,33 @@
+test: root and explicit command dispatch use the local fixture server
+
+exec header --style all_fields_plain $TEST_SERVER_URL/instagram
+stdout 'AppLinks iOS Name: Instagram'
+stdout 'Instagram Owner User ID: 25048339'
+
+exec header extract --style all_fields_plain $TEST_SERVER_URL/instagram
+stdout 'HTML Theme Color: #ffffff'
+
+exec header show --style all_fields_plain $TEST_SERVER_URL/example
+stdout 'Title: Example Page'
+
+exec header --style all_fields_plain -- $TEST_SERVER_URL/example
+stdout 'Title: Example Page'
+
+exec header extract --style all_fields_plain -- $TEST_SERVER_URL/example
+stdout 'Title: Example Page'
+
+exec header --help
+stderr 'Usage: header'
+exec header help
+stderr 'Usage: header'
+exec header extract --help
+stderr 'Usage: header.*extract'
+exec header version
+stdout 'Version: dev'
+
+! exec header --not-a-real-flag
+stderr 'unknown flag'
+! exec header extract
+stderr 'expected at least 1 positional'
+! exec header extract --style not-a-template $TEST_SERVER_URL/example
+stderr "error loading template"

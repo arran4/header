@@ -1,3 +1,9 @@
 /header
 card.png
 test.png
+*.orig
+*.rej
+.idea/
+.vscode/
+/header.exe
+/dist/

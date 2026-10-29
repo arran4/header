@@ -6,13 +6,14 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/arran4/header/cmd"
-	"github.com/arran4/header/internal/cli"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/arran4/header/cmd"
+	"github.com/arran4/header/internal/cli"
 )
 
 var _ Cmd = (*Extract)(nil)
@@ -60,11 +61,13 @@ func (c *Extract) UsageRecursive() {
 	}
 }
 
-func (c *Extract) Execute(args []string) error {
+func (c *Extract) Execute(args []string) (err error) {
 	var remainingArgs []string
+	dashDashSeen := false
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		if arg == "--" {
+			dashDashSeen = true
 			remainingArgs = append(remainingArgs, args[i+1:]...)
 			break
 		}
@@ -293,7 +296,7 @@ func (c *Extract) Execute(args []string) error {
 		}
 	}
 
-	if len(remainingArgs) > 0 {
+	if !dashDashSeen && len(remainingArgs) > 0 {
 		if cmd, ok := c.SubCommands[remainingArgs[0]]; ok {
 			return cmd().Execute(remainingArgs[1:])
 		}
@@ -313,7 +316,7 @@ func (c *Extract) Execute(args []string) error {
 
 	if c.CommandAction != nil {
 		if err := c.CommandAction(c); err != nil {
-			return fmt.Errorf("extract failed: %w", err)
+			return err
 		}
 	} else {
 		c.Usage()
@@ -340,7 +343,7 @@ func (c *RootCmd) NewExtract() *Extract {
 
 	set.BoolVar(&v.showImage, "show-image", false, "Display the cover image (if available)")
 
-	set.StringVar(&v.style, "style", "default", "The output style template to use (e.g. default, plain)")
+	set.StringVar(&v.style, "style", "default", "The output style template to use (e.g. default, all_fields_plain)")
 
 	set.StringVar(&v.userAgent, "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
 	set.StringVar(&v.userAgent, "Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
@@ -381,8 +384,9 @@ func (c *RootCmd) NewExtract() *Extract {
 				fmt.Fprintf(os.Stderr, "Use '%s help' for more information.\n", os.Args[0])
 				return nil
 			}
-			if e, ok := err.(*cmd.ErrExitCode); ok {
-				return e
+			var exitCode *cmd.ErrExitCode
+			if errors.As(err, &exitCode) {
+				return exitCode
 			}
 			return fmt.Errorf("extract failed: %w", err)
 		}

@@ -6,12 +6,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/arran4/header/cmd"
-	"github.com/arran4/header/internal/cli"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/arran4/header/cmd"
+	"github.com/arran4/header/internal/cli"
 )
 
 var _ Cmd = (*Lint)(nil)
@@ -48,11 +49,13 @@ func (c *Lint) UsageRecursive() {
 	}
 }
 
-func (c *Lint) Execute(args []string) error {
+func (c *Lint) Execute(args []string) (err error) {
 	var remainingArgs []string
+	dashDashSeen := false
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		if arg == "--" {
+			dashDashSeen = true
 			remainingArgs = append(remainingArgs, args[i+1:]...)
 			break
 		}
@@ -152,7 +155,7 @@ func (c *Lint) Execute(args []string) error {
 		}
 	}
 
-	if len(remainingArgs) > 0 {
+	if !dashDashSeen && len(remainingArgs) > 0 {
 		if cmd, ok := c.SubCommands[remainingArgs[0]]; ok {
 			return cmd().Execute(remainingArgs[1:])
 		}
@@ -172,7 +175,7 @@ func (c *Lint) Execute(args []string) error {
 
 	if c.CommandAction != nil {
 		if err := c.CommandAction(c); err != nil {
-			return fmt.Errorf("lint failed: %w", err)
+			return err
 		}
 	} else {
 		c.Usage()
@@ -213,8 +216,9 @@ func (c *RootCmd) NewLint() *Lint {
 				fmt.Fprintf(os.Stderr, "Use '%s help' for more information.\n", os.Args[0])
 				return nil
 			}
-			if e, ok := err.(*cmd.ErrExitCode); ok {
-				return e
+			var exitCode *cmd.ErrExitCode
+			if errors.As(err, &exitCode) {
+				return exitCode
 			}
 			return fmt.Errorf("lint failed: %w", err)
 		}

@@ -2,17 +2,23 @@
 
 ![Header Project Card](header-card.png)
 
-`header` is a Go command-line application that extracts human-readable metadata from a given URL. It scrapes OpenGraph information, Twitter cards, JSON-LD, and YouTube specifics (watch time, video IDs, titles), displaying them nicely on the terminal.
+`header` is a Go command-line application and library that extracts human-readable metadata from a given URL. It scrapes OpenGraph information, Twitter cards, JSON-LD, AppLinks, and YouTube specifics (watch time, video IDs, titles), displaying them cleanly in the terminal.
+
+## Prerequisites and Supported Platforms
+
+- **Build targets:** Linux and Windows on amd64, arm64 and 386; macOS on amd64 and arm64.
+- **Building from Source:** Requires Go 1.26 or higher.
+- **Go Library:** Importable as `github.com/arran4/header` for embedding metadata extraction directly into Go applications.
 
 ## Installation
 
 ### GitHub Releases
-Download binaries from: https://github.com/arran4/header/releases
+No GitHub releases have been published yet. After the first release, binaries will be available at https://github.com/arran4/header/releases.
 
-### Homebrew
+### Homebrew (after the first release)
 ```bash
 brew tap arran4/homebrew-tap
-brew install header
+brew install --cask header
 ```
 
 ### Go install
@@ -40,9 +46,8 @@ Cover Images:
 ```
 
 **Output Formats**
-The tool supports multiple output formatting templates using the `-style` flag:
+The tool supports multiple output formatting templates using the `--style` flag:
 - `default`: The default format printing concise, highlighted essential fields (URL, title, description, cover images).
-- `plain`: The same as `default` but without color highlights.
 - `all_fields`: A detailed format printing all captured metadata grouped logically.
 - `all_fields_plain`: A detailed plain text format.
 - `json`: Prints the raw page metadata as JSON.
@@ -53,24 +58,24 @@ The tool supports multiple output formatting templates using the `-style` flag:
 
 Example of retrieving all fields in JSON:
 ```bash
-header extract -style json https://example.com
+header extract --style json https://example.com
 ```
 
 **Display Cover Images**
-By default, the `-show-image` flag will download the image and use your system's default image viewer (`xdg-open`, `open`, or `start`) to display it.
+The `--show-image` flag will download the image and use your system's default image viewer (`xdg-open`, `open`, or `start`) to display it.
 ```bash
-header extract -show-image https://example.com/some/article
+header extract --show-image https://example.com/some/article
 ```
 *Experimental Shiny UI:* You can build the app with the `shiny` tag to display the image using an experimental UI window:
 ```bash
 go build -tags shiny ./cmd/header
-./header extract -show-image https://example.com/some/article
+./header extract --show-image https://example.com/some/article
 ```
 
 **Test Diagnostics**
-If you want to debug what metadata a site is missing, you can use `-test`:
+If you want to debug what metadata a site is missing, you can use `--test`:
 ```bash
-header extract -test https://example.com
+header extract --test https://example.com
 ```
 
 ### `edit`
@@ -99,7 +104,7 @@ Traces URL HTTP standard redirects as well as HTML meta-refresh redirects.
 ```bash
 header trace-redirects https://example.com/redirect
 ```
-Customization flags include `-store-cookies`, `-redirect-limit`, `-update-referer`, and `-redirect-delay`.
+Customization flags include `--store-cookies`, `--redirect-limit`, `--update-referer`, and `--redirect-delay`.
 
 ### `verify`
 Checks all URLs and other details; a subset of lint rules mostly concerned with valid info (URL reachability and image validity).
@@ -113,8 +118,8 @@ Lints the metadata of a URL.
 
 ```bash
 header lint https://example.com
-header lint -list all https://example.com
-header lint -rule twitter,opengraph https://example.com
+header lint --list all https://example.com
+header lint --rule twitter,opengraph https://example.com
 ```
 
 ### `lint-rule-lists`
@@ -132,18 +137,19 @@ header lint-rules
 ```
 
 ### `card`
-Exports a "card" (as an image) including the image, description and a couple other things from a URL. Output can be to a file, clipboard, or stdout (must specify exactly one output target via subcommands).
+Exports a "card" (as an image) including the image, description, and metadata from a URL. Output can be to a file, clipboard, or stdout (specify an output destination subcommand: `file`, `clipboard`, or `stdout`).
 
 ```bash
-header card file -out card.png https://example.com
+header card file --out card.png https://example.com
 header card clipboard https://example.com
 ```
 
 ### `view`
-Views images or icons from a URL.
+Views images or icons from a URL (positional syntax: `header view <viewType> <url>`).
 
 ```bash
-header view https://example.com/image.png
+header view image https://example.com/image.png
+header view icon https://example.com
 ```
 
 ### `httpretty`
@@ -155,8 +161,28 @@ header httpretty https://example.com
 
 ## Development & Testing
 
-Run unit and integration tests using:
+See [AGENTS.md](AGENTS.md) for contribution and generated-file contracts.
+
+Run unit, integration, and race tests using:
 
 ```bash
-go test ./...
+go test -race ./...
 ```
+
+Use golangci-lint v2.15.0, matching CI, to run lint checks:
+
+```bash
+golangci-lint run
+```
+
+To regenerate CLI command definitions:
+
+```bash
+go generate ./...
+```
+
+The generator is pinned as a Go tool dependency in `go.mod`. The [generation notes](internal/generate/README.md) explain the small main-template overlay and deterministic provenance settings.
+
+## License
+
+This project is licensed under the MIT License; see [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md). Fetched website content and historical third-party artwork retain their owners’ rights. See [SECURITY.md](SECURITY.md) before using the fetcher in a privileged service.

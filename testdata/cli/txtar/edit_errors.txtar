@@ -1,0 +1,18 @@
+test: rejected edits preserve the original file and missing input is not created
+
+! exec header edit head -S 'Duplicate title' test.html
+stderr 'cannot add'
+exec cat test.html
+stdout '<title>Original title</title>'
+! stdout 'Duplicate title'
+
+! exec header edit meta description test.html
+stderr 'must specify'
+exec cat test.html
+stdout 'content="Original description"'
+
+! exec header edit head -s 'New title' missing.html
+stderr 'Error reading input|error reading input'
+! exec cat missing.html
+-- test.html --
+<!DOCTYPE html><html><head><title>Original title</title><meta name="description" content="Original description"></head><body>Original body</body></html>

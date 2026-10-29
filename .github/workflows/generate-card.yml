@@ -5,6 +5,8 @@ on:
     branches:
       - main
     paths:
+      - '.github/scripts/header-card.go'
+      - '.github/workflows/generate-card.yml'
       - 'internal/cli/card.go'
       - 'internal/cli/cards/**'
   workflow_dispatch:
@@ -19,25 +21,27 @@ on:
           - darkmode
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   generate-card:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: 'go.mod'
 
       - name: Generate Card
-        run: |
-          go build -o header ./cmd/header
-          ./header card file -type ${{ github.event.inputs.card_type || 'basic' }} -out header-card.png https://github.com/arran4/header
+        env:
+          CARD_TYPE: ${{ inputs.card_type || 'basic' }}
+        run: go run ./.github/scripts/header-card.go --type "$CARD_TYPE"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6

@@ -19,12 +19,13 @@ func printAvailableLintRules() {
 // Lint is a subcommand `header lint` -- Lint the metadata of a URL.
 //
 // Flags:
-//   listFlag:      --list                                   Comma separated list of lint lists to run (e.g. 'all', 'recommended'). Default is 'recommended'.
-//   ruleFlag:      --rule                                   Comma separated list of specific lint rules to run (e.g. 'twitter,opengraph').
-//   listRulesFlag: --list-rules                             List available lint rules and lists, then exit.
-//   userAgent:     --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
-//   httprettyFlag: --httpretty                              Print HTTP requests and responses
-//   urlStr:        @1 (required)                            URL to lint
+//
+//	listFlag:      --list                                   Comma separated list of lint lists to run (e.g. 'all', 'recommended'). Default is 'recommended'.
+//	ruleFlag:      --rule                                   Comma separated list of specific lint rules to run (e.g. 'twitter,opengraph').
+//	listRulesFlag: --list-rules                             List available lint rules and lists, then exit.
+//	userAgent:     --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
+//	httprettyFlag: --httpretty                              Print HTTP requests and responses
+//	urlStr:        @1 (required)                            URL to lint
 func Lint(listFlag string, ruleFlag string, listRulesFlag bool, userAgent string, httprettyFlag bool, urlStr string) error {
 	if listRulesFlag {
 		printAvailableLintRules()
@@ -44,7 +45,7 @@ func Lint(listFlag string, ruleFlag string, listRulesFlag bool, userAgent string
 
 	info, err := header.FetchURL(urlStr, opts)
 	if err != nil {
-		return fmt.Errorf("Error fetching URL: %w", err)
+		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
 	listsToRun := []string{}
