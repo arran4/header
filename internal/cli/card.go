@@ -38,6 +38,8 @@ func CardFile(userAgent string, cardType string, out string, urlStr string) (err
 		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
+	warnOnCardQuality(info)
+
 	generator, err := cards.Get(cardType)
 	if err != nil {
 		return fmt.Errorf("error getting card generator: %w", err)
@@ -88,6 +90,8 @@ func CardClipboard(userAgent string, cardType string, urlStr string) error {
 		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
+	warnOnCardQuality(info)
+
 	generator, err := cards.Get(cardType)
 	if err != nil {
 		return fmt.Errorf("error getting card generator: %w", err)
@@ -129,6 +133,8 @@ func CardStdout(userAgent string, cardType string, urlStr string) error {
 		return fmt.Errorf("error fetching URL: %w", err)
 	}
 
+	warnOnCardQuality(info)
+
 	generator, err := cards.Get(cardType)
 	if err != nil {
 		return fmt.Errorf("error getting card generator: %w", err)
@@ -144,4 +150,14 @@ func CardStdout(userAgent string, cardType string, urlStr string) error {
 		return fmt.Errorf("error writing to stdout: %w", err)
 	}
 	return nil
+}
+
+// warnOnCardQuality emits machine-recognisable review statuses on stderr,
+// keeping PNG stdout and the original extraction data unchanged.
+func warnOnCardQuality(info *header.PageInfo) {
+	selected := cards.SelectCardContent(info)
+	if selected.Quality != cards.CardQualityCandidate {
+		fmt.Fprintf(os.Stderr, "card-quality: %s (description-source=%s); review before publication\n",
+			selected.Quality, selected.DescriptionSource)
+	}
 }

@@ -128,21 +128,11 @@ func (b *BasicCard) Generate(info *header.PageInfo) (image.Image, error) {
 	textX := 400
 	textY := 60
 
-	title := info.Title
-	if title == "" {
-		title = info.OGTitle
-	}
-	if title == "" {
-		title = info.TwitterTitle
-	}
-	if title == "" {
-		title = "No Title"
-	}
-
-	desc := info.OGDescription
-	if desc == "" {
-		desc = info.TwitterDescription
-	}
+	// Keep page metadata intact; select publication-facing text once for
+	// all card styles, including GitHub repository boilerplate handling.
+	selected := SelectCardContent(info)
+	title := selected.Title
+	desc := selected.Description
 
 	f, err := truetype.Parse(goregular.TTF)
 	if err != nil {
