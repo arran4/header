@@ -1,0 +1,11 @@
+baseURL = "https://arran4.github.io/header/"
+languageCode = "en-us"
+title = "header — website metadata toolkit"
+theme = "book"
+
+[params]
+  BookTheme = "auto"
+  BookSection = "docs"
+  BookToC = true
+  BookRepo = "https://github.com/arran4/header"
+  BookEditPath = "edit/main/docs/content"

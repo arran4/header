@@ -4,6 +4,10 @@
 
 `header` is a Go command-line application and library that extracts human-readable metadata from a given URL. It scrapes OpenGraph information, Twitter cards, JSON-LD, AppLinks, and YouTube specifics (watch time, video IDs, titles), displaying them cleanly in the terminal.
 
+## Documentation
+
+[Developer documentation](https://arran4.github.io/header/) — getting started, how-to guides, concepts, CLI reference and contribution guidance. The site deploys from `main` through GitHub Pages Actions; see [docs/](docs/) for its source.
+
 ## Prerequisites and Supported Platforms
 
 - **Build targets:** Linux and Windows on amd64, arm64 and 386; macOS on amd64 and arm64.
