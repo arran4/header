@@ -153,13 +153,13 @@ func (b *BasicCard) Generate(info *header.PageInfo) (image.Image, error) {
 		fce = truetype.NewFace(f, &truetype.Options{Size: 20})
 	}
 
-	drawTextWrap(img, textX, textY, "Title: "+title, color.RGBA{0, 0, 0, 255}, width-20, fce)
+	titleEnd := drawTextWrap(img, textX, textY, "Title: "+title, color.RGBA{0, 0, 0, 255}, width-20, fce)
 
 	yOff := 30
 	if fce != nil {
 		yOff = 45
 	}
-	drawTextWrap(img, textX, textY+yOff, "Description: "+desc, color.RGBA{100, 100, 100, 255}, width-20, fce)
+	drawTextWrap(img, textX, titleEnd+yOff, "Description: "+desc, color.RGBA{100, 100, 100, 255}, width-20, fce)
 
 	// Draw QR Code in bottom right
 	if qrImg != nil {
@@ -234,7 +234,7 @@ func scaleImage(dst draw.Image, r image.Rectangle, src image.Image) {
 	}
 }
 
-func drawTextWrap(img draw.Image, x, y int, label string, col color.Color, maxX int, fce font.Face) {
+func drawTextWrap(img draw.Image, x, y int, label string, col color.Color, maxX int, fce font.Face) int {
 	if fce == nil {
 		// fallback to basic font without real wordwrap package if font failed
 		d := &font.Drawer{
@@ -265,7 +265,7 @@ func drawTextWrap(img draw.Image, x, y int, label string, col color.Color, maxX 
 			d.Dot = fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(currentY * 64)}
 			d.DrawString(line)
 		}
-		return
+		return currentY
 	}
 
 	d := &font.Drawer{
@@ -299,4 +299,5 @@ func drawTextWrap(img draw.Image, x, y int, label string, col color.Color, maxX 
 		d.Dot = fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(currentY * 64)}
 		d.DrawString(line)
 	}
+	return currentY
 }
