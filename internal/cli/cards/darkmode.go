@@ -150,13 +150,13 @@ func (b *DarkmodeCard) Generate(info *header.PageInfo) (image.Image, error) {
 		fce = truetype.NewFace(f, &truetype.Options{Size: 20})
 	}
 
-	drawTextWrap(img, textX, textY, "Title: "+title, color.RGBA{255, 255, 255, 255}, width-20, fce)
+	titleEnd := drawTextWrap(img, textX, textY, "Title: "+title, color.RGBA{255, 255, 255, 255}, width-20, fce)
 
 	yOff := 30
 	if fce != nil {
 		yOff = 45
 	}
-	drawTextWrap(img, textX, textY+yOff, "Description: "+desc, color.RGBA{200, 200, 200, 255}, width-20, fce)
+	drawTextWrap(img, textX, titleEnd+yOff, "Description: "+desc, color.RGBA{200, 200, 200, 255}, width-20, fce)
 
 	// Draw QR Code in bottom right
 	if qrImg != nil {
