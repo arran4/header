@@ -32,6 +32,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          # The PR action supplies its own authentication for fetch/push.
+          # Persisted checkout credentials produce duplicate Authorization headers.
+          persist-credentials: false
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -44,7 +48,7 @@ jobs:
         run: go run ./.github/scripts/header-card.go --type "$CARD_TYPE"
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "docs: regenerate header-card.png"
           title: "docs: Update header-card.png"
