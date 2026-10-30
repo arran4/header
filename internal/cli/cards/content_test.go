@@ -34,7 +34,7 @@ func TestSelectCardContentGitHubLXA(t *testing.T) {
 
 func TestSelectCardContentGitHubFallbackAndEmpty(t *testing.T) {
 	tests := []struct {
-		name, url, og, twitter, want, source, quality string
+		name, url, title, og, twitter, want, source, quality string
 	}{
 		{
 			name: "twitter fallback after empty github description",
@@ -64,6 +64,7 @@ func TestSelectCardContentGitHubFallbackAndEmpty(t *testing.T) {
 		},
 		{
 			name: "non-github source is unchanged",
+			title: "An actual page title",
 			url: "https://example.com",
 			og: "Contribute to arran4/lxa development by creating an account on GitHub.",
 			want: "Contribute to arran4/lxa development by creating an account on GitHub.",
@@ -71,6 +72,7 @@ func TestSelectCardContentGitHubFallbackAndEmpty(t *testing.T) {
 		},
 		{
 			name: "github issue subpage is not normalized",
+			title: "An actual page title",
 			url: "https://github.com/arran4/lxa/issues/1",
 			og: "Contribute to arran4/lxa development by creating an account on GitHub.",
 			want: "Contribute to arran4/lxa development by creating an account on GitHub.",
@@ -78,6 +80,7 @@ func TestSelectCardContentGitHubFallbackAndEmpty(t *testing.T) {
 		},
 		{
 			name: "github lookalike domain is not normalized",
+			title: "An actual page title",
 			url: "https://github.com.evil.test/arran4/lxa",
 			og: "Contribute to arran4/lxa development by creating an account on GitHub.",
 			want: "Contribute to arran4/lxa development by creating an account on GitHub.",
@@ -85,6 +88,7 @@ func TestSelectCardContentGitHubFallbackAndEmpty(t *testing.T) {
 		},
 		{
 			name: "github owner page is not normalized",
+			title: "An actual page title",
 			url: "https://github.com/arran4",
 			og: "Contribute to arran4/lxa development by creating an account on GitHub.",
 			want: "Contribute to arran4/lxa development by creating an account on GitHub.",
@@ -101,12 +105,26 @@ func TestSelectCardContentGitHubFallbackAndEmpty(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := SelectCardContent(&header.PageInfo{
-				URL: tt.url, OGDescription: tt.og, TwitterDescription: tt.twitter,
+				URL: tt.url, Title: tt.title, OGDescription: tt.og, TwitterDescription: tt.twitter,
 			})
 			if c.Description != tt.want || c.DescriptionSource != tt.source || c.Quality != tt.quality {
 				t.Fatalf("selected %+v; expected desc=%q source=%q quality=%q", c, tt.want, tt.source, tt.quality)
 			}
+			if tt.title != "" && (c.Title != tt.title || c.TitleSource != "page-html-title") {
+				t.Fatalf("non-repository title was changed: %+v, expected %q", c, tt.title)
+			}
 		})
+	}
+}
+
+// A meaningful description does not make a card with no title publishable.
+func TestSelectCardContentMissingTitleNeedsReview(t *testing.T) {
+	c := SelectCardContent(&header.PageInfo{
+		URL:           "https://example.com",
+		OGDescription: "A real page description.",
+	})
+	if c.Title != "No Title" || c.Quality != CardQualityNeedsReview {
+		t.Fatalf("missing title must require review: %+v", c)
 	}
 }
 
