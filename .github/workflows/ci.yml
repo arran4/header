@@ -49,7 +49,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -155,6 +155,8 @@ jobs:
           go generate ./...
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
+      - name: Verify release version rules
+        run: bash .github/scripts/test-prepare-release.sh
       - name: Vet
         run: go vet ./...
       - name: Test
@@ -171,6 +173,9 @@ jobs:
     needs: [route, go-test]
     if: ${{ (((github.event_name == 'push') && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && startsWith(inputs.mode, 'release-'))) }}
     runs-on: ubuntu-latest
+    concurrency:
+      group: header-release-publish
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:
@@ -180,14 +185,39 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
+      - name: Prepare semantic version tag for manual release
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.mode == 'release-major' || inputs.mode == 'release-minor' || inputs.mode == 'release-patch') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_MODE: ${{ inputs.mode }}
+          RELEASE_VERSION_OVERRIDE: ${{ inputs.release_version_override }}
+        run: bash .github/scripts/prepare-release.sh "$RELEASE_MODE" "$RELEASE_VERSION_OVERRIDE"
+      - name: Select GoReleaser arguments
+        id: release-args
+        shell: bash
+        env:
+          RELEASE_MODE: ${{ inputs.mode }}
+          EVENT_NAME: ${{ github.event_name }}
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          args='release --clean'
+          if [[ "$EVENT_NAME" == 'workflow_dispatch' ]]; then
+            case "$RELEASE_MODE" in
+              release-test|release-rc|release-alpha) args+=' --snapshot' ;;
+            esac
+          fi
+          if [[ -z "$TAP_GITHUB_TOKEN" ]]; then
+            echo 'TAP_GITHUB_TOKEN unavailable: skipping Homebrew publishing'
+            args+=' --skip=homebrew'
+          fi
+          echo "args=$args" >> "$GITHUB_OUTPUT"
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: v2.19.0
-          args: >-
-            release --clean
-            ${{ (github.event_name == 'workflow_dispatch' && (inputs.mode == 'release-test' || inputs.mode == 'release-rc' || inputs.mode == 'release-alpha')) && '--snapshot' || '' }}
+          args: ${{ steps.release-args.outputs.args }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
