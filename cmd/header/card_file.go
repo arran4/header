@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/arran4/header/cmd"
 	"github.com/arran4/header/internal/cli"
@@ -21,6 +23,13 @@ type CardFile struct {
 	Flags         *flag.FlagSet
 	userAgent     string
 	cardType      string
+	retryAttempts int
+	retryDelay    time.Duration
+	retryMaxDelay time.Duration
+	timeout       time.Duration
+	imageTimeout  time.Duration
+	requireCover  bool
+	qualityReport string
 	out           string
 	urlStr        string
 	SubCommands   map[string]func() Cmd
@@ -95,6 +104,103 @@ func (c *CardFile) Execute(args []string) (err error) {
 					}
 				}
 				c.cardType = value
+
+			case "retryAttempts", "retry-attempts":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := strconv.Atoi(value)
+				if err != nil {
+					return fmt.Errorf("invalid integer value for flag %s: %s", name, value)
+				}
+				c.retryAttempts = v
+
+			case "retryDelay", "retry-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryDelay = v
+
+			case "retryMaxDelay", "retry-max-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryMaxDelay = v
+
+			case "timeout":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.timeout = v
+
+			case "imageTimeout", "image-timeout":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.imageTimeout = v
+
+			case "requireCover", "require-cover":
+				if hasValue {
+					b, err := strconv.ParseBool(value)
+					if err != nil {
+						return fmt.Errorf("invalid boolean value for flag %s: %s", name, value)
+					}
+					c.requireCover = b
+				} else {
+					c.requireCover = true
+				}
+
+			case "qualityReport", "quality-report":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.qualityReport = value
 
 			case "out":
 				if !hasValue {
@@ -172,12 +278,42 @@ func (c *Card) NewCardFile() *CardFile {
 
 	set.StringVar(&v.cardType, "type", "basic", "The type of card generator to use")
 
+	set.IntVar(&v.retryAttempts, "retry-attempts", 3, "Number of attempts for idempotent HTTP requests (1 means no retries)")
+
+	if d, err := time.ParseDuration("250ms"); err == nil {
+		set.DurationVar(&v.retryDelay, "retry-delay", d, "Initial delay between retries")
+	} else {
+		set.DurationVar(&v.retryDelay, "retry-delay", 0, "Initial delay between retries")
+	}
+
+	if d, err := time.ParseDuration("5s"); err == nil {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", d, "Maximum delay between retries")
+	} else {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", 0, "Maximum delay between retries")
+	}
+
+	if d, err := time.ParseDuration("20s"); err == nil {
+		set.DurationVar(&v.timeout, "timeout", d, "Maximum total request timeout")
+	} else {
+		set.DurationVar(&v.timeout, "timeout", 0, "Maximum total request timeout")
+	}
+
+	if d, err := time.ParseDuration("10s"); err == nil {
+		set.DurationVar(&v.imageTimeout, "image-timeout", d, "Timeout for fetching images")
+	} else {
+		set.DurationVar(&v.imageTimeout, "image-timeout", 0, "Timeout for fetching images")
+	}
+
+	set.BoolVar(&v.requireCover, "require-cover", false, "Fail if no usable cover image was fetched")
+
+	set.StringVar(&v.qualityReport, "quality-report", "", "Write machine readable card quality JSON to file")
+
 	set.StringVar(&v.out, "out", "", "(required) Output file path")
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *CardFile) error {
 
-		err := cli.CardFile(c.userAgent, c.cardType, c.out, c.urlStr)
+		err := cli.CardFile(c.userAgent, c.cardType, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.imageTimeout, c.requireCover, c.qualityReport, c.out, c.urlStr)
 		if err != nil {
 			if errors.Is(err, cmd.ErrPrintHelp) {
 				c.Usage()

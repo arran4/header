@@ -145,8 +145,21 @@ Exports a "card" (as an image) including the image, description, and metadata fr
 
 ```bash
 header card file --out card.png https://example.com
+header card file --require-cover --quality-report report.json --out card.png https://example.com
+header card stdout https://example.com > card.png
 header card clipboard https://example.com
 ```
+
+Card flags:
+- `--require-cover`: Fails generation if no usable cover image could be loaded. In default mode, a placeholder is rendered.
+- `--quality-report <path>`: Writes machine-readable card quality JSON diagnostics.
+- `--retry-attempts`: Number of HTTP attempts for idempotent requests (default: `3`; `1` disables retries).
+- `--retry-delay`: Initial retry delay (default: `250ms`).
+- `--retry-max-delay`: Maximum retry delay cap (default: `5s`).
+- `--timeout`: Maximum total page fetch timeout (default: `20s`).
+- `--image-timeout`: Image download timeout (default: `10s`).
+
+Cover image candidates (`og:image`, `og:image:secure_url`, and `twitter:image`) are tried in priority order with automatic fallback upon HTTP errors or decode failures. Piping via `card stdout` outputs only pure PNG binary data, directing human review diagnostics to `stderr`.
 
 ### `view`
 Views images or icons from a URL (positional syntax: `header view <viewType> <url>`).

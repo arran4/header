@@ -27,6 +27,10 @@ type Httpretty struct {
 	storeCookies      bool
 	redirectLimit     int
 	redirectDelay     time.Duration
+	retryAttempts     int
+	retryDelay        time.Duration
+	retryMaxDelay     time.Duration
+	timeout           time.Duration
 	urlStr            string
 	SubCommands       map[string]func() Cmd
 	CommandAction     func(c *Httpretty) error
@@ -152,6 +156,66 @@ func (c *Httpretty) Execute(args []string) (err error) {
 					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
 				}
 				c.redirectDelay = v
+
+			case "retryAttempts", "retry-attempts":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := strconv.Atoi(value)
+				if err != nil {
+					return fmt.Errorf("invalid integer value for flag %s: %s", name, value)
+				}
+				c.retryAttempts = v
+
+			case "retryDelay", "retry-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryDelay = v
+
+			case "retryMaxDelay", "retry-max-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryMaxDelay = v
+
+			case "timeout":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.timeout = v
 			default:
 				return fmt.Errorf("unknown flag: --%s", name)
 			}
@@ -229,11 +293,31 @@ func (c *RootCmd) NewHttpretty() *Httpretty {
 	} else {
 		set.DurationVar(&v.redirectDelay, "redirect-delay", 0, "Delay between redirects (e.g. 1s, 500ms)")
 	}
+
+	set.IntVar(&v.retryAttempts, "retry-attempts", 3, "Number of attempts for idempotent HTTP requests (1 means no retries)")
+
+	if d, err := time.ParseDuration("250ms"); err == nil {
+		set.DurationVar(&v.retryDelay, "retry-delay", d, "Initial delay between retries")
+	} else {
+		set.DurationVar(&v.retryDelay, "retry-delay", 0, "Initial delay between retries")
+	}
+
+	if d, err := time.ParseDuration("5s"); err == nil {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", d, "Maximum delay between retries")
+	} else {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", 0, "Maximum delay between retries")
+	}
+
+	if d, err := time.ParseDuration("20s"); err == nil {
+		set.DurationVar(&v.timeout, "timeout", d, "Maximum total request timeout")
+	} else {
+		set.DurationVar(&v.timeout, "timeout", 0, "Maximum total request timeout")
+	}
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Httpretty) error {
 
-		err := cli.Httpretty(c.userAgent, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.urlStr)
+		err := cli.Httpretty(c.userAgent, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.urlStr)
 		if err != nil {
 			if errors.Is(err, cmd.ErrPrintHelp) {
 				c.Usage()

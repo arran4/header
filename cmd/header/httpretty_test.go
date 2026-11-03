@@ -32,6 +32,14 @@ func TestHttpretty_Execute(t *testing.T) {
 	args = append(args, "1")
 	args = append(args, "--redirect-delay")
 	args = append(args, "1s")
+	args = append(args, "--retry-attempts")
+	args = append(args, "1")
+	args = append(args, "--retry-delay")
+	args = append(args, "1s")
+	args = append(args, "--retry-max-delay")
+	args = append(args, "1s")
+	args = append(args, "--timeout")
+	args = append(args, "1s")
 	args = append(args, "test")
 
 	err := cmd.Execute(args)
@@ -60,6 +68,18 @@ func TestHttpretty_Execute(t *testing.T) {
 	}
 	if cmd.redirectDelay != 1*time.Second {
 		t.Errorf("Expected redirectDelay to be 1s, got '%v'", cmd.redirectDelay)
+	}
+	if cmd.retryAttempts != 1 {
+		t.Errorf("Expected retryAttempts to be 1, got '%v'", cmd.retryAttempts)
+	}
+	if cmd.retryDelay != 1*time.Second {
+		t.Errorf("Expected retryDelay to be 1s, got '%v'", cmd.retryDelay)
+	}
+	if cmd.retryMaxDelay != 1*time.Second {
+		t.Errorf("Expected retryMaxDelay to be 1s, got '%v'", cmd.retryMaxDelay)
+	}
+	if cmd.timeout != 1*time.Second {
+		t.Errorf("Expected timeout to be 1s, got '%v'", cmd.timeout)
 	}
 	if cmd.urlStr != "test" {
 		t.Errorf("Expected urlStr to be 'test', got '%v'", cmd.urlStr)

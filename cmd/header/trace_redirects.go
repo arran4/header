@@ -28,6 +28,10 @@ type TraceRedirects struct {
 	redirectDelay     time.Duration
 	userAgent         string
 	httprettyFlag     bool
+	retryAttempts     int
+	retryDelay        time.Duration
+	retryMaxDelay     time.Duration
+	timeout           time.Duration
 	urlStr            string
 	SubCommands       map[string]func() Cmd
 	CommandAction     func(c *TraceRedirects) error
@@ -164,6 +168,66 @@ func (c *TraceRedirects) Execute(args []string) (err error) {
 				} else {
 					c.httprettyFlag = true
 				}
+
+			case "retryAttempts", "retry-attempts":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := strconv.Atoi(value)
+				if err != nil {
+					return fmt.Errorf("invalid integer value for flag %s: %s", name, value)
+				}
+				c.retryAttempts = v
+
+			case "retryDelay", "retry-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryDelay = v
+
+			case "retryMaxDelay", "retry-max-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryMaxDelay = v
+
+			case "timeout":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.timeout = v
 			default:
 				return fmt.Errorf("unknown flag: --%s", name)
 			}
@@ -243,11 +307,31 @@ func (c *RootCmd) NewTraceRedirects() *TraceRedirects {
 	set.StringVar(&v.userAgent, "Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
 
 	set.BoolVar(&v.httprettyFlag, "httpretty", false, "Print HTTP requests and responses")
+
+	set.IntVar(&v.retryAttempts, "retry-attempts", 3, "Number of attempts for idempotent HTTP requests (1 means no retries)")
+
+	if d, err := time.ParseDuration("250ms"); err == nil {
+		set.DurationVar(&v.retryDelay, "retry-delay", d, "Initial delay between retries")
+	} else {
+		set.DurationVar(&v.retryDelay, "retry-delay", 0, "Initial delay between retries")
+	}
+
+	if d, err := time.ParseDuration("5s"); err == nil {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", d, "Maximum delay between retries")
+	} else {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", 0, "Maximum delay between retries")
+	}
+
+	if d, err := time.ParseDuration("20s"); err == nil {
+		set.DurationVar(&v.timeout, "timeout", d, "Maximum total request timeout")
+	} else {
+		set.DurationVar(&v.timeout, "timeout", 0, "Maximum total request timeout")
+	}
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *TraceRedirects) error {
 
-		err := cli.TraceRedirects(c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.userAgent, c.httprettyFlag, c.urlStr)
+		err := cli.TraceRedirects(c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.userAgent, c.httprettyFlag, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.urlStr)
 		if err != nil {
 			if errors.Is(err, cmd.ErrPrintHelp) {
 				c.Usage()

@@ -37,6 +37,11 @@ type Extract struct {
 	redirectLimit     int
 	redirectDelay     time.Duration
 	httprettyFlag     bool
+	retryAttempts     int
+	retryDelay        time.Duration
+	retryMaxDelay     time.Duration
+	timeout           time.Duration
+	imageTimeout      time.Duration
 	urlStr            string
 	SubCommands       map[string]func() Cmd
 	CommandAction     func(c *Extract) error
@@ -272,6 +277,81 @@ func (c *Extract) Execute(args []string) (err error) {
 				} else {
 					c.httprettyFlag = true
 				}
+
+			case "retryAttempts", "retry-attempts":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := strconv.Atoi(value)
+				if err != nil {
+					return fmt.Errorf("invalid integer value for flag %s: %s", name, value)
+				}
+				c.retryAttempts = v
+
+			case "retryDelay", "retry-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryDelay = v
+
+			case "retryMaxDelay", "retry-max-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryMaxDelay = v
+
+			case "timeout":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.timeout = v
+
+			case "imageTimeout", "image-timeout":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.imageTimeout = v
 			default:
 				return fmt.Errorf("unknown flag: --%s", name)
 			}
@@ -370,11 +450,37 @@ func (c *RootCmd) NewExtract() *Extract {
 	}
 
 	set.BoolVar(&v.httprettyFlag, "httpretty", false, "Print HTTP requests and responses")
+
+	set.IntVar(&v.retryAttempts, "retry-attempts", 3, "Number of attempts for idempotent HTTP requests (1 means no retries)")
+
+	if d, err := time.ParseDuration("250ms"); err == nil {
+		set.DurationVar(&v.retryDelay, "retry-delay", d, "Initial delay between retries")
+	} else {
+		set.DurationVar(&v.retryDelay, "retry-delay", 0, "Initial delay between retries")
+	}
+
+	if d, err := time.ParseDuration("5s"); err == nil {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", d, "Maximum delay between retries")
+	} else {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", 0, "Maximum delay between retries")
+	}
+
+	if d, err := time.ParseDuration("20s"); err == nil {
+		set.DurationVar(&v.timeout, "timeout", d, "Maximum total request timeout")
+	} else {
+		set.DurationVar(&v.timeout, "timeout", 0, "Maximum total request timeout")
+	}
+
+	if d, err := time.ParseDuration("10s"); err == nil {
+		set.DurationVar(&v.imageTimeout, "image-timeout", d, "Timeout for fetching images")
+	} else {
+		set.DurationVar(&v.imageTimeout, "image-timeout", 0, "Timeout for fetching images")
+	}
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *Extract) error {
 
-		err := cli.Extract(c.testMode, c.lintListFlags, c.lintRuleFlags, c.lintRun, c.showImage, c.style, c.userAgent, c.showUnknown, c.excludeUnknown, c.traceRedirects, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.httprettyFlag, c.urlStr)
+		err := cli.Extract(c.testMode, c.lintListFlags, c.lintRuleFlags, c.lintRun, c.showImage, c.style, c.userAgent, c.showUnknown, c.excludeUnknown, c.traceRedirects, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.httprettyFlag, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.imageTimeout, c.urlStr)
 		if err != nil {
 			if errors.Is(err, cmd.ErrPrintHelp) {
 				c.Usage()

@@ -25,7 +25,12 @@ import (
 //	redirectLimit:     --redirect-limit (default: 20)           Maximum number of redirects to follow
 //	redirectDelay:     --redirect-delay (default: 0)            Delay between redirects (e.g. 1s, 500ms)
 //	httprettyFlag:     --httpretty                              Print HTTP requests and responses
-//	urlStr:            @1 (optional)                                       URL to extract
+//	retryAttempts:     --retry-attempts (default: 3)            Number of attempts for idempotent HTTP requests (1 means no retries)
+//	retryDelay:        --retry-delay (default: 250ms)           Initial delay between retries
+//	retryMaxDelay:     --retry-max-delay (default: 5s)          Maximum delay between retries
+//	timeout:           --timeout (default: 20s)                 Maximum total request timeout
+//	imageTimeout:      --image-timeout (default: 10s)           Timeout for fetching images
+//	urlStr:            @1 (optional)                            URL to extract
 func Root(
 	testMode bool,
 	lintListFlags string,
@@ -43,6 +48,11 @@ func Root(
 	redirectLimit int,
 	redirectDelay time.Duration,
 	httprettyFlag bool,
+	retryAttempts int,
+	retryDelay time.Duration,
+	retryMaxDelay time.Duration,
+	timeout time.Duration,
+	imageTimeout time.Duration,
 	urlStr string,
 ) error {
 	if urlStr == "" {
@@ -78,6 +88,11 @@ func Root(
 		redirectLimit,
 		redirectDelay,
 		httprettyFlag,
+		retryAttempts,
+		retryDelay,
+		retryMaxDelay,
+		timeout,
+		imageTimeout,
 		urlStr,
 	)
 }

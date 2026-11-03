@@ -3,15 +3,13 @@ package cards
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
-	"net/http"
-	"net/url"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/arran4/header"
 	"github.com/golang/freetype/truetype"
@@ -41,81 +39,41 @@ func (b *BasicCard) Description() string {
 
 // Generate creates a basic card image from the given PageInfo
 func (b *BasicCard) Generate(info *header.PageInfo) (image.Image, error) {
+	assets := FetchCardAssets(context.Background(), info, DefaultAssetFetchOptions())
+	return b.GenerateWithAssets(info, assets)
+}
+
+// GenerateWithAssets creates a basic card image using pre-fetched assets.
+func (b *BasicCard) GenerateWithAssets(info *header.PageInfo, assets *CardAssets) (image.Image, error) {
+	if assets == nil {
+		assets = FetchCardAssets(context.Background(), info, DefaultAssetFetchOptions())
+	}
 	width, height := 800, 400
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
 	// Background
 	draw.Draw(img, img.Bounds(), &image.Uniform{color.RGBA{R: 245, G: 245, B: 245, A: 255}}, image.Point{}, draw.Src)
 
-	// Fetch Favicon
-	var faviconImg image.Image
-	if len(info.Icons) > 0 {
-		faviconURL := info.Icons[0].URL
-		if !strings.HasPrefix(faviconURL, "http://") && !strings.HasPrefix(faviconURL, "https://") {
-			base, err := url.Parse(info.URL)
-			if err == nil {
-				parsedURL, err := url.Parse(faviconURL)
-				if err == nil {
-					faviconURL = base.ResolveReference(parsedURL).String()
-				}
-			}
-		}
-
-		client := &http.Client{Timeout: 5 * time.Second}
-		resp, err := client.Get(faviconURL)
-		if err == nil {
-			defer func() { _ = resp.Body.Close() }()
-			if resp.StatusCode == http.StatusOK {
-				decoded, _, err := image.Decode(resp.Body)
-				if err == nil {
-					faviconImg = decoded
-				}
-			}
-		}
-	}
+	// Favicon
+	faviconImg := assets.FaviconImage
 	if faviconImg == nil {
 		faviconImg = createPlaceholderImage(16, 16, color.RGBA{150, 150, 150, 255})
 	}
 
-	// Fetch QR Code
-	var qrImg image.Image
-	qrCode, err := qrcode.Encode(info.URL, qrcode.Medium, 256)
-	if err == nil {
-		qrDecoded, _, err := image.Decode(bytes.NewReader(qrCode))
+	// QR Code
+	qrImg := assets.QRImage
+	if qrImg == nil && info != nil && info.URL != "" {
+		qrCode, err := qrcode.Encode(info.URL, qrcode.Medium, 256)
 		if err == nil {
-			qrImg = qrDecoded
-		}
-	}
-
-	// Try to get an image
-	var coverImg image.Image
-	images := info.CoverImages()
-	if len(images) > 0 {
-		imgURL := images[0]
-
-		// Handle relative URLs
-		if !strings.HasPrefix(imgURL, "http://") && !strings.HasPrefix(imgURL, "https://") {
-			base, err := url.Parse(info.URL)
+			qrDecoded, _, err := image.Decode(bytes.NewReader(qrCode))
 			if err == nil {
-				parsedURL, err := url.Parse(imgURL)
-				if err == nil {
-					imgURL = base.ResolveReference(parsedURL).String()
-				}
-			}
-		}
-
-		client := &http.Client{Timeout: 10 * time.Second}
-		resp, err := client.Get(imgURL)
-		if err == nil {
-			defer func() { _ = resp.Body.Close() }()
-			if resp.StatusCode == http.StatusOK {
-				decoded, _, err := image.Decode(resp.Body)
-				if err == nil {
-					coverImg = decoded
-				}
+				qrImg = qrDecoded
 			}
 		}
 	}
+
+	// Cover image
+	coverImg := assets.CoverImage
 	if coverImg == nil {
 		coverImg = createPlaceholderImage(380, 380, color.RGBA{200, 200, 200, 255})
 	}

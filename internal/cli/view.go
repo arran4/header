@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/arran4/header"
 	"github.com/arran4/header/internal/ui"
@@ -13,14 +14,35 @@ import (
 // Flags:
 //
 //	userAgent:     --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
-//	viewer:        --viewer (default: "default")            The viewer to use (e.g., open, xdg-open, shiny, mock, export, print-url, default)
-//	httprettyFlag: --httpretty                              Print HTTP requests and responses
-//	viewType:      @1 (required)                            Type of image to view
-//	urlStr:        @2 (required)                            URL to fetch
-func View(userAgent string, viewer string, httprettyFlag bool, viewType string, urlStr string) error {
+//	viewer:        --viewer (default: "default")                                                                                                                   The viewer to use (e.g., open, xdg-open, shiny, mock, export, print-url, default)
+//	httprettyFlag: --httpretty                                                                                                                                     Print HTTP requests and responses
+//	retryAttempts: --retry-attempts (default: 3)                                                                                                                   Number of attempts for idempotent HTTP requests (1 means no retries)
+//	retryDelay:    --retry-delay (default: 250ms)                                                                                                                  Initial delay between retries
+//	retryMaxDelay: --retry-max-delay (default: 5s)                                                                                                                 Maximum delay between retries
+//	timeout:       --timeout (default: 20s)                                                                                                                        Maximum total request timeout
+//	imageTimeout:  --image-timeout (default: 10s)                                                                                                                  Timeout for fetching images
+//	viewType:      @1 (required)                                                                                                                                   Type of image to view
+//	urlStr:        @2 (required)                                                                                                                                   URL to fetch
+func View(
+	userAgent string,
+	viewer string,
+	httprettyFlag bool,
+	retryAttempts int,
+	retryDelay time.Duration,
+	retryMaxDelay time.Duration,
+	timeout time.Duration,
+	imageTimeout time.Duration,
+	viewType string,
+	urlStr string,
+) error {
 	opts := header.FetchOptions{
-		UserAgent: userAgent,
-		Httpretty: httprettyFlag,
+		UserAgent:     userAgent,
+		Httpretty:     httprettyFlag,
+		RetryAttempts: retryAttempts,
+		RetryDelay:    retryDelay,
+		RetryMaxDelay: retryMaxDelay,
+		Timeout:       timeout,
+		ImageTimeout:  imageTimeout,
 	}
 
 	info, err := header.FetchURL(urlStr, opts)

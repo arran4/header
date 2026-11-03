@@ -132,9 +132,7 @@ func (p *PageInfo) CoverImages() []string {
 	}
 
 	add(p.OGImage)
-	if p.OGImage == "" {
-		add(p.OGImageSecureURL)
-	}
+	add(p.OGImageSecureURL)
 	add(p.TwitterImage)
 
 	return images
