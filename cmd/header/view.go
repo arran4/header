@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/arran4/header/cmd"
 	"github.com/arran4/header/internal/cli"
@@ -23,6 +24,11 @@ type View struct {
 	userAgent     string
 	viewer        string
 	httprettyFlag bool
+	retryAttempts int
+	retryDelay    time.Duration
+	retryMaxDelay time.Duration
+	timeout       time.Duration
+	imageTimeout  time.Duration
 	viewType      string
 	urlStr        string
 	SubCommands   map[string]func() Cmd
@@ -108,6 +114,81 @@ func (c *View) Execute(args []string) (err error) {
 				} else {
 					c.httprettyFlag = true
 				}
+
+			case "retryAttempts", "retry-attempts":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := strconv.Atoi(value)
+				if err != nil {
+					return fmt.Errorf("invalid integer value for flag %s: %s", name, value)
+				}
+				c.retryAttempts = v
+
+			case "retryDelay", "retry-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryDelay = v
+
+			case "retryMaxDelay", "retry-max-delay":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.retryMaxDelay = v
+
+			case "timeout":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.timeout = v
+
+			case "imageTimeout", "image-timeout":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				v, err := time.ParseDuration(value)
+				if err != nil {
+					return fmt.Errorf("invalid duration value for flag %s: %s", name, value)
+				}
+				c.imageTimeout = v
 			default:
 				return fmt.Errorf("unknown flag: --%s", name)
 			}
@@ -186,11 +267,37 @@ func (c *RootCmd) NewView() *View {
 	set.StringVar(&v.viewer, "url", "default", "The viewer to use (e.g., open, xdg, shiny, mock, export, print, default)")
 
 	set.BoolVar(&v.httprettyFlag, "httpretty", false, "Print HTTP requests and responses")
+
+	set.IntVar(&v.retryAttempts, "retry-attempts", 3, "Number of attempts for idempotent HTTP requests (1 means no retries)")
+
+	if d, err := time.ParseDuration("250ms"); err == nil {
+		set.DurationVar(&v.retryDelay, "retry-delay", d, "Initial delay between retries")
+	} else {
+		set.DurationVar(&v.retryDelay, "retry-delay", 0, "Initial delay between retries")
+	}
+
+	if d, err := time.ParseDuration("5s"); err == nil {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", d, "Maximum delay between retries")
+	} else {
+		set.DurationVar(&v.retryMaxDelay, "retry-max-delay", 0, "Maximum delay between retries")
+	}
+
+	if d, err := time.ParseDuration("20s"); err == nil {
+		set.DurationVar(&v.timeout, "timeout", d, "Maximum total request timeout")
+	} else {
+		set.DurationVar(&v.timeout, "timeout", 0, "Maximum total request timeout")
+	}
+
+	if d, err := time.ParseDuration("10s"); err == nil {
+		set.DurationVar(&v.imageTimeout, "image-timeout", d, "Timeout for fetching images")
+	} else {
+		set.DurationVar(&v.imageTimeout, "image-timeout", 0, "Timeout for fetching images")
+	}
 	set.Usage = v.Usage
 
 	v.CommandAction = func(c *View) error {
 
-		err := cli.View(c.userAgent, c.viewer, c.httprettyFlag, c.viewType, c.urlStr)
+		err := cli.View(c.userAgent, c.viewer, c.httprettyFlag, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.imageTimeout, c.viewType, c.urlStr)
 		if err != nil {
 			if errors.Is(err, cmd.ErrPrintHelp) {
 				c.Usage()

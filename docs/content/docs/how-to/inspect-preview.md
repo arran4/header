@@ -28,6 +28,36 @@ header card list
 header card file --out card.png https://example.com
 ```
 
+Card commands support bounded HTTP retries and automatic cover candidate fallback across Open Graph (`og:image`), Open Graph Secure URL (`og:image:secure_url`), and Twitter (`twitter:image`).
+
+To enforce that a card must have a valid cover image and fail otherwise:
+
+```sh
+header card file --require-cover --out card.png https://example.com
+```
+
+To output machine-readable card quality diagnostics to JSON:
+
+```sh
+header card file --quality-report report.json --out card.png https://example.com
+```
+
+When piping `header card stdout`, only valid binary PNG data is emitted on standard output. Human diagnostics (`card-quality:` and `card-cover:`) are written to standard error.
+
+### Cover image statuses
+
+The card quality report records one of the following image statuses:
+- `loaded`: The candidate was successfully downloaded and decoded.
+- `no-image-metadata`: No image candidate metadata was found in the page.
+- `http-status`: Candidate download failed with an HTTP error status (e.g. 404).
+- `timeout`: Candidate download timed out.
+- `network-error`: Network connection failure.
+- `decode-error`: Image format was corrupted or unreadable.
+- `image-too-large`: Image file size or dimensions exceeded safety bounds.
+- `all-candidates-failed`: All available candidates were attempted and failed.
+
+In default (non-strict) mode, cards fall back to a visual placeholder when cover images cannot be loaded. Strict mode (`--require-cover`) exits with a nonzero status and does not overwrite existing good files.
+
 The card file is written locally. Be aware that downloaded website images remain the property of their respective owners.
 
 ## GitHub repository card quality

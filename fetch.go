@@ -1,6 +1,7 @@
 package header
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -25,10 +26,21 @@ type FetchOptions struct {
 	Timeout           time.Duration
 	MaxBodySize       int64
 	Httpretty         bool
+
+	// Retry configuration
+	RetryAttempts int           // Total attempts for idempotent HTTP requests (1 = no retries). Default: 3.
+	RetryDelay    time.Duration // Initial retry delay. Default: 250ms.
+	RetryMaxDelay time.Duration // Maximum retry delay cap. Default: 5s.
+	ImageTimeout  time.Duration // Timeout for fetching images in image-fetching commands. Default: 10s.
 }
 
 // FetchURL retrieves a URL and extracts metadata from it.
 func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
+	return FetchURLWithContext(context.Background(), urlStr, opts)
+}
+
+// FetchURLWithContext retrieves a URL and extracts metadata from it using the provided context.
+func FetchURLWithContext(ctx context.Context, urlStr string, opts FetchOptions) (*PageInfo, error) {
 	if opts.RedirectLimit <= 0 {
 		opts.RedirectLimit = 20
 	}
@@ -45,9 +57,11 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 		timeout = 20 * time.Second
 	}
 
+	totalCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	client := &http.Client{
-		Timeout: timeout,
-		Jar:     jar,
+		Jar: jar,
 		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
@@ -65,6 +79,12 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 			Formatters:     []httpretty.Formatter{&httpretty.JSONFormatter{}},
 		}
 		client.Transport = logger.RoundTripper(http.DefaultTransport)
+	}
+
+	policy := RetryPolicy{
+		Attempts: opts.RetryAttempts,
+		Delay:    opts.RetryDelay,
+		MaxDelay: opts.RetryMaxDelay,
 	}
 
 	info := &PageInfo{
@@ -86,10 +106,14 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 		}
 
 		if i > 0 && opts.RedirectDelay > 0 {
-			time.Sleep(opts.RedirectDelay)
+			select {
+			case <-totalCtx.Done():
+				return info, totalCtx.Err()
+			case <-time.After(opts.RedirectDelay):
+			}
 		}
 
-		req, err := http.NewRequest(http.MethodGet, nextURL, nil)
+		req, err := http.NewRequestWithContext(totalCtx, http.MethodGet, nextURL, nil)
 		if err != nil {
 			return info, err
 		}
@@ -105,9 +129,15 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 			req.Header.Set("Referer", referer)
 		}
 
-		resp, err := client.Do(req)
+		resp, _, err := ExecuteRequestWithRetry(totalCtx, client, req, policy)
 		if err != nil {
 			return info, err
+		}
+
+		if resp.Request != nil && resp.Request.URL != nil {
+			info.URL = resp.Request.URL.String()
+		} else {
+			info.URL = nextURL
 		}
 
 		isRedirect := false
@@ -125,6 +155,15 @@ func FetchURL(urlStr string, opts FetchOptions) (*PageInfo, error) {
 		}
 
 		if !isRedirect {
+			if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+				_ = resp.Body.Close()
+				statusText := http.StatusText(resp.StatusCode)
+				if statusText != "" {
+					return info, fmt.Errorf("HTTP error %d: %s", resp.StatusCode, statusText)
+				}
+				return info, fmt.Errorf("HTTP error %d", resp.StatusCode)
+			}
+
 			// Extract HTML content
 			err = extractFromResponse(resp, info, opts.MaxBodySize)
 			_ = resp.Body.Close()

@@ -17,6 +17,10 @@ import (
 //	storeCookies:      --store-cookies (default: true)          Store cookies across redirects
 //	redirectLimit:     --redirect-limit (default: 20)           Maximum number of redirects to follow
 //	redirectDelay:     --redirect-delay (default: 0)            Delay between redirects (e.g. 1s, 500ms)
+//	retryAttempts:     --retry-attempts (default: 3)            Number of attempts for idempotent HTTP requests (1 means no retries)
+//	retryDelay:        --retry-delay (default: 250ms)           Initial delay between retries
+//	retryMaxDelay:     --retry-max-delay (default: 5s)          Maximum delay between retries
+//	timeout:           --timeout (default: 20s)                 Maximum total request timeout
 //	urlStr:            @1 (required)                            URL to fetch
 func Httpretty(
 	userAgent string,
@@ -25,6 +29,10 @@ func Httpretty(
 	storeCookies bool,
 	redirectLimit int,
 	redirectDelay time.Duration,
+	retryAttempts int,
+	retryDelay time.Duration,
+	retryMaxDelay time.Duration,
+	timeout time.Duration,
 	urlStr string,
 ) error {
 	opts := header.FetchOptions{
@@ -36,6 +44,10 @@ func Httpretty(
 		RedirectLimit:     redirectLimit,
 		RedirectDelay:     redirectDelay,
 		Httpretty:         true,
+		RetryAttempts:     retryAttempts,
+		RetryDelay:        retryDelay,
+		RetryMaxDelay:     retryMaxDelay,
+		Timeout:           timeout,
 	}
 
 	_, err := header.FetchURL(urlStr, opts)

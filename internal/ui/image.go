@@ -2,6 +2,8 @@
 package ui
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +12,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"time"
+
+	"github.com/arran4/header"
 )
 
 func isCommandAvailable(name string) bool {
@@ -19,16 +23,17 @@ func isCommandAvailable(name string) bool {
 
 // DisplayImage displays an image from the given URL using the specified viewer.
 func DisplayImage(urlStr string, viewer string) {
+	DisplayImageWithOptions(urlStr, viewer, header.FetchOptions{})
+}
+
+// DisplayImageWithOptions displays an image from the given URL using the specified viewer and fetch options.
+func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOptions) {
 	if viewer == "print-url" {
 		fmt.Println(urlStr)
 		return
 	}
 
-	if viewer == "mock" {
-		return
-	}
-
-	if viewer != "" && viewer != "default" && viewer != "shiny" && viewer != "open" && viewer != "xdg-open" && viewer != "gio" && viewer != "gnome-open" && viewer != "kde-open" && viewer != "export" {
+	if viewer != "" && viewer != "default" && viewer != "shiny" && viewer != "open" && viewer != "xdg-open" && viewer != "gio" && viewer != "gnome-open" && viewer != "kde-open" && viewer != "export" && viewer != "mock" {
 		fmt.Printf("Error: unsupported viewer %q requested\n", viewer)
 		return
 	}
@@ -37,12 +42,42 @@ func DisplayImage(urlStr string, viewer string) {
 		fmt.Printf("Displaying image (exec fallback): %s\n", urlStr)
 	}
 
-	client := &http.Client{
-		Timeout: 15 * time.Second,
+	timeout := opts.ImageTimeout
+	if timeout <= 0 {
+		timeout = opts.Timeout
 	}
-	resp, err := client.Get(urlStr)
+	if timeout <= 0 {
+		timeout = 10 * time.Second
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	client := &http.Client{
+		Timeout: timeout,
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlStr, nil)
 	if err != nil {
-		fmt.Printf("Failed to download image: %v\n", err)
+		fmt.Printf("Failed to create request: %v\n", err)
+		return
+	}
+
+	if opts.UserAgent != "" {
+		req.Header.Set("User-Agent", opts.UserAgent)
+	} else {
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	}
+
+	policy := header.RetryPolicy{
+		Attempts: opts.RetryAttempts,
+		Delay:    opts.RetryDelay,
+		MaxDelay: opts.RetryMaxDelay,
+	}
+
+	resp, _, err := header.ExecuteRequestWithRetry(ctx, client, req, policy)
+	if err != nil {
+		fmt.Printf("Failed to download image: %v\n", header.SanitizeError(err))
 		return
 	}
 	defer func() { _ = resp.Body.Close() }()
@@ -51,12 +86,22 @@ func DisplayImage(urlStr string, viewer string) {
 		return
 	}
 
+	if viewer == "mock" {
+		return
+	}
+
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, 20*1024*1024))
+	if err != nil {
+		fmt.Printf("Failed to read image: %v\n", err)
+		return
+	}
+
 	// Try Shiny first if requested or default (and shiny is available)
 	if (viewer == "shiny" || viewer == "" || viewer == "default") && HasShiny() {
 		if viewer == "" || viewer == "default" {
 			fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
 		}
-		if ShowShiny(resp.Body, urlStr) {
+		if ShowShiny(bytes.NewReader(bodyBytes), urlStr) {
 			return
 		}
 		// If ShowShiny returns false (e.g., error decoding), we can fall back to the rest
@@ -73,13 +118,7 @@ func DisplayImage(urlStr string, viewer string) {
 	tmpName := tmpFile.Name()
 	defer func() { _ = tmpFile.Close() }()
 
-	// We may have read from resp.Body during shiny attempt, but let's assume it failed before that if it returned false or we haven't touched it.
-	// Actually we should read it to a buffer if we want to try multiple ways, but for now we'll just download it to a temp file first ALWAYS if we might need it for exec.
-	// We'll refactor this lightly.
-
-	// Save to temp file since both export and exec need it. (Shiny only needs it if we use bytes buffer, but let's simplify)
-
-	_, err = io.Copy(tmpFile, resp.Body)
+	_, err = tmpFile.Write(bodyBytes)
 	if err != nil {
 		fmt.Printf("Failed to save image: %v\n", err)
 		return
