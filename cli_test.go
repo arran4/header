@@ -49,7 +49,8 @@ func TestMain(m *testing.M) {
 			_, _ = w.Write(instagramHTML)
 		case "/example":
 			w.Header().Set("Content-Type", "text/html")
-			_, _ = w.Write(exampleHTML)
+			html := strings.ReplaceAll(string(exampleHTML), "http://localhost:8080", "http://"+r.Host)
+			_, _ = w.Write([]byte(html))
 		case "/missing":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(missingHTML)
@@ -73,7 +74,7 @@ func TestMain(m *testing.M) {
 		case "/media":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(mediaHTML)
-		case "/image.jpg":
+		case "/image.jpg", "/og-image.jpg", "/twitter-image.jpg", "/favicon.ico", "/favicon-32.ico":
 			w.Header().Set("Content-Type", "image/jpeg")
 			_, _ = fmt.Fprint(w, "fake image data")
 		case "/redirect1":

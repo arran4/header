@@ -467,3 +467,85 @@ func TestImage_BasicAndDarkmodeUseSameFetchedAssets(t *testing.T) {
 		t.Errorf("favicon requests after rendering both styles = %d, want 1", atomic.LoadInt32(&faviconRequests))
 	}
 }
+
+func TestFetchCardAssets_CumulativeTimeoutMultipleSlowCandidates(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		// Each request sleeps longer than the overall budget
+		time.Sleep(200 * time.Millisecond)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+
+	info := &header.PageInfo{
+		URL:              ts.URL,
+		OGImage:          ts.URL + "/cand1.png",
+		OGImageSecureURL: ts.URL + "/cand2.png",
+		TwitterImage:     ts.URL + "/cand3.png",
+		Icons: []header.Icon{
+			{URL: ts.URL + "/fav1.png"},
+		},
+	}
+
+	opts := AssetFetchOptions{
+		Timeout:       100 * time.Millisecond, // Overall budget for all asset fetching combined
+		RetryAttempts: 1,
+	}
+
+	start := time.Now()
+	assets := FetchCardAssets(context.Background(), info, opts)
+	elapsed := time.Since(start)
+
+	// Cumulative time must not blow out to 4 * 200ms = 800ms
+	if elapsed > 250*time.Millisecond {
+		t.Errorf("FetchCardAssets took %v, want <= 250ms (bounded by cumulative timeout)", elapsed)
+	}
+
+	if assets.CoverImage != nil {
+		t.Errorf("expected CoverImage to be nil due to timeout, got non-nil")
+	}
+	if assets.CoverResult.Status != ImageStatusTimeout && assets.CoverResult.Status != ImageStatusAllCandidatesFailed {
+		t.Errorf("CoverResult.Status = %q, want timeout or all-candidates-failed", assets.CoverResult.Status)
+	}
+}
+
+func TestFetchCardAssets_CandidateFallbackWithinBudget(t *testing.T) {
+	pngData := createTestPNG(10, 10)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/slow1.png":
+			// Candidate 1 hangs
+			time.Sleep(300 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+		case "/fast2.png":
+			// Candidate 2 succeeds promptly
+			w.Header().Set("Content-Type", "image/png")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write(pngData)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer ts.Close()
+
+	info := &header.PageInfo{
+		URL:          ts.URL,
+		OGImage:      ts.URL + "/slow1.png",
+		TwitterImage: ts.URL + "/fast2.png",
+	}
+
+	opts := AssetFetchOptions{
+		Timeout:       250 * time.Millisecond, // Overall budget allows candidate 1 to time out and candidate 2 to succeed
+		RetryAttempts: 1,
+	}
+
+	assets := FetchCardAssets(context.Background(), info, opts)
+	if assets.CoverImage == nil {
+		t.Fatal("expected CoverImage to be loaded from fallback candidate 2, got nil")
+	}
+	if assets.CoverResult.Status != ImageStatusLoaded {
+		t.Errorf("status = %q, want %q", assets.CoverResult.Status, ImageStatusLoaded)
+	}
+	if assets.CoverResult.SelectedURL != ts.URL+"/fast2.png" {
+		t.Errorf("SelectedURL = %q, want %q", assets.CoverResult.SelectedURL, ts.URL+"/fast2.png")
+	}
+}

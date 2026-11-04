@@ -287,9 +287,9 @@ func (c *Card) NewCardStdout() *CardStdout {
 	}
 
 	if d, err := time.ParseDuration("10s"); err == nil {
-		set.DurationVar(&v.imageTimeout, "image-timeout", d, "Timeout for fetching images")
+		set.DurationVar(&v.imageTimeout, "image-timeout", d, "Cumulative timeout budget for fetching card assets")
 	} else {
-		set.DurationVar(&v.imageTimeout, "image-timeout", 0, "Timeout for fetching images")
+		set.DurationVar(&v.imageTimeout, "image-timeout", 0, "Cumulative timeout budget for fetching card assets")
 	}
 
 	set.BoolVar(&v.requireCover, "require-cover", false, "Fail if no usable cover image was fetched")

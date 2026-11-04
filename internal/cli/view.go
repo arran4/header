@@ -21,7 +21,7 @@ import (
 //	retryDelay:    --retry-delay (default: 250ms)                                                                                                                  Initial delay between retries
 //	retryMaxDelay: --retry-max-delay (default: 5s)                                                                                                                 Maximum delay between retries
 //	timeout:       --timeout (default: 20s)                                                                                                                        Maximum total request timeout
-//	imageTimeout:  --image-timeout (default: 10s)                                                                                                                  Timeout for fetching images
+//	imageTimeout:  --image-timeout (default: 10s)                                                                                                                  Timeout budget for fetching images
 //	viewType:      @1 (required)                                                                                                                                   Type of image to view
 //	urlStr:        @2 (required)                                                                                                                                   URL to fetch
 func View(
@@ -96,6 +96,5 @@ func View(
 		targetURL = resolved
 	}
 
-	ui.DisplayImageWithOptions(targetURL, viewer, opts)
-	return nil
+	return ui.DisplayImageWithOptions(targetURL, viewer, opts)
 }
