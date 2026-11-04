@@ -558,8 +558,7 @@ func TestFetchURL_FinalURLAndRelativeAssetResolution(t *testing.T) {
 }
 
 func TestFetchURL_CrossHostRedirect(t *testing.T) {
-	var targetServer *httptest.Server
-	targetServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	targetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/destination" {
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write([]byte(`<!DOCTYPE html><html><head><title>Target Host</title></head></html>`))
