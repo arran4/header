@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/arran4/header"
+	"github.com/arran4/header/internal/cli/cards"
 	"github.com/arran4/header/internal/ui"
 )
 
@@ -91,6 +92,10 @@ func View(
 		return fmt.Errorf("no image found for type '%s'", viewType)
 	}
 
-	ui.DisplayImage(targetURL, viewer)
+	if resolved, err := cards.ResolveAssetURL(targetURL, info.URL); err == nil && resolved != "" {
+		targetURL = resolved
+	}
+
+	ui.DisplayImageWithOptions(targetURL, viewer, opts)
 	return nil
 }

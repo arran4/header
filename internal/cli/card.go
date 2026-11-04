@@ -249,10 +249,10 @@ func generateCardData(
 	usedPlaceholder := assets.CoverImage == nil
 
 	report := &cards.CardQualityReport{
-		InputURL:           urlStr,
-		FinalURL:           info.URL,
+		InputURL:           cards.SanitizeURL(urlStr),
+		FinalURL:           cards.SanitizeURL(info.URL),
 		Generator:          generator.Name(),
-		SelectedCoverURL:   assets.CoverResult.SelectedURL,
+		SelectedCoverURL:   cards.SanitizeURL(assets.CoverResult.SelectedURL),
 		Candidates:         assets.CoverResult.Candidates,
 		HTTPStatus:         assets.CoverResult.HTTPStatus,
 		Attempts:           assets.CoverResult.Attempts,
@@ -268,7 +268,7 @@ func generateCardData(
 
 	if qualityReport != "" {
 		if qerr := cards.WriteQualityReport(qualityReport, *report); qerr != nil {
-			fmt.Fprintf(os.Stderr, "warning: error writing quality report: %v\n", qerr)
+			return nil, report, fmt.Errorf("error writing quality report: %w", qerr)
 		}
 	}
 

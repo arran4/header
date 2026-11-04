@@ -7,6 +7,8 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -377,8 +379,216 @@ func TestFetchURL_RedirectAndRelativeURL(t *testing.T) {
 	if info.Title != "Final Page Title" {
 		t.Errorf("Title = %q, want 'Final Page Title'", info.Title)
 	}
+	if info.URL != ts.URL+"/final-page" {
+		t.Errorf("URL = %q, want %q", info.URL, ts.URL+"/final-page")
+	}
 	if len(info.Trace) < 2 {
 		t.Errorf("Trace length = %d, want >= 2", len(info.Trace))
+	}
+}
+
+func TestCalculateBackoff_RetryAfterNotCapped(t *testing.T) {
+	// Server requested 60s, maxDelay is 5s.
+	// CalculateBackoff must return 60s rather than capping to 5s.
+	now := time.Now()
+	delay := CalculateBackoff(1, 250*time.Millisecond, 5*time.Second, "60", now)
+	if delay != 60*time.Second {
+		t.Errorf("delay = %v, want 60s", delay)
+	}
+}
+
+func TestRetry_429WithRetryAfterExceedingMaxDelay(t *testing.T) {
+	var count int32
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		atomic.AddInt32(&count, 1)
+		w.Header().Set("Retry-After", "120") // 120 seconds
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer ts.Close()
+
+	req, _ := http.NewRequest(http.MethodGet, ts.URL, nil)
+	policy := RetryPolicy{
+		Attempts: 3,
+		Delay:    10 * time.Millisecond,
+		MaxDelay: 50 * time.Millisecond, // 50ms budget < 120s
+	}
+
+	start := time.Now()
+	resp, attempts, err := ExecuteRequestWithRetry(context.Background(), ts.Client(), req, policy)
+	duration := time.Since(start)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if attempts != 1 {
+		t.Errorf("attempts = %d, want 1 (must not retry prematurely)", attempts)
+	}
+	if atomic.LoadInt32(&count) != 1 {
+		t.Errorf("server requests = %d, want 1", atomic.LoadInt32(&count))
+	}
+	if resp.StatusCode != http.StatusTooManyRequests {
+		t.Errorf("status = %d, want 429", resp.StatusCode)
+	}
+	if duration > 1*time.Second {
+		t.Errorf("execution took %v, should have returned immediately", duration)
+	}
+}
+
+func TestFetchURL_HTTPStatuses(t *testing.T) {
+	var requests403 int32
+	var requests404 int32
+	var requests503 int32
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/status-403":
+			atomic.AddInt32(&requests403, 1)
+			http.Error(w, "Forbidden", http.StatusForbidden)
+		case "/status-404":
+			atomic.AddInt32(&requests404, 1)
+			http.NotFound(w, r)
+		case "/status-503":
+			atomic.AddInt32(&requests503, 1)
+			http.Error(w, "Service Unavailable", http.StatusServiceUnavailable)
+		}
+	}))
+	defer ts.Close()
+
+	opts := FetchOptions{
+		RetryAttempts: 3,
+		RetryDelay:    5 * time.Millisecond,
+		RetryMaxDelay: 20 * time.Millisecond,
+		Timeout:       1 * time.Second,
+	}
+
+	t.Run("403 Forbidden terminal error without retrying", func(t *testing.T) {
+		_, err := FetchURL(ts.URL+"/status-403", opts)
+		if err == nil {
+			t.Fatalf("expected error for 403, got nil")
+		}
+		if !strings.Contains(err.Error(), "403") {
+			t.Errorf("error %q should mention 403", err.Error())
+		}
+		if atomic.LoadInt32(&requests403) != 1 {
+			t.Errorf("403 requests = %d, want 1 (no retries)", atomic.LoadInt32(&requests403))
+		}
+	})
+
+	t.Run("404 Not Found terminal error without retrying", func(t *testing.T) {
+		_, err := FetchURL(ts.URL+"/status-404", opts)
+		if err == nil {
+			t.Fatalf("expected error for 404, got nil")
+		}
+		if !strings.Contains(err.Error(), "404") {
+			t.Errorf("error %q should mention 404", err.Error())
+		}
+		if atomic.LoadInt32(&requests404) != 1 {
+			t.Errorf("404 requests = %d, want 1 (no retries)", atomic.LoadInt32(&requests404))
+		}
+	})
+
+	t.Run("503 retries exhausted returns error", func(t *testing.T) {
+		_, err := FetchURL(ts.URL+"/status-503", opts)
+		if err == nil {
+			t.Fatalf("expected error for exhausted 503, got nil")
+		}
+		if !strings.Contains(err.Error(), "503") {
+			t.Errorf("error %q should mention 503", err.Error())
+		}
+		if atomic.LoadInt32(&requests503) != 3 {
+			t.Errorf("503 requests = %d, want 3 attempts", atomic.LoadInt32(&requests503))
+		}
+	})
+}
+
+func TestFetchURL_FinalURLAndRelativeAssetResolution(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/entry":
+			http.Redirect(w, r, "/nested/section/document.html", http.StatusMovedPermanently)
+		case "/nested/section/document.html":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write([]byte(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Nested Document</title>
+  <meta property="og:image" content="../images/cover.jpg">
+  <link rel="icon" href="favicon.ico">
+</head>
+<body>Nested</body>
+</html>`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer ts.Close()
+
+	opts := FetchOptions{
+		Timeout:       1 * time.Second,
+		RetryAttempts: 1,
+	}
+
+	info, err := FetchURL(ts.URL+"/entry", opts)
+	if err != nil {
+		t.Fatalf("FetchURL error: %v", err)
+	}
+
+	expectedFinalURL := ts.URL + "/nested/section/document.html"
+	if info.URL != expectedFinalURL {
+		t.Errorf("info.URL = %q, want %q", info.URL, expectedFinalURL)
+	}
+
+	// Verify relative OG image resolves against the final document URL:
+	// ../images/cover.jpg resolved against /nested/section/document.html -> /nested/images/cover.jpg
+	expectedCover := ts.URL + "/nested/images/cover.jpg"
+	coverImages := info.CoverImages()
+	if len(coverImages) == 0 {
+		t.Fatalf("expected at least one cover image")
+	}
+	// Note: info.OGImage contains the raw metadata attribute ("../images/cover.jpg"),
+	// ResolveAssetURL or resolving against info.URL gives the correct resolved URL.
+	docURL, _ := url.Parse(info.URL)
+	refURL, _ := url.Parse(info.OGImage)
+	resolved := docURL.ResolveReference(refURL).String()
+	if resolved != expectedCover {
+		t.Errorf("resolved relative cover = %q, want %q", resolved, expectedCover)
+	}
+}
+
+func TestFetchURL_CrossHostRedirect(t *testing.T) {
+	var targetServer *httptest.Server
+	targetServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/destination" {
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write([]byte(`<!DOCTYPE html><html><head><title>Target Host</title></head></html>`))
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer targetServer.Close()
+
+	originServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, targetServer.URL+"/destination", http.StatusFound)
+	}))
+	defer originServer.Close()
+
+	opts := FetchOptions{
+		Timeout:       1 * time.Second,
+		RetryAttempts: 1,
+	}
+
+	info, err := FetchURL(originServer.URL, opts)
+	if err != nil {
+		t.Fatalf("FetchURL cross-host error: %v", err)
+	}
+
+	if info.URL != targetServer.URL+"/destination" {
+		t.Errorf("info.URL = %q, want %q", info.URL, targetServer.URL+"/destination")
+	}
+	if info.Title != "Target Host" {
+		t.Errorf("info.Title = %q, want 'Target Host'", info.Title)
 	}
 }
 

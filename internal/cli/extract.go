@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/arran4/header"
-
 	"github.com/arran4/header/diagnostic"
+	"github.com/arran4/header/internal/cli/cards"
 	"github.com/arran4/header/internal/ui"
 	"github.com/arran4/header/lint"
 	_ "github.com/arran4/header/lint/lists/all" // Ensure rules are loaded
@@ -177,7 +177,11 @@ func Extract(
 	if showImage {
 		images := info.CoverImages()
 		if len(images) > 0 {
-			ui.DisplayImage(images[0], "default")
+			targetURL := images[0]
+			if resolved, err := cards.ResolveAssetURL(targetURL, info.URL); err == nil && resolved != "" {
+				targetURL = resolved
+			}
+			ui.DisplayImageWithOptions(targetURL, "default", opts)
 		} else {
 			fmt.Println("No cover image found to display.")
 		}

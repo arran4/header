@@ -228,3 +228,80 @@ func TestCard_QualityReportJSON(t *testing.T) {
 		t.Errorf("CoverStatus is empty")
 	}
 }
+
+func TestCard_QualityReportWriteFailure(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		_, _ = w.Write([]byte(`<!DOCTYPE html><html><head><title>Page</title></head><body></body></html>`))
+	}))
+	defer ts.Close()
+
+	tempDir := t.TempDir()
+	outPath := filepath.Join(tempDir, "card.png")
+	invalidReportPath := filepath.Join(tempDir, "nonexistent-dir-xyz", "report.json")
+
+	err := CardFile(
+		"Mozilla/5.0",
+		"basic",
+		1,
+		5*time.Millisecond,
+		20*time.Millisecond,
+		1*time.Second,
+		1*time.Second,
+		false,
+		invalidReportPath,
+		outPath,
+		ts.URL,
+	)
+	if err == nil {
+		t.Fatalf("expected error when quality report destination is invalid, got nil")
+	}
+	if !strings.Contains(err.Error(), "quality report") {
+		t.Errorf("error %q should mention quality report failure", err.Error())
+	}
+}
+
+func TestCard_SensitiveURLRedactionInQualityReport(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		_, _ = w.Write([]byte(`<!DOCTYPE html><html><head><title>Secret Page</title>
+<meta property="og:image" content="http://imguser:imgpassword@` + r.Host + `/img?sig=sec123">
+</head><body></body></html>`))
+	}))
+	defer ts.Close()
+
+	tempDir := t.TempDir()
+	reportPath := filepath.Join(tempDir, "report.json")
+	outPath := filepath.Join(tempDir, "card.png")
+
+	credentialURL := strings.Replace(ts.URL, "http://", "http://loginuser:loginpass@", 1) + "/page?token=auth123"
+
+	err := CardFile(
+		"Mozilla/5.0",
+		"basic",
+		1,
+		5*time.Millisecond,
+		20*time.Millisecond,
+		1*time.Second,
+		1*time.Second,
+		false,
+		reportPath,
+		outPath,
+		credentialURL,
+	)
+	if err != nil {
+		t.Fatalf("CardFile failed: %v", err)
+	}
+
+	reportBytes, err := os.ReadFile(reportPath)
+	if err != nil {
+		t.Fatalf("failed reading report: %v", err)
+	}
+	reportStr := string(reportBytes)
+
+	for _, secret := range []string{"loginpass", "auth123", "imgpassword", "sec123"} {
+		if strings.Contains(reportStr, secret) {
+			t.Errorf("quality report leaked secret %q:\n%s", secret, reportStr)
+		}
+	}
+}

@@ -120,6 +120,8 @@ func IsRetryableError(ctx context.Context, err error) bool {
 
 // CalculateBackoff computes the exponential backoff duration with jitter,
 // respecting Retry-After where available, bounded by maxDelay.
+// If Retry-After is specified, it returns the exact duration indicated by the server
+// without capping it down to maxDelay.
 func CalculateBackoff(attempt int, baseDelay, maxDelay time.Duration, retryAfter string, now time.Time) time.Duration {
 	if baseDelay <= 0 {
 		baseDelay = 250 * time.Millisecond
@@ -128,9 +130,6 @@ func CalculateBackoff(attempt int, baseDelay, maxDelay time.Duration, retryAfter
 		maxDelay = 5 * time.Second
 	}
 	if d, ok := ParseRetryAfter(retryAfter, now); ok {
-		if d > maxDelay {
-			return maxDelay
-		}
 		return d
 	}
 
@@ -193,17 +192,33 @@ func ExecuteRequestWithRetry(ctx context.Context, client HTTPDoer, req *http.Req
 				return nil, attempts, ctx.Err()
 			}
 			if attempts < policy.Attempts && IsRetryableError(ctx, err) {
-				shouldRetry = true
 				retryDelay = CalculateBackoff(attempts, policy.Delay, policy.MaxDelay, "", time.Now())
+				if ctx != nil {
+					if deadline, ok := ctx.Deadline(); ok && time.Now().Add(retryDelay).After(deadline) {
+						return nil, attempts, err
+					}
+				}
+				shouldRetry = true
 			} else {
 				return nil, attempts, err
 			}
 		} else {
 			if IsRetryableStatus(resp.StatusCode) && attempts < policy.Attempts {
-				shouldRetry = true
 				retryAfter := resp.Header.Get("Retry-After")
-				_ = resp.Body.Close()
 				retryDelay = CalculateBackoff(attempts, policy.Delay, policy.MaxDelay, retryAfter, time.Now())
+				// Do not retry earlier than the server's Retry-After requirement.
+				// If the delay exceeds the permitted retry budget (policy.MaxDelay), stop rather than retry prematurely.
+				if retryAfter != "" && retryDelay > policy.MaxDelay {
+					return resp, attempts, nil
+				}
+				// If the delay exceeds the request deadline, stop rather than retry prematurely.
+				if ctx != nil {
+					if deadline, ok := ctx.Deadline(); ok && time.Now().Add(retryDelay).After(deadline) {
+						return resp, attempts, nil
+					}
+				}
+				_ = resp.Body.Close()
+				shouldRetry = true
 			} else {
 				return resp, attempts, nil
 			}

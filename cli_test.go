@@ -85,6 +85,9 @@ func TestMain(m *testing.M) {
 		case "/redirect3":
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write([]byte(`<html><body>Final page</body></html>`))
+		case "/mock.html":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write([]byte("<!DOCTYPE html><html><head></head><body></body></html>"))
 		default:
 			http.NotFound(w, r)
 		}

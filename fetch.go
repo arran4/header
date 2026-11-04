@@ -134,6 +134,12 @@ func FetchURLWithContext(ctx context.Context, urlStr string, opts FetchOptions) 
 			return info, err
 		}
 
+		if resp.Request != nil && resp.Request.URL != nil {
+			info.URL = resp.Request.URL.String()
+		} else {
+			info.URL = nextURL
+		}
+
 		isRedirect := false
 		if resp.StatusCode >= 300 && resp.StatusCode < 400 && resp.StatusCode != http.StatusNotModified {
 			for _, header := range []string{"Location", "Redirect"} {
@@ -149,6 +155,15 @@ func FetchURLWithContext(ctx context.Context, urlStr string, opts FetchOptions) 
 		}
 
 		if !isRedirect {
+			if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+				_ = resp.Body.Close()
+				statusText := http.StatusText(resp.StatusCode)
+				if statusText != "" {
+					return info, fmt.Errorf("HTTP error %d: %s", resp.StatusCode, statusText)
+				}
+				return info, fmt.Errorf("HTTP error %d", resp.StatusCode)
+			}
+
 			// Extract HTML content
 			err = extractFromResponse(resp, info, opts.MaxBodySize)
 			_ = resp.Body.Close()

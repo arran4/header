@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -159,27 +160,17 @@ func ResolveAssetURL(rawURL, baseURL string) (string, error) {
 
 // SanitizeURL scrubs passwords and sensitive query tokens from URLs.
 func SanitizeURL(rawURL string) string {
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return rawURL
-	}
-	redacted := u.Redacted()
-	if u.RawQuery != "" {
-		q := u.Query()
-		modified := false
-		for k := range q {
-			lk := strings.ToLower(k)
-			if strings.Contains(lk, "token") || strings.Contains(lk, "secret") || strings.Contains(lk, "key") || strings.Contains(lk, "auth") || strings.Contains(lk, "password") {
-				q.Set(k, "REDACTED")
-				modified = true
-			}
-		}
-		if modified {
-			u.RawQuery = q.Encode()
-			redacted = u.Redacted()
-		}
-	}
-	return redacted
+	return header.SanitizeURL(rawURL)
+}
+
+// SanitizeError scrubs sensitive tokens and credentials from error messages.
+func SanitizeError(err error) string {
+	return header.SanitizeError(err)
+}
+
+// SanitizeErrorMessage scrubs sensitive tokens and credentials from error strings.
+func SanitizeErrorMessage(msg string) string {
+	return header.SanitizeErrorMessage(msg)
 }
 
 // FetchCardAssets fetches cover image and favicon candidates using bounded retries and diagnostics.
@@ -302,7 +293,7 @@ func fetchImageCandidates(
 				URL:      sanitizedURL,
 				Status:   ImageStatusNetworkError,
 				Attempts: 1,
-				Error:    err.Error(),
+				Error:    SanitizeError(err),
 			})
 			result.Attempts++
 			continue
@@ -328,7 +319,7 @@ func fetchImageCandidates(
 				URL:      sanitizedURL,
 				Status:   status,
 				Attempts: attempts,
-				Error:    err.Error(),
+				Error:    SanitizeError(err),
 			})
 			continue
 		}
@@ -358,7 +349,7 @@ func fetchImageCandidates(
 				Status:     ImageStatusNetworkError,
 				StatusCode: resp.StatusCode,
 				Attempts:   attempts,
-				Error:      err.Error(),
+				Error:      SanitizeError(err),
 			})
 			continue
 		}
@@ -382,7 +373,7 @@ func fetchImageCandidates(
 				Status:     ImageStatusDecodeError,
 				StatusCode: resp.StatusCode,
 				Attempts:   attempts,
-				Error:      err.Error(),
+				Error:      SanitizeError(err),
 			})
 			continue
 		}
@@ -417,7 +408,7 @@ func fetchImageCandidates(
 				Status:     ImageStatusDecodeError,
 				StatusCode: resp.StatusCode,
 				Attempts:   attempts,
-				Error:      err.Error(),
+				Error:      SanitizeError(err),
 			})
 			continue
 		}
@@ -449,15 +440,49 @@ func fetchImageCandidates(
 	return nil, result
 }
 
-// WriteQualityReport writes the card quality report JSON atomically or directly to path.
+// WriteQualityReport writes the card quality report JSON atomically to path.
 func WriteQualityReport(path string, report CardQualityReport) error {
 	if path == "" {
 		return nil
 	}
+	report.InputURL = SanitizeURL(report.InputURL)
+	report.FinalURL = SanitizeURL(report.FinalURL)
+	report.SelectedCoverURL = SanitizeURL(report.SelectedCoverURL)
+	for i := range report.Candidates {
+		report.Candidates[i].URL = SanitizeURL(report.Candidates[i].URL)
+		report.Candidates[i].Error = SanitizeErrorMessage(report.Candidates[i].Error)
+	}
+
 	data, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshaling quality report: %w", err)
 	}
 	data = append(data, '\n')
-	return os.WriteFile(path, data, 0644)
+
+	dir := filepath.Dir(path)
+	if dir == "" {
+		dir = "."
+	}
+	tmpFile, err := os.CreateTemp(dir, ".header-report-*.tmp")
+	if err != nil {
+		return fmt.Errorf("error creating temporary quality report: %w", err)
+	}
+	tmpName := tmpFile.Name()
+	defer func() {
+		_ = os.Remove(tmpName)
+	}()
+
+	if _, err := tmpFile.Write(data); err != nil {
+		_ = tmpFile.Close()
+		return fmt.Errorf("error writing temporary quality report: %w", err)
+	}
+	if err := tmpFile.Close(); err != nil {
+		return fmt.Errorf("error closing temporary quality report: %w", err)
+	}
+
+	if err := os.Rename(tmpName, path); err != nil {
+		return fmt.Errorf("error replacing quality report %s: %w", path, err)
+	}
+
+	return nil
 }
