@@ -14,6 +14,38 @@ import (
 	"time"
 )
 
+func TestRetry_PostNeverRetried(t *testing.T) {
+	var count int32
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		atomic.AddInt32(&count, 1)
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer ts.Close()
+
+	req, _ := http.NewRequest(http.MethodPost, ts.URL, strings.NewReader("payload"))
+	policy := RetryPolicy{
+		Attempts: 3,
+		Delay:    5 * time.Millisecond,
+		MaxDelay: 20 * time.Millisecond,
+	}
+
+	resp, attempts, err := ExecuteRequestWithRetry(context.Background(), ts.Client(), req, policy)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if attempts != 1 {
+		t.Errorf("attempts = %d, want 1 (POST must never be retried)", attempts)
+	}
+	if atomic.LoadInt32(&count) != 1 {
+		t.Errorf("server requests = %d, want 1", atomic.LoadInt32(&count))
+	}
+	if resp.StatusCode != http.StatusServiceUnavailable {
+		t.Errorf("status = %d, want 503", resp.StatusCode)
+	}
+}
+
 func TestRetry_ImmediateSuccess(t *testing.T) {
 	var count int32
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -227,7 +259,12 @@ func TestRetry_ConnectionFailureThenRetry(t *testing.T) {
 		MaxDelay: 20 * time.Millisecond,
 	}
 
-	client := &http.Client{Timeout: 1 * time.Second}
+	client := &http.Client{
+		Timeout: 1 * time.Second,
+		Transport: &http.Transport{
+			DisableKeepAlives: true,
+		},
+	}
 	resp, attempts, err := ExecuteRequestWithRetry(context.Background(), client, req, policy)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

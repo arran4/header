@@ -34,7 +34,7 @@ func CardList() error {
 //	retryDelay:    --retry-delay (default: 250ms)        Initial delay between retries
 //	retryMaxDelay: --retry-max-delay (default: 5s)       Maximum delay between retries
 //	timeout:       --timeout (default: 20s)              Maximum total request timeout
-//	imageTimeout:  --image-timeout (default: 10s)        Timeout for fetching images
+//	imageTimeout:  --image-timeout (default: 10s)        Cumulative timeout budget for fetching card assets
 //	requireCover:  --require-cover                       Fail if no usable cover image was fetched
 //	qualityReport: --quality-report                      Write machine readable card quality JSON to file
 //	out:           --out (required)                      Output file path
@@ -85,6 +85,10 @@ func CardFile(
 		_ = tmpFile.Close()
 		return fmt.Errorf("error encoding png: %w", err)
 	}
+	if err = tmpFile.Sync(); err != nil {
+		_ = tmpFile.Close()
+		return fmt.Errorf("error syncing temporary file: %w", err)
+	}
 	if err = tmpFile.Close(); err != nil {
 		return fmt.Errorf("error closing temporary file: %w", err)
 	}
@@ -107,7 +111,7 @@ func CardFile(
 //	retryDelay:    --retry-delay (default: 250ms)        Initial delay between retries
 //	retryMaxDelay: --retry-max-delay (default: 5s)       Maximum delay between retries
 //	timeout:       --timeout (default: 20s)              Maximum total request timeout
-//	imageTimeout:  --image-timeout (default: 10s)        Timeout for fetching images
+//	imageTimeout:  --image-timeout (default: 10s)        Cumulative timeout budget for fetching card assets
 //	requireCover:  --require-cover                       Fail if no usable cover image was fetched
 //	qualityReport: --quality-report                      Write machine readable card quality JSON to file
 //	urlStr:        @1 (required)                         URL to fetch
@@ -163,7 +167,7 @@ func CardClipboard(
 //	retryDelay:    --retry-delay (default: 250ms)        Initial delay between retries
 //	retryMaxDelay: --retry-max-delay (default: 5s)       Maximum delay between retries
 //	timeout:       --timeout (default: 20s)              Maximum total request timeout
-//	imageTimeout:  --image-timeout (default: 10s)        Timeout for fetching images
+//	imageTimeout:  --image-timeout (default: 10s)        Cumulative timeout budget for fetching card assets
 //	requireCover:  --require-cover                       Fail if no usable cover image was fetched
 //	qualityReport: --quality-report                      Write machine readable card quality JSON to file
 //	urlStr:        @1 (required)                         URL to fetch

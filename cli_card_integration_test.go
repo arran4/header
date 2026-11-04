@@ -511,3 +511,132 @@ func TestCLI_HTTPStatusErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestCLI_View_ImageFailureNonZeroExit(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/page_with_bad_image.html":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write([]byte(`<!DOCTYPE html><html><head><meta property="og:image" content="/missing.jpg"></head></html>`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer ts.Close()
+
+	bin := buildCLI(t)
+
+	cmd := exec.Command(bin, "view",
+		"--viewer", "mock",
+		"--retry-attempts", "1",
+		"image",
+		ts.URL+"/page_with_bad_image.html",
+	)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	if err == nil {
+		t.Fatalf("expected view to fail with nonzero exit code when image 404s, got success")
+	}
+
+	stderrStr := stderr.String()
+	if !strings.Contains(stderrStr, "Failed to download image") && !strings.Contains(stderrStr, "404") {
+		t.Errorf("stderr %q should contain failure diagnostic", stderrStr)
+	}
+}
+
+func TestCLI_Extract_ShowImageFailureNonZeroExit(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/page_with_bad_image.html":
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write([]byte(`<!DOCTYPE html><html><head><title>Bad Img</title><meta property="og:image" content="/missing.jpg"></head></html>`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer ts.Close()
+
+	bin := buildCLI(t)
+
+	cmd := exec.Command(bin, "extract",
+		"--show-image",
+		"--retry-attempts", "1",
+		ts.URL+"/page_with_bad_image.html",
+	)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	if err == nil {
+		t.Fatalf("expected extract --show-image to fail with nonzero exit code when image 404s, got success")
+	}
+
+	stderrStr := stderr.String()
+	if !strings.Contains(stderrStr, "Failed to download image") && !strings.Contains(stderrStr, "404") {
+		t.Errorf("stderr %q should contain failure diagnostic", stderrStr)
+	}
+}
+
+func TestCLI_View_RawURLSanitizationInStatus(t *testing.T) {
+	pngData := createValidPNG(10, 10)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/doc":
+			w.Header().Set("Content-Type", "text/html")
+			// Image URL contains sensitive userinfo and signed token
+			_, _ = w.Write([]byte(`<!DOCTYPE html><html><head>
+<meta property="og:image" content="http://imguser:secretpass@` + r.Host + `/secret.png?token=topsecrettoken&sig=signedval">
+</head></html>`))
+		case "/secret.png":
+			w.Header().Set("Content-Type", "image/png")
+			_, _ = w.Write(pngData)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer ts.Close()
+
+	bin := buildCLI(t)
+
+	// Case 1: Automatic fallback status message must redact credentials and tokens
+	cmd := exec.Command(bin, "view",
+		"--viewer", "default",
+		"--retry-attempts", "1",
+		"image",
+		ts.URL+"/doc",
+	)
+	out, _ := cmd.CombinedOutput()
+	outStr := string(out)
+
+	if strings.Contains(outStr, "secretpass") {
+		t.Errorf("automatic status message leaked secretpass: %s", outStr)
+	}
+	if strings.Contains(outStr, "topsecrettoken") {
+		t.Errorf("automatic status message leaked topsecrettoken: %s", outStr)
+	}
+	if strings.Contains(outStr, "signedval") {
+		t.Errorf("automatic status message leaked signedval: %s", outStr)
+	}
+	if !strings.Contains(outStr, "REDACTED") {
+		t.Errorf("automatic status message did not redact URL: %s", outStr)
+	}
+
+	// Case 2: Explicit print-url preserves exact raw URL
+	cmdPrint := exec.Command(bin, "view",
+		"--viewer", "print-url",
+		"image",
+		ts.URL+"/doc",
+	)
+	outPrint, errPrint := cmdPrint.CombinedOutput()
+	if errPrint != nil {
+		t.Fatalf("print-url failed: %v\n%s", errPrint, outPrint)
+	}
+	outPrintStr := string(outPrint)
+	if !strings.Contains(outPrintStr, "secretpass") || !strings.Contains(outPrintStr, "topsecrettoken") {
+		t.Errorf("print-url should preserve exact URL for caller: %s", outPrintStr)
+	}
+}

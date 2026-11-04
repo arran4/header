@@ -48,7 +48,7 @@ func importLint(info *header.PageInfo, lists, rules []string) {
 //	retryDelay:        --retry-delay (default: 250ms)           Initial delay between retries
 //	retryMaxDelay:     --retry-max-delay (default: 5s)          Maximum delay between retries
 //	timeout:           --timeout (default: 20s)                 Maximum total request timeout
-//	imageTimeout:      --image-timeout (default: 10s)           Timeout for fetching images
+//	imageTimeout:      --image-timeout (default: 10s)           Timeout budget for fetching images
 //	urlStr:            @1 (required)                            URL to extract
 //
 // Aliases: show
@@ -181,7 +181,9 @@ func Extract(
 			if resolved, err := cards.ResolveAssetURL(targetURL, info.URL); err == nil && resolved != "" {
 				targetURL = resolved
 			}
-			ui.DisplayImageWithOptions(targetURL, "default", opts)
+			if err := ui.DisplayImageWithOptions(targetURL, "default", opts); err != nil {
+				return fmt.Errorf("error displaying image: %w", err)
+			}
 		} else {
 			fmt.Println("No cover image found to display.")
 		}

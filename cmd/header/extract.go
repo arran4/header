@@ -472,9 +472,9 @@ func (c *RootCmd) NewExtract() *Extract {
 	}
 
 	if d, err := time.ParseDuration("10s"); err == nil {
-		set.DurationVar(&v.imageTimeout, "image-timeout", d, "Timeout for fetching images")
+		set.DurationVar(&v.imageTimeout, "image-timeout", d, "Timeout budget for fetching images")
 	} else {
-		set.DurationVar(&v.imageTimeout, "image-timeout", 0, "Timeout for fetching images")
+		set.DurationVar(&v.imageTimeout, "image-timeout", 0, "Timeout budget for fetching images")
 	}
 	set.Usage = v.Usage
 
