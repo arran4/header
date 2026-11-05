@@ -640,3 +640,27 @@ func TestCLI_View_RawURLSanitizationInStatus(t *testing.T) {
 		t.Errorf("print-url should preserve exact URL for caller: %s", outPrintStr)
 	}
 }
+
+func TestCLI_View_UnsupportedViewerReturnsError(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		_, _ = w.Write([]byte(`<!DOCTYPE html><html><head><meta property="og:image" content="/img.png"></head></html>`))
+	}))
+	defer ts.Close()
+
+	bin := buildCLI(t)
+	cmd := exec.Command(bin, "view", "--viewer", "unsupported-viewer-xyz", "image", ts.URL)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	if err == nil {
+		t.Fatalf("expected view to fail with nonzero exit code for unsupported viewer, got success")
+	}
+
+	stderrStr := stderr.String()
+	if !strings.Contains(stderrStr, `unsupported viewer "unsupported-viewer-xyz" requested`) {
+		t.Errorf("stderr %q should mention unsupported viewer", stderrStr)
+	}
+}

@@ -34,8 +34,7 @@ func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOpti
 	}
 
 	if viewer != "" && viewer != "default" && viewer != "shiny" && viewer != "open" && viewer != "xdg-open" && viewer != "gio" && viewer != "gnome-open" && viewer != "kde-open" && viewer != "export" && viewer != "mock" {
-		fmt.Printf("Error: unsupported viewer %q requested\n", viewer)
-		return nil
+		return fmt.Errorf("unsupported viewer %q requested", viewer)
 	}
 
 	sanitizedURL := header.SanitizeURL(urlStr)
