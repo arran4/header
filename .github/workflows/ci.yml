@@ -30,12 +30,13 @@ on:
           - release-major
           - release-minor
           - release-patch
+          - release-retry
           - release-test
           - release-rc
           - release-alpha
           - monthly-maintenance
       release_version_override:
-        description: "Optional explicit release version"
+        description: "Explicit existing tag for release-retry; optional for new releases"
         required: false
         default: ""
         type: string
@@ -182,6 +183,53 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Select existing tagged draft for release retry
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'release-retry' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_version_override }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == 'refs/heads/main' ]] || {
+            echo '::error::Retry dispatch must run from main'; exit 1;
+          }
+          [[ "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || {
+            echo '::error::An existing vMAJOR.MINOR.PATCH tag is required'; exit 1;
+          }
+          release_id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" |
+            jq -r --arg tag "$TAG" '.[] | select(.tag_name == $tag and .draft == true) | .id')
+          [[ "$release_id" =~ ^[0-9]+$ ]] || {
+            echo "::error::Release $TAG must already exist as one unpublished draft"; exit 1;
+          }
+          tag_commit=$(git rev-parse --verify "refs/tags/$TAG^{commit}")
+          git switch --detach "$tag_commit"
+          [[ "$(git rev-parse HEAD)" == "$tag_commit" ]] || exit 1
+
+          # Use the original release's source/build configuration; add only
+          # GoReleaser draft-resume options without dirtying its tagged tree.
+          if grep -q '^release:' .goreleaser.yml; then
+            echo '::error::Tagged config already has a release policy; review before retry'; exit 1
+          fi
+          cp .goreleaser.yml "$RUNNER_TEMP/header-retry.goreleaser.yml"
+          cat >> "$RUNNER_TEMP/header-retry.goreleaser.yml" <<'YAML'
+
+          release:
+            draft: true
+            use_existing_draft: true
+            replace_existing_artifacts: true
+            mode: keep-existing
+          YAML
+
+          # GitHub documents incomplete "starter" assets as safe to delete.
+          # Leave every fully uploaded asset untouched until GoReleaser can
+          # replace collisions and issue a consistent new checksums.txt.
+          while IFS= read -r asset_id; do
+            [[ "$asset_id" =~ ^[0-9]+$ ]] || exit 1
+            echo "Removing incomplete draft asset ID $asset_id"
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$asset_id"
+          done < <(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100" |
+            jq -r '.[] | select(.state == "starter") | .id')
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
@@ -207,7 +255,10 @@ jobs:
               release-test|release-rc|release-alpha) args+=' --snapshot' ;;
             esac
           fi
-          if [[ -z "$TAP_GITHUB_TOKEN" ]]; then
+          if [[ "$EVENT_NAME" == workflow_dispatch && "$RELEASE_MODE" == release-retry ]]; then
+            # No tap changes while repairing an already-created GitHub release.
+            args+=" --skip=homebrew --config=$RUNNER_TEMP/header-retry.goreleaser.yml"
+          elif [[ -z "$TAP_GITHUB_TOKEN" ]]; then
             echo 'TAP_GITHUB_TOKEN unavailable: skipping Homebrew publishing'
             args+=' --skip=homebrew'
           fi
@@ -221,3 +272,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+
+      - name: Verify assets and publish resumed draft
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'release-retry' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_version_override }}
+        run: |
+          set -euo pipefail
+          release_id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" |
+            jq -r --arg tag "$TAG" '.[] | select(.tag_name == $tag and .draft == true) | .id')
+          [[ "$release_id" =~ ^[0-9]+$ ]] || exit 1
+          assets=$(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100")
+          jq -e 'length == 21 and all(.[]; .state == "uploaded")' <<< "$assets" >/dev/null || {
+            echo '::error::Release assets not fully uploaded (expected 21)'
+            jq -r '.[] | [.name, .state] | @tsv' <<< "$assets"
+            exit 1
+          }
+
+          mkdir -p "$RUNNER_TEMP/header-release-verify"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir "$RUNNER_TEMP/header-release-verify"
+          (cd "$RUNNER_TEMP/header-release-verify" && sha256sum -c checksums.txt)
+
+          # Only publish after all expected artifacts were downloaded and checked.
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+          [[ "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')" == false ]]
