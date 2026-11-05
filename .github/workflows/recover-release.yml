@@ -26,6 +26,9 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Validate recovery workflow presence
         run: test -f .github/workflows/recover-release.yml
   recover:
