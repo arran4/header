@@ -1,0 +1,134 @@
+# Recovery path for incomplete GoReleaser draft publications.
+# Normal release-patch mode must not be retried against an existing draft/tag.
+name: Recover incomplete draft release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing semantic release tag with an incomplete draft
+        required: true
+        type: string
+        default: v0.0.4
+
+permissions:
+  contents: read
+
+concurrency:
+  group: header-release-publish
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - name: Validate existing tag and draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::Only existing vMAJOR.MINOR.PATCH tags can be recovered"
+            exit 1
+          fi
+          state=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')
+          if [[ "$state" != true ]]; then
+            echo "::error::Release $TAG does not exist as a draft; refusing to republish"
+            exit 1
+          fi
+          echo "Recovering existing draft $TAG; original tag and release are preserved"
+      - name: Check out the original release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Confirm the checkout is precisely the requested tag
+        env:
+          TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tagged=$(git rev-parse "refs/tags/$TAG^{}")
+          actual=$(git rev-parse HEAD)
+          if [[ "$tagged" != "$actual" ]]; then
+            echo "::error::Checked out $actual, but $TAG resolves to $tagged"
+            exit 1
+          fi
+          git status --short
+      - name: Set up original Go version
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Write a recovery-only GoReleaser configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Leave the source tree and the original release tag unchanged.
+          # GoReleaser v2.19.0 supports all three options below.
+          cp .goreleaser.yml "$RUNNER_TEMP/header-recovery.goreleaser.yml"
+          cat >> "$RUNNER_TEMP/header-recovery.goreleaser.yml" <<'YAML'
+
+          release:
+            draft: true
+            use_existing_draft: true
+            replace_existing_artifacts: true
+            mode: keep-existing
+          YAML
+      - name: Rebuild and repair all assets of the SAME draft
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: v2.19.0
+          args: release --clean --skip=homebrew --config=${{ runner.temp }}/header-recovery.goreleaser.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify ALL release assets and SHA256 checksums before publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          id=$(gh api "repos/$repo/releases?per_page=100" |
+            jq -er --arg tag "$TAG" '.[] | select(.tag_name == $tag) | .id')
+          test "$(gh api "repos/$repo/releases/$id" --jq '.draft')" = true
+          assets=$(gh api "repos/$repo/releases/$id/assets?per_page=100")
+          count=$(jq -r 'length' <<< "$assets")
+          uploaded=$(jq -r '[.[] | select(.state == "uploaded")] | length' <<< "$assets")
+          if [[ "$count" -ne 21 || "$uploaded" -ne 21 ]]; then
+            echo "::error::Expected 21 uploaded assets, found $uploaded uploaded of $count total"
+            jq -r '.[] | [.name, .state] | @tsv' <<< "$assets"
+            exit 1
+          fi
+
+          dest="$RUNNER_TEMP/release-verify"
+          mkdir -p "$dest"
+          gh release download "$TAG" --repo "$repo" --dir "$dest"
+          (cd "$dest" && sha256sum -c checksums.txt)
+
+          actual=$(find "$dest" -maxdepth 1 -type f -printf '%f\n' | sort)
+          expected=$(jq -r '.[].name' <<< "$assets" | sort)
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::Downloaded files do not match the release asset listing"
+            exit 1
+          fi
+          echo "All 21 assets uploaded; 20 package/archive checksums verified"
+      - name: Publish the verified existing draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --verify-tag
+          test "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')" = false
+          echo "Published the recovered $TAG GitHub release"
