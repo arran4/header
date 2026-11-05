@@ -17,7 +17,7 @@
 ## Installation
 
 ### GitHub Releases
-No GitHub releases have been published yet. After the first release, binaries will be available at https://github.com/arran4/header/releases.
+Download published binaries and packages from https://github.com/arran4/header/releases. Releases are produced by GoReleaser.
 
 ### Homebrew (after the first release)
 ```bash
@@ -175,6 +175,31 @@ Fetches a URL and prints HTTP requests and responses using httpretty.
 ```bash
 header httpretty https://example.com
 ```
+
+## Recovering an incomplete release
+
+If GoReleaser successfully builds the binaries but GitHub rejects an asset upload,
+**do not dispatch another patch/minor/major release** and do not move the version tag.
+The original release may exist as an unpublished draft with a mixture of completed
+and `starter` (incomplete) assets.
+
+After merging the recovery workflow into `main`, use
+**Actions → Recover incomplete draft release → Run workflow** with the original
+tag (for example, `v0.0.4`). This dedicated recovery workflow:
+
+1. Refuses nonexistent or already-published releases.
+2. Checks out the **original tag**, not the latest `main` or a newly bumped version.
+3. Rebuilds the assets using GoReleaser and its original configuration, overriding
+   only recovery settings to reuse the existing draft, replace conflicting assets,
+   and keep the release unpublished during validation. The Homebrew integration
+   remains skipped, consistent with releases lacking the tap token.
+4. Checks that all 21 release assets are uploaded and validates every archive and
+   package against the downloaded `checksums.txt`.
+5. Publishes that exact draft only after all checks pass.
+
+If recovery fails, inspect the run and leave the draft intact. A repeat recovery
+of the **same tag** remains possible; it must not alter the tag or invent a new
+version. See [the recovery workflow](.github/workflows/recover-release.yml).
 
 ## Development & Testing
 
