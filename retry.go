@@ -79,6 +79,18 @@ func IsPermanentStatus(statusCode int) bool {
 	}
 }
 
+// IsRetryableMethod returns true if the HTTP request method is safe and idempotent for automatic retries.
+// Per RFC 9110 §9.2.1-9.2.2, GET and HEAD are safe and idempotent. Mutating or non-idempotent methods
+// (POST, PUT, PATCH, DELETE, etc.) are never retried to prevent duplicated side-effects.
+func IsRetryableMethod(method string) bool {
+	switch strings.ToUpper(method) {
+	case http.MethodGet, http.MethodHead:
+		return true
+	default:
+		return false
+	}
+}
+
 // IsRetryableError returns true if the network error is transient and eligible for retry.
 func IsRetryableError(ctx context.Context, err error) bool {
 	if err == nil {
@@ -112,7 +124,9 @@ func IsRetryableError(ctx context.Context, err error) bool {
 		strings.Contains(msg, "eof") ||
 		strings.Contains(msg, "broken pipe") ||
 		strings.Contains(msg, "closed network connection") ||
-		strings.Contains(msg, "server closed idle connection") {
+		strings.Contains(msg, "server closed idle connection") ||
+		strings.Contains(msg, "readlooppeekfaillocked") ||
+		strings.Contains(msg, "readloop") {
 		return true
 	}
 	return false
@@ -191,7 +205,7 @@ func ExecuteRequestWithRetry(ctx context.Context, client HTTPDoer, req *http.Req
 			if ctx != nil && ctx.Err() != nil {
 				return nil, attempts, ctx.Err()
 			}
-			if attempts < policy.Attempts && IsRetryableError(ctx, err) {
+			if IsRetryableMethod(req.Method) && attempts < policy.Attempts && IsRetryableError(ctx, err) {
 				retryDelay = CalculateBackoff(attempts, policy.Delay, policy.MaxDelay, "", time.Now())
 				if ctx != nil {
 					if deadline, ok := ctx.Deadline(); ok && time.Now().Add(retryDelay).After(deadline) {
@@ -203,7 +217,7 @@ func ExecuteRequestWithRetry(ctx context.Context, client HTTPDoer, req *http.Req
 				return nil, attempts, err
 			}
 		} else {
-			if IsRetryableStatus(resp.StatusCode) && attempts < policy.Attempts {
+			if IsRetryableMethod(req.Method) && IsRetryableStatus(resp.StatusCode) && attempts < policy.Attempts {
 				retryAfter := resp.Header.Get("Retry-After")
 				retryDelay = CalculateBackoff(attempts, policy.Delay, policy.MaxDelay, retryAfter, time.Now())
 				// Do not retry earlier than the server's Retry-After requirement.

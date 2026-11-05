@@ -22,24 +22,25 @@ func isCommandAvailable(name string) bool {
 }
 
 // DisplayImage displays an image from the given URL using the specified viewer.
-func DisplayImage(urlStr string, viewer string) {
-	DisplayImageWithOptions(urlStr, viewer, header.FetchOptions{})
+func DisplayImage(urlStr string, viewer string) error {
+	return DisplayImageWithOptions(urlStr, viewer, header.FetchOptions{})
 }
 
 // DisplayImageWithOptions displays an image from the given URL using the specified viewer and fetch options.
-func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOptions) {
+func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOptions) error {
 	if viewer == "print-url" {
 		fmt.Println(urlStr)
-		return
+		return nil
 	}
 
 	if viewer != "" && viewer != "default" && viewer != "shiny" && viewer != "open" && viewer != "xdg-open" && viewer != "gio" && viewer != "gnome-open" && viewer != "kde-open" && viewer != "export" && viewer != "mock" {
-		fmt.Printf("Error: unsupported viewer %q requested\n", viewer)
-		return
+		return fmt.Errorf("unsupported viewer %q requested", viewer)
 	}
 
+	sanitizedURL := header.SanitizeURL(urlStr)
+
 	if (viewer == "" || viewer == "default") && !HasShiny() {
-		fmt.Printf("Displaying image (exec fallback): %s\n", urlStr)
+		fmt.Printf("Displaying image (exec fallback): %s\n", sanitizedURL)
 	}
 
 	timeout := opts.ImageTimeout
@@ -59,8 +60,9 @@ func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOpti
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlStr, nil)
 	if err != nil {
-		fmt.Printf("Failed to create request: %v\n", err)
-		return
+		sanitizedErr := header.SanitizeError(err)
+		fmt.Fprintf(os.Stderr, "Failed to create request: %v\n", sanitizedErr)
+		return fmt.Errorf("failed to create request: %s", sanitizedErr)
 	}
 
 	if opts.UserAgent != "" {
@@ -77,32 +79,34 @@ func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOpti
 
 	resp, _, err := header.ExecuteRequestWithRetry(ctx, client, req, policy)
 	if err != nil {
-		fmt.Printf("Failed to download image: %v\n", header.SanitizeError(err))
-		return
+		sanitizedErr := header.SanitizeError(err)
+		fmt.Fprintf(os.Stderr, "Failed to download image: %v\n", sanitizedErr)
+		return fmt.Errorf("failed to download image: %s", sanitizedErr)
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("Failed to download image: HTTP %s\n", resp.Status)
-		return
+		fmt.Fprintf(os.Stderr, "Failed to download image: HTTP %s\n", resp.Status)
+		return fmt.Errorf("failed to download image: HTTP %s", resp.Status)
 	}
 
 	if viewer == "mock" {
-		return
+		return nil
 	}
 
 	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, 20*1024*1024))
 	if err != nil {
-		fmt.Printf("Failed to read image: %v\n", err)
-		return
+		sanitizedErr := header.SanitizeError(err)
+		fmt.Fprintf(os.Stderr, "Failed to read image: %v\n", sanitizedErr)
+		return fmt.Errorf("failed to read image: %s", sanitizedErr)
 	}
 
 	// Try Shiny first if requested or default (and shiny is available)
 	if (viewer == "shiny" || viewer == "" || viewer == "default") && HasShiny() {
 		if viewer == "" || viewer == "default" {
-			fmt.Printf("Displaying image (shiny UI): %s\n", urlStr)
+			fmt.Printf("Displaying image (shiny UI): %s\n", sanitizedURL)
 		}
 		if ShowShiny(bytes.NewReader(bodyBytes), urlStr) {
-			return
+			return nil
 		}
 		// If ShowShiny returns false (e.g., error decoding), we can fall back to the rest
 	} else if viewer == "shiny" && !HasShiny() {
@@ -112,30 +116,30 @@ func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOpti
 
 	tmpFile, err := os.CreateTemp("", "header-cover-*.jpg")
 	if err != nil {
-		fmt.Printf("Failed to create temp file: %v\n", err)
-		return
+		fmt.Fprintf(os.Stderr, "Failed to create temp file: %v\n", err)
+		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 	tmpName := tmpFile.Name()
 	defer func() { _ = tmpFile.Close() }()
 
 	_, err = tmpFile.Write(bodyBytes)
 	if err != nil {
-		fmt.Printf("Failed to save image: %v\n", err)
-		return
+		fmt.Fprintf(os.Stderr, "Failed to save image: %v\n", err)
+		return fmt.Errorf("failed to save image: %w", err)
 	}
 
 	finalName := tmpName
 	if filepath.Ext(tmpName) == "" {
 		finalName = tmpName + ".jpg"
 		if err := os.Rename(tmpName, finalName); err != nil {
-			fmt.Printf("Failed to rename temp file: %v\n", err)
-			return
+			fmt.Fprintf(os.Stderr, "Failed to rename temp file: %v\n", err)
+			return fmt.Errorf("failed to rename temp file: %w", err)
 		}
 	}
 
 	if viewer == "export" {
 		fmt.Printf("Image exported to: %s\n", finalName)
-		return
+		return nil
 	}
 
 	var cmd *exec.Cmd
@@ -160,7 +164,7 @@ func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOpti
 					cmd = exec.Command("kde-open", finalName)
 				} else {
 					fmt.Println("Warning: no default viewer found (e.g. xdg-open)")
-					return
+					return nil
 				}
 			}
 		}
@@ -176,7 +180,9 @@ func DisplayImageWithOptions(urlStr string, viewer string, opts header.FetchOpti
 	if cmd != nil {
 		err = cmd.Start()
 		if err != nil {
-			fmt.Printf("Failed to open image viewer: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to open image viewer: %v\n", err)
+			return fmt.Errorf("failed to open image viewer: %w", err)
 		}
 	}
+	return nil
 }

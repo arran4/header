@@ -31,7 +31,7 @@ type FetchOptions struct {
 	RetryAttempts int           // Total attempts for idempotent HTTP requests (1 = no retries). Default: 3.
 	RetryDelay    time.Duration // Initial retry delay. Default: 250ms.
 	RetryMaxDelay time.Duration // Maximum retry delay cap. Default: 5s.
-	ImageTimeout  time.Duration // Timeout for fetching images in image-fetching commands. Default: 10s.
+	ImageTimeout  time.Duration // Cumulative timeout budget for fetching card assets (all cover candidates and favicons combined) in image-fetching commands. Default: 10s.
 }
 
 // FetchURL retrieves a URL and extracts metadata from it.

@@ -97,7 +97,7 @@ type CardQualityReport struct {
 // AssetFetchOptions configures asset fetching.
 type AssetFetchOptions struct {
 	UserAgent     string
-	Timeout       time.Duration // Total deadline per asset
+	Timeout       time.Duration // Cumulative timeout budget for all card assets (all cover candidates and favicons combined)
 	RetryAttempts int
 	RetryDelay    time.Duration
 	RetryMaxDelay time.Duration
@@ -174,6 +174,8 @@ func SanitizeErrorMessage(msg string) string {
 }
 
 // FetchCardAssets fetches cover image and favicon candidates using bounded retries and diagnostics.
+// The opts.Timeout enforces a cumulative overall deadline covering all asset fetching
+// (cover candidates and favicon candidates combined) while preserving fallback across candidates.
 func FetchCardAssets(ctx context.Context, info *header.PageInfo, opts AssetFetchOptions) *CardAssets {
 	assets := &CardAssets{}
 	if info == nil {
@@ -208,13 +210,16 @@ func FetchCardAssets(ctx context.Context, info *header.PageInfo, opts AssetFetch
 		MaxDelay: opts.RetryMaxDelay,
 	}
 
+	totalAssetCtx, cancel := context.WithTimeout(ctx, opts.Timeout)
+	defer cancel()
+
 	// 1. Fetch Cover Image Candidates in priority order: OGImage, OGImageSecureURL, TwitterImage
 	coverCandidates := collectCoverCandidates(info)
-	assets.CoverImage, assets.CoverResult = fetchImageCandidates(ctx, client, policy, coverCandidates, opts.UserAgent, opts.Timeout)
+	assets.CoverImage, assets.CoverResult = fetchImageCandidates(totalAssetCtx, client, policy, coverCandidates, opts.UserAgent, opts.Timeout)
 
-	// 2. Fetch Favicon Candidates
+	// 2. Fetch Favicon Candidates sharing the remaining cumulative budget
 	faviconCandidates := collectFaviconCandidates(info)
-	assets.FaviconImage, assets.FaviconResult = fetchImageCandidates(ctx, client, policy, faviconCandidates, opts.UserAgent, opts.Timeout)
+	assets.FaviconImage, assets.FaviconResult = fetchImageCandidates(totalAssetCtx, client, policy, faviconCandidates, opts.UserAgent, opts.Timeout)
 
 	// 3. Generate QR Code
 	if info.URL != "" {
@@ -273,7 +278,7 @@ func fetchImageCandidates(
 	policy header.RetryPolicy,
 	candidates []string,
 	userAgent string,
-	timeout time.Duration,
+	overallTimeout time.Duration,
 ) (image.Image, ImageResult) {
 	result := ImageResult{}
 	if len(candidates) == 0 {
@@ -282,9 +287,44 @@ func fetchImageCandidates(
 		return nil, result
 	}
 
-	for _, rawURL := range candidates {
+	for i, rawURL := range candidates {
 		sanitizedURL := SanitizeURL(rawURL)
-		reqCtx, cancel := context.WithTimeout(ctx, timeout)
+
+		if ctx.Err() != nil {
+			result.Candidates = append(result.Candidates, CandidateOutcome{
+				URL:      sanitizedURL,
+				Status:   ImageStatusTimeout,
+				Attempts: 0,
+				Error:    ctx.Err().Error(),
+			})
+			continue
+		}
+
+		remainingCandidates := len(candidates) - i
+		var candTimeout time.Duration
+		if deadline, ok := ctx.Deadline(); ok {
+			remaining := time.Until(deadline)
+			if remaining <= 0 {
+				result.Candidates = append(result.Candidates, CandidateOutcome{
+					URL:      sanitizedURL,
+					Status:   ImageStatusTimeout,
+					Attempts: 0,
+					Error:    context.DeadlineExceeded.Error(),
+				})
+				continue
+			}
+			candTimeout = remaining / time.Duration(remainingCandidates)
+			if candTimeout < 50*time.Millisecond && remaining >= 50*time.Millisecond {
+				candTimeout = 50 * time.Millisecond
+			}
+			if candTimeout > remaining {
+				candTimeout = remaining
+			}
+		} else {
+			candTimeout = overallTimeout / time.Duration(remainingCandidates)
+		}
+
+		reqCtx, cancel := context.WithTimeout(ctx, candTimeout)
 
 		req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, rawURL, nil)
 		if err != nil {
@@ -475,6 +515,10 @@ func WriteQualityReport(path string, report CardQualityReport) error {
 	if _, err := tmpFile.Write(data); err != nil {
 		_ = tmpFile.Close()
 		return fmt.Errorf("error writing temporary quality report: %w", err)
+	}
+	if err := tmpFile.Sync(); err != nil {
+		_ = tmpFile.Close()
+		return fmt.Errorf("error syncing temporary quality report: %w", err)
 	}
 	if err := tmpFile.Close(); err != nil {
 		return fmt.Errorf("error closing temporary quality report: %w", err)
