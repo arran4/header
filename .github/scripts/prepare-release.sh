@@ -67,7 +67,9 @@ fi
 
 if [[ "${RELEASE_TAG_DRY_RUN:-false}" != 'true' ]]; then
   if gh release view "$version" --repo "${GITHUB_REPOSITORY:?}" >/dev/null 2>&1; then
-    echo "Release $version already exists; refusing duplicate publication" >&2
+    echo "Release $version already exists (possibly a draft); refusing duplicate publication" >&2
+    echo "For incomplete drafts, merge/dispatch .github/workflows/recover-release.yml from main with tag $version" >&2
+    echo "Do not increment the version or delete the existing draft just to retry publishing" >&2
     exit 1
   fi
   echo "tag=$version" >> "${GITHUB_OUTPUT:?}"
