@@ -82,6 +82,72 @@ jobs:
             replace_existing_artifacts: true
             mode: keep-existing
           YAML
+      - name: Remove only incomplete draft assets (GitHub starter state)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          id=$(gh api "repos/$repo/releases?per_page=100" |
+            jq -er --arg tag "$TAG" '.[] | select(.tag_name == $tag and .draft) | .id')
+          gh api "repos/$repo/releases/$id/assets?per_page=100" |
+            jq -r '.[] | select(.state == "starter") | [.id, .name] | @tsv' |
+            while IFS=        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: v2.19.0
+          args: release --clean --skip=homebrew --config=${{ runner.temp }}/header-recovery.goreleaser.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify ALL release assets and SHA256 checksums before publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          id=$(gh api "repos/$repo/releases?per_page=100" |
+            jq -er --arg tag "$TAG" '.[] | select(.tag_name == $tag) | .id')
+          test "$(gh api "repos/$repo/releases/$id" --jq '.draft')" = true
+          assets=$(gh api "repos/$repo/releases/$id/assets?per_page=100")
+          count=$(jq -r 'length' <<< "$assets")
+          uploaded=$(jq -r '[.[] | select(.state == "uploaded")] | length' <<< "$assets")
+          if [[ "$count" -ne 21 || "$uploaded" -ne 21 ]]; then
+            echo "::error::Expected 21 uploaded assets, found $uploaded uploaded of $count total"
+            jq -r '.[] | [.name, .state] | @tsv' <<< "$assets"
+            exit 1
+          fi
+
+          dest="$RUNNER_TEMP/release-verify"
+          mkdir -p "$dest"
+          gh release download "$TAG" --repo "$repo" --dir "$dest"
+          (cd "$dest" && sha256sum -c checksums.txt)
+
+          actual=$(find "$dest" -maxdepth 1 -type f -printf '%f\n' | sort)
+          expected=$(jq -r '.[].name' <<< "$assets" | sort)
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::Downloaded files do not match the release asset listing"
+            exit 1
+          fi
+          echo "All 21 assets uploaded; 20 package/archive checksums verified"
+      - name: Publish the verified existing draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --verify-tag
+          test "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft')" = false
+          echo "Published the recovered $TAG GitHub release"
+\t' read -r asset_id asset_name; do
+              [[ "$asset_id" =~ ^[0-9]+$ ]] || exit 1
+              echo "Deleting incomplete starter asset: $asset_name"
+              gh api --method DELETE "repos/$repo/releases/assets/$asset_id"
+            done
       - name: Rebuild and repair all assets of the SAME draft
         uses: goreleaser/goreleaser-action@v6
         with:
