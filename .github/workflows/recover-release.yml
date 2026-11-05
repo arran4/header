@@ -3,6 +3,9 @@
 name: Recover incomplete draft release
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/recover-release.yml'
   workflow_dispatch:
     inputs:
       tag:
@@ -19,8 +22,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate recovery workflow presence
+        run: test -f .github/workflows/recover-release.yml
   recover:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
