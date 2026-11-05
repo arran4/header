@@ -76,3 +76,10 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+# Allow an interrupted upload to resume against the original GitHub draft.
+# GoReleaser replaces existing assets only after an upload-name collision;
+# normal first-time releases retain the default publish-on-success behaviour.
+release:
+  use_existing_draft: true
+  replace_existing_artifacts: true
