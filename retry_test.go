@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -225,57 +226,70 @@ func TestRetry_TimeoutThenRetry(t *testing.T) {
 	}
 }
 
+// retryDoerFunc lets retry tests control request outcomes without relying on
+// HTTP transport connection scheduling or a raw TCP server.
+type retryDoerFunc func(*http.Request) (*http.Response, error)
+
+func (f retryDoerFunc) Do(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
 func TestRetry_ConnectionFailureThenRetry(t *testing.T) {
-	var count int32
-	l, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = l.Close() }()
+	for _, tc := range []struct {
+		name string
+		err  error
+	}{
+		{name: "EOF", err: io.EOF},
+		{name: "connection reset", err: syscall.ECONNRESET},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			calls := 0
+			client := retryDoerFunc(func(req *http.Request) (*http.Response, error) {
+				calls++
+				if calls == 1 {
+					return nil, &url.Error{Op: "Get", URL: req.URL.String(), Err: tc.err}
+				}
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Header:     make(http.Header),
+					Body:       io.NopCloser(strings.NewReader("ok")),
+					Request:    req,
+				}, nil
+			})
 
-	go func() {
-		for {
-			conn, err := l.Accept()
+			req, err := http.NewRequest(http.MethodGet, "http://example.test", nil)
 			if err != nil {
-				return
+				t.Fatal(err)
 			}
-			reqNum := atomic.AddInt32(&count, 1)
-			if reqNum == 1 {
-				// Close connection immediately to simulate reset/EOF
-				_ = conn.Close()
-			} else {
-				// Send minimal HTTP 200 response
-				_, _ = fmt.Fprintf(conn, "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok")
-				_ = conn.Close()
+			policy := RetryPolicy{
+				Attempts: 3,
+				Delay:    5 * time.Millisecond,
+				MaxDelay: 20 * time.Millisecond,
 			}
-		}
-	}()
 
-	urlStr := fmt.Sprintf("http://%s", l.Addr().String())
-	req, _ := http.NewRequest(http.MethodGet, urlStr, nil)
-	policy := RetryPolicy{
-		Attempts: 3,
-		Delay:    5 * time.Millisecond,
-		MaxDelay: 20 * time.Millisecond,
-	}
+			resp, attempts, err := ExecuteRequestWithRetry(context.Background(), client, req, policy)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			defer func() { _ = resp.Body.Close() }()
 
-	client := &http.Client{
-		Timeout: 1 * time.Second,
-		Transport: &http.Transport{
-			DisableKeepAlives: true,
-		},
-	}
-	resp, attempts, err := ExecuteRequestWithRetry(context.Background(), client, req, policy)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if attempts < 2 {
-		t.Errorf("attempts = %d, want >= 2", attempts)
-	}
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("status = %d, want 200", resp.StatusCode)
+			if attempts != 2 {
+				t.Errorf("attempts = %d, want 2", attempts)
+			}
+			if calls != 2 {
+				t.Errorf("client calls = %d, want 2", calls)
+			}
+			if resp.StatusCode != http.StatusOK {
+				t.Errorf("status = %d, want 200", resp.StatusCode)
+			}
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatalf("read response body: %v", err)
+			}
+			if string(body) != "ok" {
+				t.Errorf("body = %q, want ok", body)
+			}
+		})
 	}
 }
 
