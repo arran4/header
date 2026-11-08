@@ -16,12 +16,18 @@ func PrintStyles(w io.Writer) error {
 		return err
 	}
 
-	fmt.Fprintln(w, "Available Styles:")
+	if _, err := fmt.Fprintln(w, "Available Styles:"); err != nil {
+		return err
+	}
 	for _, s := range styles {
 		if s.Description != "" {
-			fmt.Fprintf(w, "  %-16s - %s\n", s.Name, s.Description)
+			if _, err := fmt.Fprintf(w, "  %-16s - %s\n", s.Name, s.Description); err != nil {
+				return err
+			}
 		} else {
-			fmt.Fprintf(w, "  %s\n", s.Name)
+			if _, err := fmt.Fprintf(w, "  %s\n", s.Name); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
