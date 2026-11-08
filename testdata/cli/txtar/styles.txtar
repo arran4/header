@@ -4,14 +4,19 @@ exec header styles
 stdout 'Available Styles:'
 stdout 'all_fields'
 stdout 'default'
+stdout 'html'
 
 exec header style list
 stdout 'Available Styles:'
 stdout 'all_fields'
 stdout 'default'
+stdout 'html'
 
 exec header style export all_fields
 stdout 'URL:'
+
+exec header style export html
+stdout '<head>'
 
 exec header style export --out exported.tmpl all_fields
 ! exec header style export --out exported.tmpl all_fields
@@ -21,6 +26,11 @@ exec header style export --force --out exported.tmpl all_fields
 
 exec header extract --style-file exported.tmpl $TEST_SERVER_URL/example
 stdout 'Example Page'
+
+exec header extract --style html $TEST_SERVER_URL/example
+stdout '<head>'
+stdout '<title>Example Page</title>'
+stdout '</head>'
 
 ! exec header extract --style json --style-file exported.tmpl $TEST_SERVER_URL/example
 stderr 'cannot specify both --style and --style-file'

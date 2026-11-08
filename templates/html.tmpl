@@ -1,0 +1,136 @@
+{{/*
+  Synthetic HTML <head> representation of extracted page metadata.
+  - Generates deterministic, readable <head> elements.
+  - HTML text and attributes are safely escaped to prevent HTML/script injection.
+  - Distinct source-specific metadata (HTML, OpenGraph, Twitter, AppLinks) is preserved.
+  - Unobserved or empty fields are omitted without fabricating values.
+  - Documented omissions / information loss:
+    * JSON-LD scripts are intentionally omitted from this synthetic <head> view to avoid unsafe
+      script-block injection and schema fabrication. Use the dedicated 'jsonld' style for JSON-LD.
+    * Duplicate unknown meta tags or conflicting source tags are rendered sequentially in standard order.
+*/ -}}
+<head>
+{{- if .Title}}
+  <title>{{htmlEscape .Title}}</title>
+{{- end}}
+{{- if .Description}}
+  <meta name="description" content="{{attrEscape .Description}}">
+{{- end}}
+{{- if .Keywords}}
+  <meta name="keywords" content="{{attrEscape .Keywords}}">
+{{- end}}
+{{- if .ThemeColor}}
+  <meta name="theme-color" content="{{attrEscape .ThemeColor}}">
+{{- end}}
+{{- if .ApplicationTitle}}
+  <meta name="application-name" content="{{attrEscape .ApplicationTitle}}">
+{{- end}}
+{{- if .MetaRefresh}}
+  <meta http-equiv="refresh" content="{{attrEscape .MetaRefresh}}">
+{{- end}}
+{{- if .CanonicalLink}}
+  <link rel="canonical" href="{{attrEscape .CanonicalLink}}">
+{{- end}}
+{{- if .ShortLink}}
+  <link rel="shortlink" href="{{attrEscape .ShortLink}}">
+{{- end}}
+{{- range .Icons}}
+  <link rel="icon" href="{{attrEscape .URL}}"{{if .Sizes}} sizes="{{attrEscape .Sizes}}"{{end}}>
+{{- end}}
+{{- range .FeedLinks}}
+  <link rel="alternate" type="{{attrEscape .Type}}" href="{{attrEscape .URL}}"{{if .Title}} title="{{attrEscape .Title}}"{{end}}>
+{{- end}}
+{{- range .AlternateLinks}}
+  <link rel="alternate" href="{{attrEscape .URL}}"{{if .Media}} media="{{attrEscape .Media}}"{{end}}>
+{{- end}}
+{{- if .OGTitle}}
+  <meta property="og:title" content="{{attrEscape .OGTitle}}">
+{{- end}}
+{{- if .OGType}}
+  <meta property="og:type" content="{{attrEscape .OGType}}">
+{{- end}}
+{{- if .OGImage}}
+  <meta property="og:image" content="{{attrEscape .OGImage}}">
+{{- end}}
+{{- if .OGImageSecureURL}}
+  <meta property="og:image:secure_url" content="{{attrEscape .OGImageSecureURL}}">
+{{- end}}
+{{- if .OGImageType}}
+  <meta property="og:image:type" content="{{attrEscape .OGImageType}}">
+{{- end}}
+{{- if .OGImageWidth}}
+  <meta property="og:image:width" content="{{attrEscape .OGImageWidth}}">
+{{- end}}
+{{- if .OGImageHeight}}
+  <meta property="og:image:height" content="{{attrEscape .OGImageHeight}}">
+{{- end}}
+{{- if .OGDescription}}
+  <meta property="og:description" content="{{attrEscape .OGDescription}}">
+{{- end}}
+{{- if .OGImageAlt}}
+  <meta property="og:image:alt" content="{{attrEscape .OGImageAlt}}">
+{{- end}}
+{{- if .OGVideo}}
+  <meta property="og:video" content="{{attrEscape .OGVideo}}">
+{{- end}}
+{{- if .OGVideoSecureURL}}
+  <meta property="og:video:secure_url" content="{{attrEscape .OGVideoSecureURL}}">
+{{- end}}
+{{- if .OGVideoType}}
+  <meta property="og:video:type" content="{{attrEscape .OGVideoType}}">
+{{- end}}
+{{- if .OGVideoWidth}}
+  <meta property="og:video:width" content="{{attrEscape .OGVideoWidth}}">
+{{- end}}
+{{- if .OGVideoHeight}}
+  <meta property="og:video:height" content="{{attrEscape .OGVideoHeight}}">
+{{- end}}
+{{- if .OGVideoAlt}}
+  <meta property="og:video:alt" content="{{attrEscape .OGVideoAlt}}">
+{{- end}}
+{{- if .TwitterCard}}
+  <meta name="twitter:card" content="{{attrEscape .TwitterCard}}">
+{{- end}}
+{{- if .TwitterTitle}}
+  <meta name="twitter:title" content="{{attrEscape .TwitterTitle}}">
+{{- end}}
+{{- if .TwitterDescription}}
+  <meta name="twitter:description" content="{{attrEscape .TwitterDescription}}">
+{{- end}}
+{{- if .TwitterImage}}
+  <meta name="twitter:image" content="{{attrEscape .TwitterImage}}">
+{{- end}}
+{{- if .TwitterImageAlt}}
+  <meta name="twitter:image:alt" content="{{attrEscape .TwitterImageAlt}}">
+{{- end}}
+{{- if .TwitterPlayer}}
+  <meta name="twitter:player" content="{{attrEscape .TwitterPlayer}}">
+{{- end}}
+{{- if .TwitterPlayerWidth}}
+  <meta name="twitter:player:width" content="{{attrEscape .TwitterPlayerWidth}}">
+{{- end}}
+{{- if .TwitterPlayerHeight}}
+  <meta name="twitter:player:height" content="{{attrEscape .TwitterPlayerHeight}}">
+{{- end}}
+{{- if .AppLinksIOSName}}
+  <meta property="al:ios:app_name" content="{{attrEscape .AppLinksIOSName}}">
+{{- end}}
+{{- if .AppLinksIOSAppStoreID}}
+  <meta property="al:ios:app_store_id" content="{{attrEscape .AppLinksIOSAppStoreID}}">
+{{- end}}
+{{- if .AppLinksIOSURL}}
+  <meta property="al:ios:url" content="{{attrEscape .AppLinksIOSURL}}">
+{{- end}}
+{{- if .AppLinksAndroidName}}
+  <meta property="al:android:app_name" content="{{attrEscape .AppLinksAndroidName}}">
+{{- end}}
+{{- if .AppLinksAndroidPackage}}
+  <meta property="al:android:package" content="{{attrEscape .AppLinksAndroidPackage}}">
+{{- end}}
+{{- if .AppLinksAndroidURL}}
+  <meta property="al:android:url" content="{{attrEscape .AppLinksAndroidURL}}">
+{{- end}}
+{{- range .UnknownMeta}}
+  <meta name="{{attrEscape .Key}}" content="{{attrEscape .Value}}">
+{{- end}}
+</head>

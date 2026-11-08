@@ -28,7 +28,7 @@ func TestListStyles(t *testing.T) {
 	}
 
 	// Verify standard styles are present
-	expected := []string{"all_fields", "all_fields_plain", "default", "discord", "json", "jsonld", "opengraph", "twitter"}
+	expected := []string{"all_fields", "all_fields_plain", "default", "discord", "html", "json", "jsonld", "opengraph", "twitter"}
 	styleMap := make(map[string]templates.StyleInfo)
 	for _, s := range styles {
 		styleMap[s.Name] = s

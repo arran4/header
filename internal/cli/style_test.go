@@ -23,7 +23,7 @@ func TestPrintStyles(t *testing.T) {
 	}
 
 	// Verify all known styles are present
-	for _, style := range []string{"all_fields", "all_fields_plain", "default", "discord", "json", "jsonld", "opengraph", "twitter"} {
+	for _, style := range []string{"all_fields", "all_fields_plain", "default", "discord", "html", "json", "jsonld", "opengraph", "twitter"} {
 		if !strings.Contains(out, style) {
 			t.Errorf("expected style %q in output, got: %s", style, out)
 		}
