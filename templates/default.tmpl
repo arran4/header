@@ -3,15 +3,20 @@
 {{- else -}}
 {{bold "URL:"}} {{cyan .URL}}
 {{- end}}
-{{bold "Title:"}} {{green .Title}}
-{{- if .OGDescription}}
-{{bold "Description:"}} {{.OGDescription}}
-{{- else if .TwitterDescription}}
-{{bold "Description:"}} {{.TwitterDescription}}
+{{- range .GroupedTitles}}
+
+{{bold (printf "Title (%s):" .SourcesString)}}
+  {{green .Value}}
 {{- end}}
-{{- if .CoverImages}}
+{{- range .GroupedDescriptions}}
+
+{{bold (printf "Description (%s):" .SourcesString)}}
+  {{.Value}}
+{{- end}}
+{{- if .GroupedCoverImages}}
+
 {{bold "Cover Images:"}}
-{{- range .CoverImages}}
-  - {{yellow .}}
+{{- range .GroupedCoverImages}}
+  {{yellow .URL}} ({{.SourcesString}})
 {{- end}}
 {{- end}}

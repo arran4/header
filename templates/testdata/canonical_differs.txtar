@@ -12,7 +12,9 @@ Title: Test Title
 HTML Canonical Link: https://example.com/some-page
 -- expected_default.txt --
 URL: https://example.com/some-page?utm_source=test
-Title: Test Title
+
+Title (HTML):
+  Test Title
 -- expected_json.txt --
 {
   "URL": "https://example.com/some-page?utm_source=test",

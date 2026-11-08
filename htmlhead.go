@@ -67,6 +67,12 @@ func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
 				}
 
 				// Standard Metadata
+				if strings.EqualFold(name, "description") || strings.EqualFold(property, "description") {
+					i.KnownMetaTracker.MarkKnown(name)
+					if i.Description == "" {
+						i.Description = content
+					}
+				}
 				if strings.EqualFold(name, "keywords") {
 					i.KnownMetaTracker.MarkKnown(name)
 					i.Keywords = content

@@ -21,6 +21,7 @@ type PageInfo struct {
 	Trace       []string `json:",omitempty"`
 	MetaRefresh string   `json:",omitempty"`
 	Title       string   `json:",omitempty"`
+	Description string   `json:",omitempty"`
 	Keywords    string   `json:",omitempty"`
 
 	// OpenGraph
@@ -209,6 +210,9 @@ func (p *PageInfo) GroupedProperties() []GroupedProperty {
 		add("HTML", "Icon", "Icon", val)
 	}
 
+	if p.Description != "" {
+		add("HTML", "Description", "Description", p.Description)
+	}
 	add("HTML", "Keywords", "Keywords", p.Keywords)
 	add("HTML", "Application Title", "ApplicationTitle", p.ApplicationTitle)
 	add("HTML", "Theme Color", "ThemeColor", p.ThemeColor)
@@ -347,4 +351,145 @@ func (p *PageInfo) Mutate(fn func(*PageInfo)) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	fn(p)
+}
+
+// ProvenanceProperty represents a semantic property with associated source tags.
+type ProvenanceProperty struct {
+	Sources []string
+	Value   string
+}
+
+// SourcesString formats the sources slice into a comma-separated string, e.g. "HTML, OpenGraph, Twitter".
+func (p ProvenanceProperty) SourcesString() string {
+	return strings.Join(p.Sources, ", ")
+}
+
+// ProvenanceImage represents a cover image URL with associated source tags.
+type ProvenanceImage struct {
+	URL     string
+	Sources []string
+}
+
+// SourcesString formats the sources slice into a comma-separated string, e.g. "OpenGraph, Twitter".
+func (p ProvenanceImage) SourcesString() string {
+	return strings.Join(p.Sources, ", ")
+}
+
+type sourceValue struct {
+	source string
+	value  string
+}
+
+var canonicalSourceOrder = map[string]int{
+	"HTML":      1,
+	"OpenGraph": 2,
+	"Twitter":   3,
+	"JSON-LD":   4,
+}
+
+func groupValues(items []sourceValue) []ProvenanceProperty {
+	var distinctValues []string
+	valToSources := make(map[string][]string)
+	seenSourceForVal := make(map[string]map[string]bool)
+
+	for _, item := range items {
+		val := strings.TrimSpace(item.value)
+		if val == "" {
+			continue
+		}
+		if _, exists := valToSources[val]; !exists {
+			distinctValues = append(distinctValues, val)
+			seenSourceForVal[val] = make(map[string]bool)
+		}
+		if !seenSourceForVal[val][item.source] {
+			seenSourceForVal[val][item.source] = true
+			valToSources[val] = append(valToSources[val], item.source)
+		}
+	}
+
+	var results []ProvenanceProperty
+	for _, val := range distinctValues {
+		sources := valToSources[val]
+		sort.SliceStable(sources, func(i, j int) bool {
+			return canonicalSourceOrder[sources[i]] < canonicalSourceOrder[sources[j]]
+		})
+		results = append(results, ProvenanceProperty{
+			Sources: sources,
+			Value:   val,
+		})
+	}
+	return results
+}
+
+// GroupedTitles returns distinct title values with their original sources in stable order.
+func (p *PageInfo) GroupedTitles() []ProvenanceProperty {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	items := []sourceValue{
+		{source: "HTML", value: p.Title},
+		{source: "OpenGraph", value: p.OGTitle},
+		{source: "Twitter", value: p.TwitterTitle},
+		{source: "JSON-LD", value: p.JSONLDName},
+	}
+	return groupValues(items)
+}
+
+// GroupedDescriptions returns distinct description values with their original sources in stable order.
+func (p *PageInfo) GroupedDescriptions() []ProvenanceProperty {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	items := []sourceValue{
+		{source: "HTML", value: p.Description},
+		{source: "OpenGraph", value: p.OGDescription},
+		{source: "Twitter", value: p.TwitterDescription},
+		{source: "JSON-LD", value: p.JSONLDDescription},
+	}
+	return groupValues(items)
+}
+
+// GroupedCoverImages returns distinct cover image URLs with their original sources in stable order.
+func (p *PageInfo) GroupedCoverImages() []ProvenanceImage {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	items := []sourceValue{
+		{source: "OpenGraph", value: p.OGImage},
+		{source: "OpenGraph", value: p.OGImageSecureURL},
+		{source: "Twitter", value: p.TwitterImage},
+		{source: "JSON-LD", value: p.JSONLDThumbnailURL},
+	}
+
+	var distinctURLs []string
+	urlToSources := make(map[string][]string)
+	seenSourceForURL := make(map[string]map[string]bool)
+
+	for _, item := range items {
+		imgURL := strings.TrimSpace(item.value)
+		if imgURL == "" {
+			continue
+		}
+		if _, exists := urlToSources[imgURL]; !exists {
+			distinctURLs = append(distinctURLs, imgURL)
+			seenSourceForURL[imgURL] = make(map[string]bool)
+		}
+		if !seenSourceForURL[imgURL][item.source] {
+			seenSourceForURL[imgURL][item.source] = true
+			urlToSources[imgURL] = append(urlToSources[imgURL], item.source)
+		}
+	}
+
+	var results []ProvenanceImage
+	for _, imgURL := range distinctURLs {
+		sources := urlToSources[imgURL]
+		sort.SliceStable(sources, func(i, j int) bool {
+			return canonicalSourceOrder[sources[i]] < canonicalSourceOrder[sources[j]]
+		})
+		results = append(results, ProvenanceImage{
+			URL:     imgURL,
+			Sources: sources,
+		})
+	}
+	return results
 }
