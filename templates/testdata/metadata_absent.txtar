@@ -7,7 +7,9 @@ URL: https://example.com/empty
 Title: Empty metadata
 -- expected_default.txt --
 URL: https://example.com/empty
-Title: Empty metadata
+
+Title (HTML):
+  Empty metadata
 -- expected_discord.txt --
 
 URL: https://example.com/empty
