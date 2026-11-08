@@ -1,0 +1,29 @@
+test: style listing, export and custom style loading
+
+exec header styles
+stdout 'Available Styles:'
+stdout 'all_fields'
+stdout 'default'
+
+exec header style list
+stdout 'Available Styles:'
+stdout 'all_fields'
+stdout 'default'
+
+exec header style export all_fields
+stdout 'URL:'
+
+exec header style export --out exported.tmpl all_fields
+! exec header style export --out exported.tmpl all_fields
+stderr 'already exists'
+
+exec header style export --force --out exported.tmpl all_fields
+
+exec header extract --style-file exported.tmpl $TEST_SERVER_URL/example
+stdout 'Example Page'
+
+! exec header extract --style json --style-file exported.tmpl $TEST_SERVER_URL/example
+stderr 'cannot specify both --style and --style-file'
+
+! exec header extract --style not-a-style $TEST_SERVER_URL/example
+stderr 'available styles:'

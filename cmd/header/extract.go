@@ -27,6 +27,7 @@ type Extract struct {
 	lintRun           bool
 	showImage         bool
 	style             string
+	styleFile         string
 	userAgent         string
 	showUnknown       bool
 	excludeUnknown    string
@@ -159,6 +160,17 @@ func (c *Extract) Execute(args []string) (err error) {
 					}
 				}
 				c.style = value
+
+			case "styleFile", "style-file":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.styleFile = value
 
 			case "userAgent", "user-agent", "Agent":
 				if !hasValue {
@@ -425,6 +437,8 @@ func (c *RootCmd) NewExtract() *Extract {
 
 	set.StringVar(&v.style, "style", "default", "The output style template to use (e.g. default, all_fields_plain)")
 
+	set.StringVar(&v.styleFile, "style-file", "", "Custom template file path to use for output")
+
 	set.StringVar(&v.userAgent, "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
 	set.StringVar(&v.userAgent, "Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
 
@@ -480,7 +494,7 @@ func (c *RootCmd) NewExtract() *Extract {
 
 	v.CommandAction = func(c *Extract) error {
 
-		err := cli.Extract(c.testMode, c.lintListFlags, c.lintRuleFlags, c.lintRun, c.showImage, c.style, c.userAgent, c.showUnknown, c.excludeUnknown, c.traceRedirects, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.httprettyFlag, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.imageTimeout, c.urlStr)
+		err := cli.Extract(c.testMode, c.lintListFlags, c.lintRuleFlags, c.lintRun, c.showImage, c.style, c.styleFile, c.userAgent, c.showUnknown, c.excludeUnknown, c.traceRedirects, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.httprettyFlag, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.imageTimeout, c.urlStr)
 		if err != nil {
 			if errors.Is(err, cmd.ErrPrintHelp) {
 				c.Usage()

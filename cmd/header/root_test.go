@@ -29,6 +29,8 @@ func TestRoot_Execute(t *testing.T) {
 	args = append(args, "--show-image")
 	args = append(args, "--style")
 	args = append(args, "test")
+	args = append(args, "--style-file")
+	args = append(args, "test")
 	args = append(args, "--user-agent")
 	args = append(args, "test")
 	args = append(args, "--show-unknown")
@@ -80,6 +82,9 @@ func TestRoot_Execute(t *testing.T) {
 	}
 	if cmd.style != "test" {
 		t.Errorf("Expected style to be 'test', got '%v'", cmd.style)
+	}
+	if cmd.styleFile != "test" {
+		t.Errorf("Expected styleFile to be 'test', got '%v'", cmd.styleFile)
 	}
 	if cmd.userAgent != "test" {
 		t.Errorf("Expected userAgent to be 'test', got '%v'", cmd.userAgent)

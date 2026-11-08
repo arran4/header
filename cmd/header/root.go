@@ -80,6 +80,7 @@ type RootCmd struct {
 	lintRun           bool
 	showImage         bool
 	style             string
+	styleFile         string
 	userAgent         string
 	showUnknown       bool
 	excludeUnknown    string
@@ -140,6 +141,8 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 
 	c.StringVar(&c.style, "style", "default", "The output style template to use (e.g. default, all_fields_plain)")
 
+	c.StringVar(&c.styleFile, "style-file", "", "Custom template file path to use for output")
+
 	c.StringVar(&c.userAgent, "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
 	c.StringVar(&c.userAgent, "Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36", "The User header to use when fetching URLs")
 
@@ -194,7 +197,7 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 
 	c.CommandAction = func(c *RootCmd) error {
 
-		err := cli.Root(c.testMode, c.lintListFlags, c.lintRuleFlags, c.lintRun, c.showImage, c.style, c.userAgent, c.showUnknown, c.excludeUnknown, c.traceRedirects, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.httprettyFlag, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.imageTimeout, c.urlStr)
+		err := cli.Root(c.testMode, c.lintListFlags, c.lintRuleFlags, c.lintRun, c.showImage, c.style, c.styleFile, c.userAgent, c.showUnknown, c.excludeUnknown, c.traceRedirects, c.followMetaRefresh, c.updateReferer, c.storeCookies, c.redirectLimit, c.redirectDelay, c.httprettyFlag, c.retryAttempts, c.retryDelay, c.retryMaxDelay, c.timeout, c.imageTimeout, c.urlStr)
 		if err != nil {
 			if errors.Is(err, cmd.ErrPrintHelp) {
 				c.Usage()
@@ -254,6 +257,18 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 	{
 		subCmd := NewLazyCommand(func() Cmd { return c.NewLintRules() })
 		c.Commands["lint-rules"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewStyle() })
+		c.Commands["style"] = subCmd
+
+	}
+
+	{
+		subCmd := NewLazyCommand(func() Cmd { return c.NewStyles() })
+		c.Commands["styles"] = subCmd
 
 	}
 
@@ -407,6 +422,17 @@ func (c *RootCmd) Execute(args []string) (err error) {
 					}
 				}
 				c.style = value
+
+			case "styleFile", "style-file":
+				if !hasValue {
+					if i+1 < len(args) {
+						value = args[i+1]
+						i++
+					} else {
+						return fmt.Errorf("flag %s requires a value", name)
+					}
+				}
+				c.styleFile = value
 
 			case "userAgent", "user-agent", "Agent":
 				if !hasValue {

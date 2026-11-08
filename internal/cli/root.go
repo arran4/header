@@ -15,6 +15,7 @@ import (
 //	lintRun:           --lint-run                               Run default linting
 //	showImage:         --show-image                             Display the cover image (if available)
 //	style:             --style (default: "default")             The output style template to use (e.g. default, all_fields_plain)
+//	styleFile:         --style-file                             Custom template file path to use for output
 //	userAgent:         --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
 //	showUnknown:       --show-unknown                           Show unknown metadata tags
 //	excludeUnknown:    --exclude-unknown                        Comma separated list of unknown tags to exclude
@@ -38,6 +39,7 @@ func Root(
 	lintRun bool,
 	showImage bool,
 	style string,
+	styleFile string,
 	userAgent string,
 	showUnknown bool,
 	excludeUnknown string,
@@ -68,6 +70,8 @@ func Root(
 		fmt.Println("  lint-rules       List available lint rules")
 		fmt.Println("  view             View images or icons from a URL (e.g. view image <url>)")
 		fmt.Println("  card             Export a card (as an image) including the image, description and a couple other things")
+		fmt.Println("  style            Manage extraction styles (list, export)")
+		fmt.Println("  styles           List available extraction styles")
 		return fmt.Errorf("URL is required")
 	}
 
@@ -78,6 +82,7 @@ func Root(
 		lintRun,
 		showImage,
 		style,
+		styleFile,
 		userAgent,
 		showUnknown,
 		excludeUnknown,

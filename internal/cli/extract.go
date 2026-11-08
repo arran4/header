@@ -1,11 +1,8 @@
 package cli
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/arran4/header"
@@ -16,7 +13,6 @@ import (
 	_ "github.com/arran4/header/lint/lists/all" // Ensure rules are loaded
 	_ "github.com/arran4/header/lint/lists/recommended"
 	"github.com/arran4/header/templates"
-	"github.com/fatih/color"
 )
 
 // To avoid unused import issues if lint isn't used directly here, we wrap it
@@ -34,6 +30,7 @@ func importLint(info *header.PageInfo, lists, rules []string) {
 //	lintRun:           --lint-run                               Run default linting
 //	showImage:         --show-image                             Display the cover image (if available)
 //	style:             --style (default: "default")             The output style template to use (e.g. default, all_fields_plain)
+//	styleFile:         --style-file                             Custom template file path to use for output
 //	userAgent:         --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
 //	showUnknown:       --show-unknown                           Show unknown metadata tags
 //	excludeUnknown:    --exclude-unknown                        Comma separated list of unknown tags to exclude
@@ -59,6 +56,7 @@ func Extract(
 	lintRun bool,
 	showImage bool,
 	style string,
+	styleFile string,
 	userAgent string,
 	showUnknown bool,
 	excludeUnknown string,
@@ -118,35 +116,16 @@ func Extract(
 		})
 	}
 
-	tmplContent, err := templates.FS.ReadFile(style + ".tmpl")
+	tmpl, err := templates.LoadTemplate(style, styleFile)
 	if err != nil {
-		return fmt.Errorf("error loading template '%s': %w", style, err)
+		return err
 	}
 
-	funcMap := template.FuncMap{
-		"bold":   color.New(color.Bold).SprintFunc(),
-		"green":  color.New(color.FgGreen).SprintFunc(),
-		"cyan":   color.New(color.FgCyan).SprintFunc(),
-		"yellow": color.New(color.FgYellow).SprintFunc(),
-		"json": func(v interface{}) (string, error) {
-			b, err := json.MarshalIndent(v, "", "  ")
-			if err != nil {
-				return "", fmt.Errorf("failed to marshal json: %w", err)
-			}
-			return string(b), nil
-		},
-	}
-
-	tmpl, err := template.New("output").Funcs(funcMap).Parse(string(tmplContent))
+	rendered, err := templates.Render(tmpl, info)
 	if err != nil {
-		return fmt.Errorf("error parsing template: %w", err)
+		return err
 	}
-
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, info); err != nil {
-		return fmt.Errorf("error executing template: %w", err)
-	}
-	fmt.Print(buf.String())
+	fmt.Print(rendered)
 	fmt.Println()
 
 	if testMode {
