@@ -31,6 +31,23 @@ Title (OpenGraph, Twitter, JSON-LD):
 
 Description (OpenGraph, Twitter):
   Same description
+
+Social Sharing:
+  Type (OpenGraph, Twitter): website
+
+Structured Data (JSON-LD):
+  Type: website
+-- expected_quick.txt --
+URL: https://example.com
+
+Title (HTML):
+  Test Title
+
+Title (OpenGraph, Twitter, JSON-LD):
+  Same Title
+
+Description (OpenGraph, Twitter):
+  Same description
 -- expected_json.txt --
 {
   "URL": "https://example.com",

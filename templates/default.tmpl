@@ -2,6 +2,12 @@
 {{bold "URL (canonical):"}} {{cyan .URL}}
 {{- else -}}
 {{bold "URL:"}} {{cyan .URL}}
+{{- if .CanonicalLink}}
+{{bold "Canonical URL:"}} {{cyan .CanonicalLink}}
+{{- end}}
+{{- end}}
+{{- if and .ShortLink (ne .URL .ShortLink)}}
+{{bold "Shortlink:"}} {{cyan .ShortLink}}
 {{- end}}
 {{- range .GroupedTitles}}
 
@@ -13,10 +19,123 @@
 {{bold (printf "Description (%s):" .SourcesString)}}
   {{.Value}}
 {{- end}}
+{{- if or .OGType .TwitterCard .InstagramOwnerUserID}}
+
+{{bold "Social Sharing:"}}
+{{- if and .OGType .TwitterCard (eq .OGType .TwitterCard)}}
+  Type (OpenGraph, Twitter): {{.OGType}}
+{{- else}}
+{{- if .OGType}}
+  OpenGraph Type: {{.OGType}}
+{{- end}}
+{{- if .TwitterCard}}
+  Twitter Card: {{.TwitterCard}}
+{{- end}}
+{{- end}}
+{{- if .InstagramOwnerUserID}}
+  Instagram User ID: {{.InstagramOwnerUserID}}
+{{- end}}
+{{- end}}
 {{- if .GroupedCoverImages}}
 
 {{bold "Cover Images:"}}
 {{- range .GroupedCoverImages}}
   {{yellow .URL}} ({{.SourcesString}})
+{{- end}}
+{{- if or .OGImageAlt .TwitterImageAlt}}
+{{- if and .OGImageAlt .TwitterImageAlt (eq .OGImageAlt .TwitterImageAlt)}}
+  Image Alt (OpenGraph, Twitter): {{.OGImageAlt}}
+{{- else}}
+{{- if .OGImageAlt}}
+  Image Alt (OpenGraph): {{.OGImageAlt}}
+{{- end}}
+{{- if .TwitterImageAlt}}
+  Image Alt (Twitter): {{.TwitterImageAlt}}
+{{- end}}
+{{- end}}
+{{- end}}
+{{- if and .OGImageWidth .OGImageHeight}}
+  Image Dimensions: {{.OGImageWidth}}x{{.OGImageHeight}}{{if .OGImageType}} ({{.OGImageType}}){{end}}
+{{- else if .OGImageType}}
+  Image Type: {{.OGImageType}}
+{{- end}}
+{{- end}}
+{{- if or .OGVideo .TwitterPlayer .YouTubeVideoID}}
+
+{{bold "Video:"}}
+{{- if .OGVideo}}
+  OpenGraph Video: {{cyan .OGVideo}}{{if and .OGVideoWidth .OGVideoHeight}} ({{.OGVideoWidth}}x{{.OGVideoHeight}}{{if .OGVideoType}}, {{.OGVideoType}}{{end}}){{else if .OGVideoType}} ({{.OGVideoType}}){{end}}
+{{- if and .OGVideoSecureURL (ne .OGVideo .OGVideoSecureURL)}}
+  OpenGraph Video (secure): {{cyan .OGVideoSecureURL}}
+{{- end}}
+{{- if .OGVideoAlt}}
+  OpenGraph Video Alt: {{.OGVideoAlt}}
+{{- end}}
+{{- end}}
+{{- if .TwitterPlayer}}
+  Twitter Player: {{cyan .TwitterPlayer}}{{if and .TwitterPlayerWidth .TwitterPlayerHeight}} ({{.TwitterPlayerWidth}}x{{.TwitterPlayerHeight}}){{end}}
+{{- end}}
+{{- if .YouTubeVideoID}}
+  YouTube Video ID: {{.YouTubeVideoID}}{{if .YouTubeDuration}} ({{.YouTubeDuration}}){{end}}
+{{- end}}
+{{- end}}
+{{- if or .JSONLDType .JSONLDAuthor .JSONLDPublisher .JSONLDID .JSONLDUploadDate}}
+
+{{bold "Structured Data (JSON-LD):"}}
+{{- if .JSONLDType}}
+  Type: {{.JSONLDType}}
+{{- end}}
+{{- if .JSONLDID}}
+  ID: {{cyan .JSONLDID}}
+{{- end}}
+{{- if .JSONLDAuthor}}
+  Author: {{.JSONLDAuthor}}
+{{- end}}
+{{- if .JSONLDPublisher}}
+  Publisher: {{.JSONLDPublisher}}
+{{- end}}
+{{- if and .JSONLDUploadDate (not .JSONLDUploadDateParsed.IsZero)}}
+  Upload Date: {{.JSONLDUploadDateParsed.Format "2006-01-02 15:04:05 MST"}}
+{{- else if .JSONLDUploadDate}}
+  Upload Date: {{.JSONLDUploadDate}}
+{{- end}}
+{{- end}}
+{{- if or .FeedLinks .AlternateLinks .Icons}}
+
+{{bold "Discovery Links:"}}
+{{- range .FeedLinks}}
+  Feed Link: {{cyan .URL}}{{if or .Title .Type}} ({{if .Title}}{{printf "%q" .Title}}{{if .Type}}, {{end}}{{end}}{{.Type}}){{end}}
+{{- end}}
+{{- range .AlternateLinks}}
+  Alternate Link: {{cyan .URL}}{{if .Media}} ({{.Media}}){{end}}
+{{- end}}
+{{- range .Icons}}
+  Icon: {{cyan .URL}}{{if .Sizes}} ({{.Sizes}}){{end}}
+{{- end}}
+{{- end}}
+{{- if or .AppLinksIOSName .AppLinksIOSURL .AppLinksIOSAppStoreID .AppLinksAndroidName .AppLinksAndroidURL .AppLinksAndroidPackage}}
+
+{{bold "App Links:"}}
+{{- if or .AppLinksIOSName .AppLinksIOSURL .AppLinksIOSAppStoreID}}
+  iOS:{{if .AppLinksIOSName}} {{.AppLinksIOSName}}{{end}}{{if .AppLinksIOSURL}} ({{cyan .AppLinksIOSURL}}){{end}}{{if .AppLinksIOSAppStoreID}} [App Store ID: {{.AppLinksIOSAppStoreID}}]{{end}}
+{{- end}}
+{{- if or .AppLinksAndroidName .AppLinksAndroidURL .AppLinksAndroidPackage}}
+  Android:{{if .AppLinksAndroidName}} {{.AppLinksAndroidName}}{{end}}{{if .AppLinksAndroidURL}} ({{cyan .AppLinksAndroidURL}}){{end}}{{if .AppLinksAndroidPackage}} [Package: {{.AppLinksAndroidPackage}}]{{end}}
+{{- end}}
+{{- end}}
+{{- if or .ApplicationTitle .ThemeColor .Keywords .MetaRefresh}}
+
+{{bold "Page Metadata:"}}
+{{- if .ApplicationTitle}}
+  Application: {{.ApplicationTitle}}
+{{- end}}
+{{- if .ThemeColor}}
+  Theme Color: {{.ThemeColor}}
+{{- end}}
+{{- if .Keywords}}
+  Keywords: {{.Keywords}}
+{{- end}}
+{{- if .MetaRefresh}}
+  Meta Refresh: {{.MetaRefresh}}
 {{- end}}
 {{- end}}

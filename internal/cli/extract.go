@@ -29,7 +29,7 @@ func importLint(info *header.PageInfo, lists, rules []string) {
 //	lintRuleFlags:     --lint-rule                              Run linting with specific rules (comma separated).
 //	lintRun:           --lint-run                               Run default linting
 //	showImage:         --show-image                             Display the cover image (if available)
-//	style:             --style (default: "default")             The output style template to use (e.g. default, all_fields_plain)
+//	style:             --style (default: "default")             The output style template to use (e.g. default, quick, all_fields_plain)
 //	styleFile:         --style-file                             Custom template file path to use for output
 //	userAgent:         --user-agent (default: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36") The User-Agent header to use when fetching URLs
 //	showUnknown:       --show-unknown                           Show unknown metadata tags

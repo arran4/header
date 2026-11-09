@@ -29,6 +29,21 @@ URL: https://example.com/app
 
 Title (HTML):
   App Title
+
+Social Sharing:
+  Instagram User ID: 987654321
+
+App Links:
+  iOS: Test App (example://ios) [App Store ID: 123456]
+  Android: Test Android App (example://android) [Package: com.example.app]
+
+Page Metadata:
+  Theme Color: #ff0000
+-- expected_quick.txt --
+URL: https://example.com/app
+
+Title (HTML):
+  App Title
 -- expected_discord.txt --
 
 URL: https://example.com/app

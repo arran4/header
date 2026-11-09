@@ -15,7 +15,7 @@ Subcommands:
     --lint-rule string                                                                                                                                                   Run linting with specific rules (comma separated).
     --lint-run                                                                                                                                                           Run default linting
     --show-image                                                                                                                                                         Display the cover image (if available)
-    --style string                    (default: "default")                                                                                                               The output style template to use (e.g. default, all_fields_plain)
+    --style string                    (default: "default")                                                                                                               The output style template to use (e.g. default, quick, all_fields_plain)
     --style-file string                                                                                                                                                  Custom template file path to use for output
     --show-unknown                                                                                                                                                       Show unknown metadata tags
     --exclude-unknown string                                                                                                                                             Comma separated list of unknown tags to exclude

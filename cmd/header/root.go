@@ -139,7 +139,7 @@ func NewRoot(name, version, commit, date string) (*RootCmd, error) {
 
 	c.BoolVar(&c.showImage, "show-image", false, "Display the cover image (if available)")
 
-	c.StringVar(&c.style, "style", "default", "The output style template to use (e.g. default, all_fields_plain)")
+	c.StringVar(&c.style, "style", "default", "The output style template to use (e.g. default, quick, all_fields_plain)")
 
 	c.StringVar(&c.styleFile, "style-file", "", "Custom template file path to use for output")
 

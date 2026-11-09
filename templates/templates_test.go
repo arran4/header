@@ -66,7 +66,7 @@ func TestTemplates(t *testing.T) {
 				t.Fatalf("Failed to unmarshal input.json: %v", err)
 			}
 
-			tmplFiles := []string{"all_fields.tmpl", "all_fields_plain.tmpl", "default.tmpl", "discord.tmpl", "json.tmpl", "jsonld.tmpl", "opengraph.tmpl", "twitter.tmpl"}
+			tmplFiles := []string{"all_fields.tmpl", "all_fields_plain.tmpl", "default.tmpl", "discord.tmpl", "json.tmpl", "jsonld.tmpl", "opengraph.tmpl", "quick.tmpl", "twitter.tmpl"}
 			for _, tmplName := range tmplFiles {
 				t.Run(tmplName, func(t *testing.T) {
 					expectedOutputName := "expected_" + strings.TrimSuffix(tmplName, ".tmpl") + ".txt"

@@ -435,7 +435,7 @@ func (c *RootCmd) NewExtract() *Extract {
 
 	set.BoolVar(&v.showImage, "show-image", false, "Display the cover image (if available)")
 
-	set.StringVar(&v.style, "style", "default", "The output style template to use (e.g. default, all_fields_plain)")
+	set.StringVar(&v.style, "style", "default", "The output style template to use (e.g. default, quick, all_fields_plain)")
 
 	set.StringVar(&v.styleFile, "style-file", "", "Custom template file path to use for output")
 

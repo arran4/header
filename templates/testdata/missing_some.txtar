@@ -17,6 +17,17 @@ URL: https://example.com
 
 Title (HTML):
   Test Title
+
+Social Sharing:
+  Twitter Card: summary
+
+Structured Data (JSON-LD):
+  Type: Article
+-- expected_quick.txt --
+URL: https://example.com
+
+Title (HTML):
+  Test Title
 -- expected_json.txt --
 {
   "URL": "https://example.com",
