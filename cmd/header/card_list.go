@@ -29,14 +29,14 @@ type UsageDataCardList struct {
 }
 
 func (c *CardList) Usage() {
-	err := executeUsage(os.Stderr, "list_usage.txt", UsageDataCardList{c, false})
+	err := executeUsage(os.Stderr, "card_list_usage.txt", UsageDataCardList{c, false})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error generating usage: %s\n", err)
 	}
 }
 
 func (c *CardList) UsageRecursive() {
-	err := executeUsage(os.Stderr, "list_usage.txt", UsageDataCardList{c, true})
+	err := executeUsage(os.Stderr, "card_list_usage.txt", UsageDataCardList{c, true})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error generating usage: %s\n", err)
 	}
