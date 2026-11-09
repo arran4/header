@@ -17,7 +17,9 @@ Title: Example
 HTML Alternate Link: https://m.example.com/mobile (handheld)
 -- expected_default.txt --
 URL: https://example.com/desktop
-Title: Example
+
+Title (HTML):
+  Example
 -- expected_json.txt --
 {
   "URL": "https://example.com/desktop",

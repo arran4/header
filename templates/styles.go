@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -102,6 +103,8 @@ func FuncMap() template.FuncMap {
 			}
 			return string(b), nil
 		},
+		"htmlEscape": html.EscapeString,
+		"attrEscape": html.EscapeString,
 	}
 }
 

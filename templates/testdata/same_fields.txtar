@@ -22,8 +22,15 @@ OpenGraph and Twitter Description: Same description
 JSON-LD Name: Same Title
 -- expected_default.txt --
 URL: https://example.com
-Title: Test Title
-Description: Same description
+
+Title (HTML):
+  Test Title
+
+Title (OpenGraph, Twitter, JSON-LD):
+  Same Title
+
+Description (OpenGraph, Twitter):
+  Same description
 -- expected_json.txt --
 {
   "URL": "https://example.com",

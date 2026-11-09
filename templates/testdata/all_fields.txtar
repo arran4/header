@@ -95,11 +95,32 @@ Cover Images:
   - http://example.com/tw.jpg
 -- expected_default.txt --
 URL: https://example.com
-Title: Test Title
-Description: Test OG Description
+
+Title (HTML):
+  Test Title
+
+Title (OpenGraph):
+  OG Title
+
+Title (Twitter):
+  Twitter Title
+
+Title (JSON-LD):
+  Rick Astley
+
+Description (OpenGraph):
+  Test OG Description
+
+Description (Twitter):
+  Twitter Desc
+
+Description (JSON-LD):
+  JSON-LD Test Description
+
 Cover Images:
-  - http://example.com/og.jpg
-  - http://example.com/tw.jpg
+  http://example.com/og.jpg (OpenGraph)
+  http://example.com/tw.jpg (Twitter)
+  https://example.com/thumbnail.jpg (JSON-LD)
 -- expected_json.txt --
 {
   "URL": "https://example.com",
