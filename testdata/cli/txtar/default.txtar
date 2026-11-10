@@ -1,0 +1,101 @@
+test: default extraction overview and quick CLI regression
+# Compiled CLI coverage complements the exact expected_default.txt and
+# expected_quick.txt goldens in templates/testdata/*.txtar.
+# All pages are served by the in-process, offline fixture HTTP server.
+
+# No --style is required to get the richer overview.
+exec header extract $TEST_SERVER_URL/example
+stdout 'URL:'
+stdout 'Canonical URL: https://example.com/canonical-url'
+stdout 'Title \(HTML\):'
+stdout 'Example Page'
+stdout 'Social Sharing:'
+stdout 'OpenGraph Type: website'
+stdout 'Twitter Card: summary'
+stdout 'Cover Images:'
+stdout 'image.jpg \(OpenGraph\)'
+stdout 'Structured Data \(JSON-LD\):'
+stdout 'Type: WebPage'
+stdout 'Discovery Links:'
+stdout 'Feed Link: https://example.com/feed.xml'
+stdout 'Icon: https://example.com/favicon_32x32.png \(32x32\)'
+! stdout 'Description \('
+! stdout 'OpenGraph Image Dimensions:'
+! stderr '.'
+
+# Explicit --style default must use the same enriched output.
+exec header extract --style default $TEST_SERVER_URL/example
+stdout 'Canonical URL: https://example.com/canonical-url'
+stdout 'Social Sharing:'
+stdout 'Structured Data \(JSON-LD\):'
+stdout 'Discovery Links:'
+! stderr '.'
+
+# The root URL route must use the same default, not the old quick format.
+exec header -- $TEST_SERVER_URL/example
+stdout 'Canonical URL: https://example.com/canonical-url'
+stdout 'Social Sharing:'
+stdout 'Structured Data \(JSON-LD\):'
+stdout 'Discovery Links:'
+! stderr '.'
+
+# Quick deliberately retains the former minimal preview.
+exec header extract --style quick $TEST_SERVER_URL/example
+stdout 'URL:'
+stdout 'Title \(HTML\):'
+stdout 'Example Page'
+stdout 'Cover Images:'
+! stdout 'Canonical URL:'
+! stdout 'Social Sharing:'
+! stdout 'Structured Data \(JSON-LD\):'
+! stdout 'Discovery Links:'
+! stderr '.'
+
+# Canonical identical to the fetched URL: no redundant canonical line.
+# This fixture has no HTML <title>, but the current Title fallback copies OG title
+# into the generic field. Source misattribution is tracked in header issue #81.
+exec header extract $TEST_SERVER_URL/issue
+stdout 'URL \(canonical\):'
+stdout 'Title \(HTML, OpenGraph\):'
+stdout 'arran4 - Overview'
+stdout 'OpenGraph Type: profile'
+! stdout 'Canonical URL:'
+! stdout 'Title \(HTML\):'
+! stdout 'Twitter Card:'
+! stderr '.'
+
+# Discovery and application metadata appear only when supplied.
+exec header extract $TEST_SERVER_URL/media
+stdout 'Title \(HTML\):'
+stdout 'Media Title'
+stdout 'Discovery Links:'
+stdout 'Alternate Link: https://m.example.com/mobile'
+! stdout 'Social Sharing:'
+! stdout 'Structured Data \(JSON-LD\):'
+! stderr '.'
+
+exec header extract $TEST_SERVER_URL/instagram
+stdout 'Instagram User ID: 25048339'
+stdout 'Video:'
+stdout 'OpenGraph Video: https://example.com/video.mp4'
+stdout 'Discovery Links:'
+stdout 'App Links:'
+stdout 'iOS: Instagram'
+stdout 'Android: Instagram'
+stdout 'Page Metadata:'
+stdout 'Theme Color: #ffffff'
+! stdout 'Title \(HTML\):'
+! stderr '.'
+
+# Conflicting HTML and Open Graph titles remain separately attributed.
+# Absent descriptions are not invented; keywords remain in the overview.
+exec header extract $TEST_SERVER_URL/unknown
+stdout 'Title \(HTML\):'
+stdout 'Unknown Meta Test'
+stdout 'Title \(OpenGraph\):'
+stdout 'Known Title'
+stdout 'Page Metadata:'
+stdout 'Keywords: known, keywords'
+! stdout 'Description \('
+! stdout 'Structured Data \(JSON-LD\):'
+! stderr '.'
