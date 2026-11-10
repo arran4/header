@@ -17,36 +17,54 @@
 ## Installation
 
 ### GitHub Releases
-No GitHub releases have been published yet. After the first release, binaries will be available at https://github.com/arran4/header/releases.
+Download binaries for Linux, macOS and Windows, or Linux packages, from the [GitHub releases page](https://github.com/arran4/header/releases). The latest published version is [v0.0.6](https://github.com/arran4/header/releases/tag/v0.0.6); each release includes `checksums.txt` for verifying downloaded assets.
 
-### Homebrew (after the first release)
-```bash
-brew tap arran4/homebrew-tap
-brew install --cask header
-```
+### Homebrew (not yet published)
+There is not currently a `header` cask in the [arran4/homebrew-tap](https://github.com/arran4/homebrew-tap) repository. Until one is published, install from GitHub Releases or use `go install`.
 
 ### Go install
 ```bash
 go install github.com/arran4/header/cmd/header@latest
 ```
 
+To pin the published v0.0.6 version instead of tracking the latest release:
+
+```bash
+go install github.com/arran4/header/cmd/header@v0.0.6
+```
+
 ## Commands
 
 ### `show` / `extract` (default)
-Extracts human-readable metadata from a given URL.
+Extracts human-readable metadata from a given URL. Since v0.0.6, the default is a richer, provenance-aware overview; use `--style quick` for the previous compact presentation.
 
 ```bash
-header https://youtube.com/watch?v=dQw4w9WgXcQ
-header extract https://youtube.com/watch?v=dQw4w9WgXcQ
+header https://example.com/page
+header extract https://example.com/page
+header extract --style quick https://example.com/page
 ```
 
-Example Output:
-```
-URL: https://youtube.com/watch?v=dQw4w9WgXcQ
-Title: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster) - YouTube
-Description: The official video for “Never Gonna Give You Up” by Rick Astley. Never: The Autobiography 📚 OUT NOW! Follow this link to get your copy and listen to Rick’s ...
+Illustrative, abridged **default** output (based on an offline test fixture; actual metadata depends on the page):
+
+```text
+URL: https://example.com/page
+Canonical URL: https://example.com/canonical-url
+
+Title (HTML):
+  Example Page
+
+Social Sharing:
+  OpenGraph Type: website
+  Twitter Card: summary
+
 Cover Images:
-  - https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+  https://example.com/image.jpg (OpenGraph)
+
+Structured Data (JSON-LD):
+  Type: WebPage
+
+Discovery Links:
+  Icon: https://example.com/favicon_32x32.png (32x32)
 ```
 
 **Output Formats**
