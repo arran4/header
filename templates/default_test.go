@@ -109,7 +109,8 @@ func TestDefaultTemplate_RichOverview(t *testing.T) {
 		"Cover Images:",
 		"https://example.com/og.jpg (OpenGraph, Twitter)",
 		"Image Alt (OpenGraph, Twitter): Article banner",
-		"Image Dimensions: 1200x630 (image/jpeg)",
+		"OpenGraph Image Dimensions: 1200x630",
+		"OpenGraph Image Type: image/jpeg",
 		"Video:",
 		"OpenGraph Video: https://example.com/clip.mp4 (1920x1080, video/mp4)",
 		"Structured Data (JSON-LD):",
@@ -226,3 +227,71 @@ Cover Images:
 		t.Errorf("quick output mismatch.\nExpected:\n%s\nGot:\n%s", expected, quickOut)
 	}
 }
+
+func TestDefaultTemplate_EqualOpenGraphAndTwitterTypeStrings(t *testing.T) {
+	info := &header.PageInfo{
+		URL:         "https://example.com/",
+		Title:       "Test Page",
+		OGType:      "website",
+		TwitterCard: "website",
+	}
+
+	out := renderStyle(t, "default", info)
+
+	// Must always display OpenGraph type and Twitter card type as separate semantic fields,
+	// never combining them into "Type (OpenGraph, Twitter): website".
+	if strings.Contains(out, "Type (OpenGraph, Twitter):") {
+		t.Errorf("OpenGraph type and Twitter card type should not be combined: %s", out)
+	}
+	if !strings.Contains(out, "OpenGraph Type: website") {
+		t.Errorf("missing 'OpenGraph Type: website' in output: %s", out)
+	}
+	if !strings.Contains(out, "Twitter Card: website") {
+		t.Errorf("missing 'Twitter Card: website' in output: %s", out)
+	}
+}
+
+func TestDefaultTemplate_DistinctImageURLsWithDifferentSourceMetadata(t *testing.T) {
+	info := &header.PageInfo{
+		URL:             "https://example.com/article",
+		Title:           "Article Page",
+		OGImage:         "https://example.com/og-banner.jpg",
+		TwitterImage:    "https://example.com/twitter-card.png",
+		OGImageAlt:      "OpenGraph Banner Alt",
+		TwitterImageAlt: "Twitter Card Alt",
+		OGImageWidth:    "1200",
+		OGImageHeight:   "630",
+		OGImageType:     "image/jpeg",
+	}
+
+	out := renderStyle(t, "default", info)
+
+	// Distinct image URLs must be listed with their respective sources
+	if !strings.Contains(out, "https://example.com/og-banner.jpg (OpenGraph)") {
+		t.Errorf("missing OpenGraph cover image: %s", out)
+	}
+	if !strings.Contains(out, "https://example.com/twitter-card.png (Twitter)") {
+		t.Errorf("missing Twitter cover image: %s", out)
+	}
+
+	// Alt text should reflect distinct sources
+	if !strings.Contains(out, "Image Alt (OpenGraph): OpenGraph Banner Alt") {
+		t.Errorf("missing OpenGraph image alt: %s", out)
+	}
+	if !strings.Contains(out, "Image Alt (Twitter): Twitter Card Alt") {
+		t.Errorf("missing Twitter image alt: %s", out)
+	}
+
+	// Open Graph-specific dimensions and MIME type must be explicitly labelled
+	if !strings.Contains(out, "OpenGraph Image Dimensions: 1200x630") {
+		t.Errorf("missing explicit 'OpenGraph Image Dimensions: 1200x630': %s", out)
+	}
+	if !strings.Contains(out, "OpenGraph Image Type: image/jpeg") {
+		t.Errorf("missing explicit 'OpenGraph Image Type: image/jpeg': %s", out)
+	}
+	// Ensure generic/unqualified labels are not present
+	if strings.Contains(out, "\n  Image Dimensions:") || strings.Contains(out, "\n  Image Type:") {
+		t.Errorf("image dimensions/type must be explicitly labelled as OpenGraph: %s", out)
+	}
+}
+

@@ -22,15 +22,11 @@
 {{- if or .OGType .TwitterCard .InstagramOwnerUserID}}
 
 {{bold "Social Sharing:"}}
-{{- if and .OGType .TwitterCard (eq .OGType .TwitterCard)}}
-  Type (OpenGraph, Twitter): {{.OGType}}
-{{- else}}
 {{- if .OGType}}
   OpenGraph Type: {{.OGType}}
 {{- end}}
 {{- if .TwitterCard}}
   Twitter Card: {{.TwitterCard}}
-{{- end}}
 {{- end}}
 {{- if .InstagramOwnerUserID}}
   Instagram User ID: {{.InstagramOwnerUserID}}
@@ -55,9 +51,14 @@
 {{- end}}
 {{- end}}
 {{- if and .OGImageWidth .OGImageHeight}}
-  Image Dimensions: {{.OGImageWidth}}x{{.OGImageHeight}}{{if .OGImageType}} ({{.OGImageType}}){{end}}
-{{- else if .OGImageType}}
-  Image Type: {{.OGImageType}}
+  OpenGraph Image Dimensions: {{.OGImageWidth}}x{{.OGImageHeight}}
+{{- else if .OGImageWidth}}
+  OpenGraph Image Width: {{.OGImageWidth}}
+{{- else if .OGImageHeight}}
+  OpenGraph Image Height: {{.OGImageHeight}}
+{{- end}}
+{{- if .OGImageType}}
+  OpenGraph Image Type: {{.OGImageType}}
 {{- end}}
 {{- end}}
 {{- if or .OGVideo .TwitterPlayer .YouTubeVideoID}}

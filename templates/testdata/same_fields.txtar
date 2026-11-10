@@ -33,7 +33,8 @@ Description (OpenGraph, Twitter):
   Same description
 
 Social Sharing:
-  Type (OpenGraph, Twitter): website
+  OpenGraph Type: website
+  Twitter Card: website
 
 Structured Data (JSON-LD):
   Type: website
