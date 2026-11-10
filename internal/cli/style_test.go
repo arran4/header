@@ -104,7 +104,7 @@ func TestStyleExport(t *testing.T) {
 			t.Fatalf("failed to create target file: %v", err)
 		}
 		if err := os.Symlink(targetPath, symlinkPath); err != nil {
-			t.Fatalf("failed to create symlink: %v", err)
+			t.Skipf("skipping symlink test (symlink creation not supported/permitted on this platform): %v", err)
 		}
 
 		err := cli.StyleExport(symlinkPath, false, "all_fields")
@@ -140,7 +140,7 @@ func TestStyleExport(t *testing.T) {
 		symlinkPath := filepath.Join(tmpDir, "dangling.tmpl")
 
 		if err := os.Symlink(nonexistentTarget, symlinkPath); err != nil {
-			t.Fatalf("failed to create dangling symlink: %v", err)
+			t.Skipf("skipping dangling symlink test (symlink creation not supported/permitted on this platform): %v", err)
 		}
 
 		err := cli.StyleExport(symlinkPath, false, "all_fields")
@@ -248,7 +248,7 @@ func TestStyleExport(t *testing.T) {
 			t.Fatalf("failed to create target file: %v", err)
 		}
 		if err := os.Symlink(targetPath, symlinkPath); err != nil {
-			t.Fatalf("failed to create symlink: %v", err)
+			t.Skipf("skipping symlink test (symlink creation not supported/permitted on this platform): %v", err)
 		}
 
 		if err := cli.StyleExport(symlinkPath, true, "quick"); err != nil {
@@ -288,7 +288,7 @@ func TestStyleExport(t *testing.T) {
 		symlinkPath := filepath.Join(tmpDir, "dangling.tmpl")
 
 		if err := os.Symlink(nonexistentTarget, symlinkPath); err != nil {
-			t.Fatalf("failed to create dangling symlink: %v", err)
+			t.Skipf("skipping dangling symlink test (symlink creation not supported/permitted on this platform): %v", err)
 		}
 
 		if err := cli.StyleExport(symlinkPath, true, "quick"); err != nil {

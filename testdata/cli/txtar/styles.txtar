@@ -27,30 +27,20 @@ exec header style export --out exported.tmpl all_fields
 ! exec header style export --out exported.tmpl all_fields
 stderr 'already exists'
 
-# Collision rejection on symlinks and directories
-exec ln -s initial_target.tmpl symlink_target.tmpl
-exec ln -s nonexistent.tmpl dangling_symlink.tmpl
-
-! exec header style export --out symlink_target.tmpl all_fields
-stderr 'already exists'
-
-! exec header style export --out dangling_symlink.tmpl all_fields
-stderr 'already exists'
-
 ! exec header style export --out existing_dir all_fields
 stderr 'destination is a directory'
 
-# Force overwrite replaces symlink safely without mutating original target
-exec header style export --force --out symlink_target.tmpl quick
-exec cat initial_target.tmpl
-stdout 'Target original content'
-exec cat symlink_target.tmpl
-stdout 'URL:'
+# Force overwrite replaces existing file safely
+exec header style export --force --out exported.tmpl quick
+exec header extract --style-file exported.tmpl $TEST_SERVER_URL/example
+stdout 'Example Page'
+! stdout 'OpenGraph Type:'
 
 exec header style export --force --out exported.tmpl all_fields
 
 exec header extract --style-file exported.tmpl $TEST_SERVER_URL/example
 stdout 'Example Page'
+stdout 'OpenGraph Type:'
 
 exec header extract --style html $TEST_SERVER_URL/example
 stdout '<head>'
@@ -66,7 +56,5 @@ stderr 'cannot specify both --style and --style-file'
 
 ! exec header extract --style not-a-style $TEST_SERVER_URL/example
 stderr 'available styles:'
--- initial_target.tmpl --
-Target original content
 -- existing_dir/keep.txt --
 Placeholder
