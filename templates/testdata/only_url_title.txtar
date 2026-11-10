@@ -13,6 +13,11 @@ URL: https://example.com
 
 Title (HTML):
   Test Title
+-- expected_quick.txt --
+URL: https://example.com
+
+Title (HTML):
+  Test Title
 -- expected_json.txt --
 {
   "URL": "https://example.com",

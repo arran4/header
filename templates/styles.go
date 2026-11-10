@@ -25,12 +25,13 @@ type StyleInfo struct {
 var knownDescriptions = map[string]string{
 	"all_fields":       "Complete extracted metadata with terminal colors",
 	"all_fields_plain": "Complete extracted metadata without terminal colors",
-	"default":          "Concise human-readable metadata summary",
+	"default":          "Rich metadata overview with provenance and source differences",
 	"discord":          "Discord embed-oriented metadata preview",
 	"html":             "Deterministic synthetic HTML <head> metadata",
 	"json":             "Raw extracted metadata as formatted JSON",
 	"jsonld":           "Extracted JSON-LD structured data",
 	"opengraph":        "Open Graph protocol metadata properties",
+	"quick":            "Compact metadata summary grouping titles, descriptions and cover images",
 	"twitter":          "Twitter card metadata properties",
 }
 

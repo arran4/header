@@ -117,6 +117,59 @@ Description (Twitter):
 Description (JSON-LD):
   JSON-LD Test Description
 
+Social Sharing:
+  OpenGraph Type: article
+  Twitter Card: summary_large_image
+
+Cover Images:
+  http://example.com/og.jpg (OpenGraph)
+  http://example.com/tw.jpg (Twitter)
+  https://example.com/thumbnail.jpg (JSON-LD)
+  Image Alt (OpenGraph): OG Image Alt Text
+  Image Alt (Twitter): Twitter Image Alt Text
+
+Video:
+  OpenGraph Video: http://example.com/video.mp4 (1920x1080, video/mp4)
+  OpenGraph Video (secure): https://example.com/video.mp4
+  OpenGraph Video Alt: A video alt
+  Twitter Player: https://example.com/player (640x360)
+  YouTube Video ID: jNQXAC9IVRw (3m32s)
+
+Structured Data (JSON-LD):
+  Type: VideoObject
+  ID: https://example.com/article/1
+  Author: John Doe
+  Publisher: Example News
+  Upload Date: 2023-10-24 23:57:33 -0700
+
+Discovery Links:
+  Feed Link: https://example.com/rss ("RSS Feed", application/rss+xml)
+  Icon: https://example.com/favicon.ico
+  Icon: https://example.com/favicon_32x32.png (32x32)
+-- expected_quick.txt --
+URL: https://example.com
+
+Title (HTML):
+  Test Title
+
+Title (OpenGraph):
+  OG Title
+
+Title (Twitter):
+  Twitter Title
+
+Title (JSON-LD):
+  Rick Astley
+
+Description (OpenGraph):
+  Test OG Description
+
+Description (Twitter):
+  Twitter Desc
+
+Description (JSON-LD):
+  JSON-LD Test Description
+
 Cover Images:
   http://example.com/og.jpg (OpenGraph)
   http://example.com/tw.jpg (Twitter)

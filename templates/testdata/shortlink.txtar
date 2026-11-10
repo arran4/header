@@ -12,6 +12,12 @@ Title: Test Title
 HTML Short Link: https://example.com/sp
 -- expected_default.txt --
 URL: https://example.com/some-page?utm_source=test
+Shortlink: https://example.com/sp
+
+Title (HTML):
+  Test Title
+-- expected_quick.txt --
+URL: https://example.com/some-page?utm_source=test
 
 Title (HTML):
   Test Title

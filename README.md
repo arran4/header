@@ -51,14 +51,24 @@ Cover Images:
 
 **Output Formats**
 The tool supports multiple output formatting templates using the `--style` flag:
-- `default`: The default format printing concise, highlighted essential fields (URL, title, description, cover images).
-- `all_fields`: A detailed format printing all captured metadata grouped logically.
-- `all_fields_plain`: A detailed plain text format.
-- `json`: Prints the raw page metadata as JSON.
+- `default`: Rich metadata overview with provenance, source differences, social cards, media, structured data, and discovery links.
+- `quick`: Compact metadata summary grouping titles, descriptions, and cover images by source (the previous default).
+- `all_fields`: Full detailed format printing all captured metadata grouped logically.
+- `all_fields_plain`: Full detailed plain text format without terminal colors.
+- `html`: Deterministic synthetic HTML `<head>` representation.
+- `json`: Raw extracted metadata as formatted JSON.
 - `discord`: A format tailored for Discord metadata embedding.
-- `jsonld`: Prints human readable JSON-LD metadata.
-- `opengraph`: Prints OpenGraph metadata only.
-- `twitter`: Prints Twitter card metadata only.
+- `jsonld`: Extracted JSON-LD structured data.
+- `opengraph`: OpenGraph protocol metadata only.
+- `twitter`: Twitter card metadata only.
+
+Discover and export available templates:
+```bash
+header styles
+header style export quick
+header extract --style quick https://example.com
+header extract --style-file ./custom.tmpl https://example.com
+```
 
 Example of retrieving all fields in JSON:
 ```bash

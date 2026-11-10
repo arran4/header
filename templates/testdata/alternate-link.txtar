@@ -20,6 +20,14 @@ URL: https://example.com/desktop
 
 Title (HTML):
   Example
+
+Discovery Links:
+  Alternate Link: https://m.example.com/mobile (handheld)
+-- expected_quick.txt --
+URL: https://example.com/desktop
+
+Title (HTML):
+  Example
 -- expected_json.txt --
 {
   "URL": "https://example.com/desktop",

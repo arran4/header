@@ -10,6 +10,11 @@ URL: https://example.com/empty
 
 Title (HTML):
   Empty metadata
+-- expected_quick.txt --
+URL: https://example.com/empty
+
+Title (HTML):
+  Empty metadata
 -- expected_discord.txt --
 
 URL: https://example.com/empty

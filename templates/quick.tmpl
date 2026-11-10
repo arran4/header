@@ -1,0 +1,22 @@
+{{- if and .CanonicalLink (eq .URL .CanonicalLink) -}}
+{{bold "URL (canonical):"}} {{cyan .URL}}
+{{- else -}}
+{{bold "URL:"}} {{cyan .URL}}
+{{- end}}
+{{- range .GroupedTitles}}
+
+{{bold (printf "Title (%s):" .SourcesString)}}
+  {{green .Value}}
+{{- end}}
+{{- range .GroupedDescriptions}}
+
+{{bold (printf "Description (%s):" .SourcesString)}}
+  {{.Value}}
+{{- end}}
+{{- if .GroupedCoverImages}}
+
+{{bold "Cover Images:"}}
+{{- range .GroupedCoverImages}}
+  {{yellow .URL}} ({{.SourcesString}})
+{{- end}}
+{{- end}}
