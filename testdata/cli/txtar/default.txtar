@@ -52,10 +52,11 @@ stdout 'Cover Images:'
 ! stderr '.'
 
 # Canonical identical to the fetched URL: no redundant canonical line.
-# This fixture has an Open Graph title but no HTML title.
+# This fixture has no HTML <title>, but the current Title fallback copies OG title
+# into the generic field. Source misattribution is tracked in header issue #81.
 exec header extract $TEST_SERVER_URL/issue
 stdout 'URL \(canonical\):'
-stdout 'Title \(OpenGraph\):'
+stdout 'Title \(HTML, OpenGraph\):'
 stdout 'arran4 - Overview'
 stdout 'OpenGraph Type: profile'
 ! stdout 'Canonical URL:'
