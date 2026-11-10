@@ -3,6 +3,12 @@ Usage: header [flags...] style export [flags...] <name>
 
 Export an extraction style template.
 
+By default without --force, exports are created atomically and exclusively; existing files,
+directories, and symlinks (including dangling symlinks) are never overwritten.
+When --force is specified, the destination is safely replaced via an atomic temporary file rename.
+If the destination is an existing symlink, --force replaces the symlink itself and does not follow
+or overwrite the symlink target. Exporting to an existing directory is always rejected.
+
 Subcommands:
     help         Print this help message
     usage        Print this usage message
