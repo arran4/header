@@ -25,6 +25,7 @@ func renderHTML(t *testing.T, info *header.PageInfo) string {
 func TestHTMLTemplate_DeterministicStructure(t *testing.T) {
 	info := &header.PageInfo{
 		Title:              "Example title",
+		HTMLTitle:          "Example title",
 		Description:        "Example description",
 		OGTitle:            "Example title",
 		OGDescription:      "Example description",
@@ -51,6 +52,7 @@ func TestHTMLTemplate_DeterministicStructure(t *testing.T) {
 func TestHTMLTemplate_EscapingAndInjection(t *testing.T) {
 	info := &header.PageInfo{
 		Title:         `<script>alert("XSS & title")</script>`,
+		HTMLTitle:     `<script>alert("XSS & title")</script>`,
 		Description:   `" onclick="alert('inject')" <tag>`,
 		OGTitle:       `" onmouseover="bad()" & <test>`,
 		CanonicalLink: `https://example.com/?a=1&b=2" onclick="bad()`,
@@ -82,6 +84,7 @@ func TestHTMLTemplate_PreserveDistinctSources(t *testing.T) {
 	// Grouped text view coalesces these, but synthetic HTML MUST preserve distinct tags
 	info := &header.PageInfo{
 		Title:        "Same Title",
+		HTMLTitle:    "Same Title",
 		OGTitle:      "Same Title",
 		TwitterTitle: "Same Title",
 	}
@@ -97,6 +100,61 @@ func TestHTMLTemplate_PreserveDistinctSources(t *testing.T) {
 	if !strings.Contains(out, `<meta name="twitter:title" content="Same Title">`) {
 		t.Errorf("missing twitter:title: %s", out)
 	}
+}
+
+func TestHTMLTemplate_OmitTitleWhenOnlyOpenGraphOrTwitter(t *testing.T) {
+	info := &header.PageInfo{
+		Title:        "OG Title",
+		OGTitle:      "OG Title",
+		TwitterTitle: "Twitter Title",
+	}
+
+	out := renderHTML(t, info)
+
+	if strings.Contains(out, "<title>") {
+		t.Errorf("synthetic HTML should omit <title> when no HTML title was observed: %s", out)
+	}
+	if !strings.Contains(out, `<meta property="og:title" content="OG Title">`) {
+		t.Errorf("missing og:title: %s", out)
+	}
+	if !strings.Contains(out, `<meta name="twitter:title" content="Twitter Title">`) {
+		t.Errorf("missing twitter:title: %s", out)
+	}
+}
+
+func TestHTMLTemplate_OmitTitleWhenOnlyJSONLDOrYouTube(t *testing.T) {
+	t.Run("JSON-LD headline only omits title tag", func(t *testing.T) {
+		info := &header.PageInfo{
+			Title:          "JSON-LD Headline",
+			JSONLDHeadline: "JSON-LD Headline",
+		}
+		out := renderHTML(t, info)
+		if strings.Contains(out, "<title>") {
+			t.Errorf("synthetic HTML must omit <title> for JSON-LD headline-only page, got: %s", out)
+		}
+	})
+
+	t.Run("YouTube only omits title tag", func(t *testing.T) {
+		info := &header.PageInfo{
+			Title:          "YouTube Video Title",
+			YouTubeVideoID: "dQw4w9WgXcQ",
+			YouTubeTitle:   "YouTube Video Title",
+		}
+		out := renderHTML(t, info)
+		if strings.Contains(out, "<title>") {
+			t.Errorf("synthetic HTML must omit <title> for YouTube-only page, got: %s", out)
+		}
+	})
+
+	t.Run("Legacy manually constructed PageInfo retains title tag", func(t *testing.T) {
+		info := &header.PageInfo{
+			Title: "Legacy Manual Title",
+		}
+		out := renderHTML(t, info)
+		if !strings.Contains(out, "<title>Legacy Manual Title</title>") {
+			t.Errorf("expected <title> for legacy manual PageInfo without source tags, got: %s", out)
+		}
+	})
 }
 
 func TestHTMLTemplate_MissingFields(t *testing.T) {

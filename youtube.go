@@ -55,8 +55,9 @@ func (p *youtubeProcessor) ProcessToken(t html.Token) bool {
 					sec, _ := strconv.Atoi(pr.VideoDetails.LengthSeconds)
 					p.info.Mutate(func(i *PageInfo) {
 						i.YouTubeVideoID = pr.VideoDetails.VideoID
-						if i.Title == "" && pr.VideoDetails.Title != "" {
-							i.Title = pr.VideoDetails.Title
+						if pr.VideoDetails.Title != "" {
+							i.YouTubeTitle = pr.VideoDetails.Title
+							i.updatePreferredTitle()
 						}
 						i.YouTubeLengthSeconds = sec
 						i.YouTubeDuration = time.Duration(sec) * time.Second

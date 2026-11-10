@@ -62,9 +62,7 @@ func (p *openGraphProcessor) ProcessToken(t html.Token) bool {
 					case "og:title":
 						i.KnownMetaTracker.MarkKnown(property)
 						i.OGTitle = content
-						if i.Title == "" {
-							i.Title = content
-						}
+						i.updatePreferredTitle()
 					case "og:video", "og:video:url":
 						i.KnownMetaTracker.MarkKnown(property)
 						i.OGVideo = content

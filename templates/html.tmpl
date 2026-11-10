@@ -10,7 +10,9 @@
     * Duplicate unknown meta tags or conflicting source tags are rendered sequentially in standard order.
 */ -}}
 <head>
-{{- if .Title}}
+{{- if .HTMLTitle}}
+  <title>{{htmlEscape .HTMLTitle}}</title>
+{{- else if and .Title (ne .Title .OGTitle) (ne .Title .TwitterTitle) (ne .Title .JSONLDHeadline) (ne .Title .JSONLDName) (ne .Title .YouTubeTitle)}}
   <title>{{htmlEscape .Title}}</title>
 {{- end}}
 {{- if .Description}}
