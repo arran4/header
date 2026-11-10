@@ -141,6 +141,7 @@ func extractDataFromMap(data map[string]interface{}, info *PageInfo) {
 		if n, ok := data["name"].(string); ok {
 			if i.JSONLDName == "" {
 				i.JSONLDName = n
+				i.updatePreferredTitle()
 			}
 		}
 		if d, ok := data["description"].(string); ok {
@@ -190,8 +191,9 @@ func extractDataFromMap(data map[string]interface{}, info *PageInfo) {
 		}
 
 		if t, ok := data["headline"].(string); ok {
-			if i.Title == "" {
-				i.Title = t
+			if i.JSONLDHeadline == "" {
+				i.JSONLDHeadline = t
+				i.updatePreferredTitle()
 			}
 		}
 	})

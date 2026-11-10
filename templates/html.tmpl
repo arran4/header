@@ -12,7 +12,7 @@
 <head>
 {{- if .HTMLTitle}}
   <title>{{htmlEscape .HTMLTitle}}</title>
-{{- else if and .Title (not .OGTitle) (not .TwitterTitle)}}
+{{- else if and .Title (ne .Title .OGTitle) (ne .Title .TwitterTitle) (ne .Title .JSONLDHeadline) (ne .Title .JSONLDName) (ne .Title .YouTubeTitle)}}
   <title>{{htmlEscape .Title}}</title>
 {{- end}}
 {{- if .Description}}

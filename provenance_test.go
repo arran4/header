@@ -2,6 +2,7 @@ package header
 
 import (
 	"bytes"
+	"encoding/json"
 	"strings"
 	"testing"
 	"text/template"
@@ -39,8 +40,12 @@ func renderDefault(t *testing.T, info *PageInfo) string {
 }
 
 func extractHTML(htmlContent string) *PageInfo {
+	return extractHTMLWithURL("https://example.com/", htmlContent)
+}
+
+func extractHTMLWithURL(urlStr, htmlContent string) *PageInfo {
 	info := &PageInfo{
-		URL: "https://example.com/",
+		URL: urlStr,
 	}
 	processors := make([]Processor, len(extractorRegistry))
 	active := make([]bool, len(extractorRegistry))
@@ -463,6 +468,153 @@ func TestProvenance_TitleProvenanceAndPrecedence(t *testing.T) {
 		}
 		if infoOGFirst.HTMLTitle != "" || infoTWFirst.HTMLTitle != "" {
 			t.Errorf("HTMLTitle must remain empty when no <title> tag exists")
+		}
+	})
+
+	t.Run("JSON-LD headline-only title accurately tracked without HTML misattribution", func(t *testing.T) {
+		html := `<!DOCTYPE html><html><head>
+			<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "NewsArticle",
+				"headline": "Exclusive Breaking News Headline"
+			}
+			</script>
+		</head><body></body></html>`
+		info := extractHTML(html)
+
+		if info.HTMLTitle != "" {
+			t.Errorf("expected empty HTMLTitle, got %q", info.HTMLTitle)
+		}
+		if info.JSONLDHeadline != "Exclusive Breaking News Headline" {
+			t.Errorf("expected JSONLDHeadline 'Exclusive Breaking News Headline', got %q", info.JSONLDHeadline)
+		}
+		if info.Title != "Exclusive Breaking News Headline" {
+			t.Errorf("expected preferred Title to match JSON-LD headline, got %q", info.Title)
+		}
+
+		grouped := info.GroupedTitles()
+		if len(grouped) != 1 {
+			t.Fatalf("expected 1 grouped title for JSON-LD headline, got %d: %+v", len(grouped), grouped)
+		}
+		if grouped[0].SourcesString() != "JSON-LD" || grouped[0].Value != "Exclusive Breaking News Headline" {
+			t.Errorf("unexpected grouped title: %+v", grouped[0])
+		}
+
+		out := renderDefault(t, info)
+		if !strings.Contains(out, "Title (JSON-LD):") {
+			t.Errorf("expected 'Title (JSON-LD):' in default output: %s", out)
+		}
+		if strings.Contains(out, "Title (HTML") {
+			t.Errorf("output must not attribute JSON-LD title to HTML: %s", out)
+		}
+	})
+
+	t.Run("YouTube-only title accurately tracked without HTML misattribution", func(t *testing.T) {
+		html := `<!DOCTYPE html><html><head>
+			<script>var ytInitialPlayerResponse = {"videoDetails": {"videoId": "dQw4w9WgXcQ", "title": "Rick Astley - Standalone Video", "lengthSeconds": "212"}};</script>
+		</head><body></body></html>`
+		info := extractHTMLWithURL("https://www.youtube.com/watch?v=dQw4w9WgXcQ", html)
+
+		if info.HTMLTitle != "" {
+			t.Errorf("expected empty HTMLTitle, got %q", info.HTMLTitle)
+		}
+		if info.YouTubeTitle != "Rick Astley - Standalone Video" {
+			t.Errorf("expected YouTubeTitle 'Rick Astley - Standalone Video', got %q", info.YouTubeTitle)
+		}
+		if info.Title != "Rick Astley - Standalone Video" {
+			t.Errorf("expected preferred Title to match YouTube title, got %q", info.Title)
+		}
+
+		grouped := info.GroupedTitles()
+		if len(grouped) != 1 {
+			t.Fatalf("expected 1 grouped title for YouTube video, got %d: %+v", len(grouped), grouped)
+		}
+		if grouped[0].SourcesString() != "YouTube" || grouped[0].Value != "Rick Astley - Standalone Video" {
+			t.Errorf("unexpected grouped title: %+v", grouped[0])
+		}
+
+		out := renderDefault(t, info)
+		if !strings.Contains(out, "Title (YouTube):") {
+			t.Errorf("expected 'Title (YouTube):' in default output: %s", out)
+		}
+		if strings.Contains(out, "Title (HTML") {
+			t.Errorf("output must not attribute YouTube title to HTML: %s", out)
+		}
+	})
+
+	t.Run("Legacy manually constructed PageInfo retains HTML attribution", func(t *testing.T) {
+		info := &PageInfo{
+			Title: "Legacy Standalone Title",
+		}
+
+		grouped := info.GroupedTitles()
+		if len(grouped) != 1 {
+			t.Fatalf("expected 1 grouped title, got %d: %+v", len(grouped), grouped)
+		}
+		if grouped[0].SourcesString() != "HTML" || grouped[0].Value != "Legacy Standalone Title" {
+			t.Errorf("expected HTML attribution for legacy PageInfo, got: %+v", grouped[0])
+		}
+
+		out := renderDefault(t, info)
+		if !strings.Contains(out, "Title (HTML):") {
+			t.Errorf("expected 'Title (HTML):' in default output: %s", out)
+		}
+	})
+}
+
+func TestPageInfo_HTMLTitleJSONSerialization(t *testing.T) {
+	t.Run("HTMLTitle present in JSON output when observed", func(t *testing.T) {
+		info := &PageInfo{
+			Title:     "Page Title",
+			HTMLTitle: "Page Title",
+			URL:       "https://example.com/",
+		}
+
+		b, err := json.Marshal(info)
+		if err != nil {
+			t.Fatalf("failed to marshal info: %v", err)
+		}
+		jsonStr := string(b)
+
+		if !strings.Contains(jsonStr, `"HTMLTitle":"Page Title"`) {
+			t.Errorf("expected 'HTMLTitle' field in JSON output: %s", jsonStr)
+		}
+		if !strings.Contains(jsonStr, `"Title":"Page Title"`) {
+			t.Errorf("expected backward-compatible 'Title' field in JSON output: %s", jsonStr)
+		}
+
+		// Verify round-trip unmarshaling
+		var roundTrip PageInfo
+		if err := json.Unmarshal(b, &roundTrip); err != nil {
+			t.Fatalf("failed to unmarshal JSON: %v", err)
+		}
+		if roundTrip.HTMLTitle != "Page Title" || roundTrip.Title != "Page Title" {
+			t.Errorf("round-trip mismatch: got HTMLTitle=%q, Title=%q", roundTrip.HTMLTitle, roundTrip.Title)
+		}
+	})
+
+	t.Run("HTMLTitle omitted from JSON output when empty", func(t *testing.T) {
+		info := &PageInfo{
+			Title:   "Fallback Title",
+			OGTitle: "Fallback Title",
+			URL:     "https://example.com/",
+		}
+
+		b, err := json.Marshal(info)
+		if err != nil {
+			t.Fatalf("failed to marshal info: %v", err)
+		}
+		jsonStr := string(b)
+
+		if strings.Contains(jsonStr, `"HTMLTitle"`) {
+			t.Errorf("HTMLTitle must be omitted (omitempty) when empty: %s", jsonStr)
+		}
+		if !strings.Contains(jsonStr, `"Title":"Fallback Title"`) {
+			t.Errorf("expected backward-compatible 'Title' field in JSON output: %s", jsonStr)
+		}
+		if !strings.Contains(jsonStr, `"OGTitle":"Fallback Title"`) {
+			t.Errorf("expected 'OGTitle' field in JSON output: %s", jsonStr)
 		}
 	})
 }

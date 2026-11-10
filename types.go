@@ -54,6 +54,7 @@ type PageInfo struct {
 
 	// YouTube Specific
 	YouTubeVideoID       string        `json:",omitempty"`
+	YouTubeTitle         string        `json:",omitempty"`
 	YouTubeLengthSeconds int           `json:",omitempty"`
 	YouTubeDuration      time.Duration `json:",omitempty"`
 
@@ -76,6 +77,7 @@ type PageInfo struct {
 	JSONLDType         string        `json:",omitempty"`
 	JSONLDID           string        `json:",omitempty"`
 	JSONLDName         string        `json:",omitempty"`
+	JSONLDHeadline     string        `json:",omitempty"`
 	JSONLDDescription  string        `json:",omitempty"`
 	JSONLDUploadDate       string        `json:",omitempty"`
 	JSONLDUploadDateParsed time.Time     `json:",omitempty"`
@@ -355,7 +357,7 @@ func (p *PageInfo) Mutate(fn func(*PageInfo)) {
 }
 
 // updatePreferredTitle updates Title based on provenance precedence:
-// HTML title > OpenGraph title > Twitter title.
+// HTML title > OpenGraph title > Twitter title > JSON-LD headline > JSON-LD name > YouTube title.
 // Assumes p.mu is held (e.g. within Mutate).
 func (p *PageInfo) updatePreferredTitle() {
 	if p.HTMLTitle != "" {
@@ -364,6 +366,12 @@ func (p *PageInfo) updatePreferredTitle() {
 		p.Title = p.OGTitle
 	} else if p.TwitterTitle != "" {
 		p.Title = p.TwitterTitle
+	} else if p.JSONLDHeadline != "" {
+		p.Title = p.JSONLDHeadline
+	} else if p.JSONLDName != "" {
+		p.Title = p.JSONLDName
+	} else if p.YouTubeTitle != "" {
+		p.Title = p.YouTubeTitle
 	}
 }
 
@@ -399,6 +407,7 @@ var canonicalSourceOrder = map[string]int{
 	"OpenGraph": 2,
 	"Twitter":   3,
 	"JSON-LD":   4,
+	"YouTube":   5,
 }
 
 func groupValues(items []sourceValue) []ProvenanceProperty {
@@ -441,7 +450,12 @@ func (p *PageInfo) GroupedTitles() []ProvenanceProperty {
 	defer p.mu.Unlock()
 
 	htmlTitle := p.HTMLTitle
-	if htmlTitle == "" && p.Title != "" && p.Title != p.OGTitle && p.Title != p.TwitterTitle && p.Title != p.JSONLDName {
+	if htmlTitle == "" && p.Title != "" &&
+		p.Title != p.OGTitle &&
+		p.Title != p.TwitterTitle &&
+		p.Title != p.JSONLDName &&
+		p.Title != p.JSONLDHeadline &&
+		p.Title != p.YouTubeTitle {
 		htmlTitle = p.Title
 	}
 
@@ -450,6 +464,8 @@ func (p *PageInfo) GroupedTitles() []ProvenanceProperty {
 		{source: "OpenGraph", value: p.OGTitle},
 		{source: "Twitter", value: p.TwitterTitle},
 		{source: "JSON-LD", value: p.JSONLDName},
+		{source: "JSON-LD", value: p.JSONLDHeadline},
+		{source: "YouTube", value: p.YouTubeTitle},
 	}
 	return groupValues(items)
 }

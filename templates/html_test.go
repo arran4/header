@@ -122,6 +122,41 @@ func TestHTMLTemplate_OmitTitleWhenOnlyOpenGraphOrTwitter(t *testing.T) {
 	}
 }
 
+func TestHTMLTemplate_OmitTitleWhenOnlyJSONLDOrYouTube(t *testing.T) {
+	t.Run("JSON-LD headline only omits title tag", func(t *testing.T) {
+		info := &header.PageInfo{
+			Title:          "JSON-LD Headline",
+			JSONLDHeadline: "JSON-LD Headline",
+		}
+		out := renderHTML(t, info)
+		if strings.Contains(out, "<title>") {
+			t.Errorf("synthetic HTML must omit <title> for JSON-LD headline-only page, got: %s", out)
+		}
+	})
+
+	t.Run("YouTube only omits title tag", func(t *testing.T) {
+		info := &header.PageInfo{
+			Title:          "YouTube Video Title",
+			YouTubeVideoID: "dQw4w9WgXcQ",
+			YouTubeTitle:   "YouTube Video Title",
+		}
+		out := renderHTML(t, info)
+		if strings.Contains(out, "<title>") {
+			t.Errorf("synthetic HTML must omit <title> for YouTube-only page, got: %s", out)
+		}
+	})
+
+	t.Run("Legacy manually constructed PageInfo retains title tag", func(t *testing.T) {
+		info := &header.PageInfo{
+			Title: "Legacy Manual Title",
+		}
+		out := renderHTML(t, info)
+		if !strings.Contains(out, "<title>Legacy Manual Title</title>") {
+			t.Errorf("expected <title> for legacy manual PageInfo without source tags, got: %s", out)
+		}
+	})
+}
+
 func TestHTMLTemplate_MissingFields(t *testing.T) {
 	info := &header.PageInfo{
 		URL: "https://example.com/only-url",
