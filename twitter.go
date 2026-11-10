@@ -47,9 +47,7 @@ func (p *twitterProcessor) ProcessToken(t html.Token) bool {
 					case "twitter:title":
 						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterTitle = content
-						if i.Title == "" {
-							i.Title = content
-						}
+						i.updatePreferredTitle()
 					case "twitter:description":
 						i.KnownMetaTracker.MarkKnown(name)
 						i.TwitterDescription = content

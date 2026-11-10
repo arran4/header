@@ -15,8 +15,9 @@ func (e htmlHeadExtractor) Init(info *PageInfo) Processor {
 }
 
 type htmlHeadProcessor struct {
-	info    *PageInfo
-	inTitle bool
+	info      *PageInfo
+	inTitle   bool
+	titleRead bool
 }
 
 func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
@@ -87,7 +88,9 @@ func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
 				}
 			})
 		case "title":
-			p.inTitle = true
+			if !p.titleRead {
+				p.inTitle = true
+			}
 		case "link":
 			var rel, href, sizes, media, typ, title string
 			for _, attr := range t.Attr {
@@ -181,20 +184,32 @@ func (p *htmlHeadProcessor) ProcessToken(t html.Token) bool {
 				}
 			})
 		case "body":
+			if p.inTitle {
+				p.inTitle = false
+				p.titleRead = true
+				p.info.Mutate(func(i *PageInfo) {
+					i.HTMLTitle = strings.TrimSpace(i.HTMLTitle)
+					i.updatePreferredTitle()
+				})
+			}
 			return true
 		}
 	} else if t.Type == html.TextToken {
-		if p.inTitle {
+		if p.inTitle && !p.titleRead {
 			data := t.Data
 			p.info.Mutate(func(i *PageInfo) {
-				if i.Title == "" {
-					i.Title = data
-				}
+				i.HTMLTitle += data
+				i.updatePreferredTitle()
 			})
 		}
 	} else if t.Type == html.EndTagToken {
-		if t.Data == "title" {
+		if t.Data == "title" && p.inTitle {
 			p.inTitle = false
+			p.titleRead = true
+			p.info.Mutate(func(i *PageInfo) {
+				i.HTMLTitle = strings.TrimSpace(i.HTMLTitle)
+				i.updatePreferredTitle()
+			})
 		}
 	}
 

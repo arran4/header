@@ -72,6 +72,7 @@ func TestProvenance_IdenticalMetadata(t *testing.T) {
 	info := &PageInfo{
 		URL:                "https://example.com/",
 		Title:              "Example title",
+		HTMLTitle:          "Example title",
 		OGTitle:            "Example title",
 		TwitterTitle:       "Example title",
 		OGDescription:      "Example description",
@@ -184,6 +185,7 @@ func TestProvenance_SourceOrderingAndDeduplication(t *testing.T) {
 	info := &PageInfo{
 		URL:              "https://example.com/",
 		Title:            "Shared Title",
+		HTMLTitle:        "Shared Title",
 		OGTitle:          "Shared Title",
 		TwitterTitle:     "Shared Title",
 		JSONLDName:       "Shared Title",
@@ -248,4 +250,219 @@ func TestProvenance_HTMLExtraction(t *testing.T) {
 	if !strings.Contains(out, "Description (HTML):") || !strings.Contains(out, "Description (OpenGraph):") {
 		t.Errorf("expected Descriptions separated since they differ, got: %s", out)
 	}
+}
+
+func TestProvenance_TitleProvenanceAndPrecedence(t *testing.T) {
+	t.Run("OG-only title accurately tracked without HTML misattribution", func(t *testing.T) {
+		html := `<!DOCTYPE html><html><head><meta property="og:title" content="OpenGraph Only Title"></head><body></body></html>`
+		info := extractHTML(html)
+
+		if info.HTMLTitle != "" {
+			t.Errorf("expected empty HTMLTitle, got %q", info.HTMLTitle)
+		}
+		if info.OGTitle != "OpenGraph Only Title" {
+			t.Errorf("expected OGTitle 'OpenGraph Only Title', got %q", info.OGTitle)
+		}
+		if info.Title != "OpenGraph Only Title" {
+			t.Errorf("expected fallback Title 'OpenGraph Only Title', got %q", info.Title)
+		}
+
+		grouped := info.GroupedTitles()
+		if len(grouped) != 1 {
+			t.Fatalf("expected 1 grouped title, got %d: %+v", len(grouped), grouped)
+		}
+		if grouped[0].SourcesString() != "OpenGraph" || grouped[0].Value != "OpenGraph Only Title" {
+			t.Errorf("unexpected grouped title: %+v", grouped[0])
+		}
+
+		out := renderDefault(t, info)
+		if !strings.Contains(out, "Title (OpenGraph):") {
+			t.Errorf("expected 'Title (OpenGraph):' in default output: %s", out)
+		}
+		if strings.Contains(out, "Title (HTML") {
+			t.Errorf("output must not attribute title to HTML: %s", out)
+		}
+	})
+
+	t.Run("Twitter-only title accurately tracked without HTML misattribution", func(t *testing.T) {
+		html := `<!DOCTYPE html><html><head><meta name="twitter:title" content="Twitter Only Title"></head><body></body></html>`
+		info := extractHTML(html)
+
+		if info.HTMLTitle != "" {
+			t.Errorf("expected empty HTMLTitle, got %q", info.HTMLTitle)
+		}
+		if info.TwitterTitle != "Twitter Only Title" {
+			t.Errorf("expected TwitterTitle 'Twitter Only Title', got %q", info.TwitterTitle)
+		}
+		if info.Title != "Twitter Only Title" {
+			t.Errorf("expected fallback Title 'Twitter Only Title', got %q", info.Title)
+		}
+
+		grouped := info.GroupedTitles()
+		if len(grouped) != 1 {
+			t.Fatalf("expected 1 grouped title, got %d: %+v", len(grouped), grouped)
+		}
+		if grouped[0].SourcesString() != "Twitter" || grouped[0].Value != "Twitter Only Title" {
+			t.Errorf("unexpected grouped title: %+v", grouped[0])
+		}
+
+		out := renderDefault(t, info)
+		if !strings.Contains(out, "Title (Twitter):") {
+			t.Errorf("expected 'Title (Twitter):' in default output: %s", out)
+		}
+		if strings.Contains(out, "Title (HTML") {
+			t.Errorf("output must not attribute title to HTML: %s", out)
+		}
+	})
+
+	t.Run("HTML-only title accurately tracked", func(t *testing.T) {
+		html := `<!DOCTYPE html><html><head><title>HTML Only Title</title></head><body></body></html>`
+		info := extractHTML(html)
+
+		if info.HTMLTitle != "HTML Only Title" {
+			t.Errorf("expected HTMLTitle 'HTML Only Title', got %q", info.HTMLTitle)
+		}
+		if info.Title != "HTML Only Title" {
+			t.Errorf("expected Title 'HTML Only Title', got %q", info.Title)
+		}
+
+		grouped := info.GroupedTitles()
+		if len(grouped) != 1 {
+			t.Fatalf("expected 1 grouped title, got %d: %+v", len(grouped), grouped)
+		}
+		if grouped[0].SourcesString() != "HTML" || grouped[0].Value != "HTML Only Title" {
+			t.Errorf("unexpected grouped title: %+v", grouped[0])
+		}
+
+		out := renderDefault(t, info)
+		if !strings.Contains(out, "Title (HTML):") {
+			t.Errorf("expected 'Title (HTML):' in default output: %s", out)
+		}
+	})
+
+	t.Run("Conflicting titles preserve HTML precedence and distinct sources", func(t *testing.T) {
+		html := `<!DOCTYPE html><html><head>
+			<title>Original HTML Title</title>
+			<meta property="og:title" content="OpenGraph Title">
+			<meta name="twitter:title" content="Twitter Title">
+		</head><body></body></html>`
+		info := extractHTML(html)
+
+		if info.HTMLTitle != "Original HTML Title" {
+			t.Errorf("expected HTMLTitle 'Original HTML Title', got %q", info.HTMLTitle)
+		}
+		if info.OGTitle != "OpenGraph Title" {
+			t.Errorf("expected OGTitle 'OpenGraph Title', got %q", info.OGTitle)
+		}
+		if info.TwitterTitle != "Twitter Title" {
+			t.Errorf("expected TwitterTitle 'Twitter Title', got %q", info.TwitterTitle)
+		}
+		if info.Title != "Original HTML Title" {
+			t.Errorf("expected preferred Title to be HTML title 'Original HTML Title', got %q", info.Title)
+		}
+
+		grouped := info.GroupedTitles()
+		if len(grouped) != 3 {
+			t.Fatalf("expected 3 distinct grouped titles, got %d: %+v", len(grouped), grouped)
+		}
+
+		out := renderDefault(t, info)
+		if !strings.Contains(out, "Title (HTML):") || !strings.Contains(out, "Title (OpenGraph):") || !strings.Contains(out, "Title (Twitter):") {
+			t.Errorf("expected distinct title sections for each source: %s", out)
+		}
+	})
+
+	t.Run("Matching titles across sources coalesced correctly", func(t *testing.T) {
+		html := `<!DOCTYPE html><html><head>
+			<title>Uniform Title</title>
+			<meta property="og:title" content="Uniform Title">
+			<meta name="twitter:title" content="Uniform Title">
+		</head><body></body></html>`
+		info := extractHTML(html)
+
+		if info.HTMLTitle != "Uniform Title" || info.OGTitle != "Uniform Title" || info.TwitterTitle != "Uniform Title" {
+			t.Errorf("expected matching titles across sources, got HTML=%q, OG=%q, TW=%q", info.HTMLTitle, info.OGTitle, info.TwitterTitle)
+		}
+		if info.Title != "Uniform Title" {
+			t.Errorf("expected Title 'Uniform Title', got %q", info.Title)
+		}
+
+		grouped := info.GroupedTitles()
+		if len(grouped) != 1 {
+			t.Fatalf("expected 1 grouped title, got %d: %+v", len(grouped), grouped)
+		}
+		if grouped[0].SourcesString() != "HTML, OpenGraph, Twitter" || grouped[0].Value != "Uniform Title" {
+			t.Errorf("unexpected grouped title: %+v", grouped[0])
+		}
+
+		out := renderDefault(t, info)
+		if !strings.Contains(out, "Title (HTML, OpenGraph, Twitter):") {
+			t.Errorf("expected grouped Title (HTML, OpenGraph, Twitter): %s", out)
+		}
+	})
+
+	t.Run("Tag order does not affect title precedence or provenance", func(t *testing.T) {
+		// Order 1: OG before HTML
+		html1 := `<!DOCTYPE html><html><head>
+			<meta property="og:title" content="OpenGraph Title">
+			<title>True HTML Title</title>
+			<meta name="twitter:title" content="Twitter Title">
+		</head><body></body></html>`
+
+		// Order 2: Twitter before HTML before OG
+		html2 := `<!DOCTYPE html><html><head>
+			<meta name="twitter:title" content="Twitter Title">
+			<title>True HTML Title</title>
+			<meta property="og:title" content="OpenGraph Title">
+		</head><body></body></html>`
+
+		// Order 3: HTML first
+		html3 := `<!DOCTYPE html><html><head>
+			<title>True HTML Title</title>
+			<meta property="og:title" content="OpenGraph Title">
+			<meta name="twitter:title" content="Twitter Title">
+		</head><body></body></html>`
+
+		info1 := extractHTML(html1)
+		info2 := extractHTML(html2)
+		info3 := extractHTML(html3)
+
+		for idx, info := range []*PageInfo{info1, info2, info3} {
+			if info.Title != "True HTML Title" {
+				t.Errorf("order %d: expected Title 'True HTML Title', got %q", idx+1, info.Title)
+			}
+			if info.HTMLTitle != "True HTML Title" {
+				t.Errorf("order %d: expected HTMLTitle 'True HTML Title', got %q", idx+1, info.HTMLTitle)
+			}
+			if info.OGTitle != "OpenGraph Title" {
+				t.Errorf("order %d: expected OGTitle 'OpenGraph Title', got %q", idx+1, info.OGTitle)
+			}
+			if info.TwitterTitle != "Twitter Title" {
+				t.Errorf("order %d: expected TwitterTitle 'Twitter Title', got %q", idx+1, info.TwitterTitle)
+			}
+		}
+
+		// When HTML title is absent, OG takes precedence over Twitter regardless of order
+		ogBeforeTwitter := `<!DOCTYPE html><html><head>
+			<meta property="og:title" content="Preferred OG Title">
+			<meta name="twitter:title" content="Fallback Twitter Title">
+		</head><body></body></html>`
+		twitterBeforeOG := `<!DOCTYPE html><html><head>
+			<meta name="twitter:title" content="Fallback Twitter Title">
+			<meta property="og:title" content="Preferred OG Title">
+		</head><body></body></html>`
+
+		infoOGFirst := extractHTML(ogBeforeTwitter)
+		infoTWFirst := extractHTML(twitterBeforeOG)
+
+		if infoOGFirst.Title != "Preferred OG Title" {
+			t.Errorf("expected OG title precedence, got %q", infoOGFirst.Title)
+		}
+		if infoTWFirst.Title != "Preferred OG Title" {
+			t.Errorf("expected OG title precedence even when Twitter tag comes first, got %q", infoTWFirst.Title)
+		}
+		if infoOGFirst.HTMLTitle != "" || infoTWFirst.HTMLTitle != "" {
+			t.Errorf("HTMLTitle must remain empty when no <title> tag exists")
+		}
+	})
 }

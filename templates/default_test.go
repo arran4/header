@@ -196,6 +196,7 @@ func TestQuickTemplate_ReproducesPreChangeFormat(t *testing.T) {
 	info := &header.PageInfo{
 		URL:                "https://example.com/",
 		Title:              "Title 1",
+		HTMLTitle:          "Title 1",
 		OGTitle:            "Title 1",
 		TwitterTitle:       "Title 1",
 		Description:        "Desc 1",

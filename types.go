@@ -21,6 +21,7 @@ type PageInfo struct {
 	Trace       []string `json:",omitempty"`
 	MetaRefresh string   `json:",omitempty"`
 	Title       string   `json:",omitempty"`
+	HTMLTitle   string   `json:",omitempty"`
 	Description string   `json:",omitempty"`
 	Keywords    string   `json:",omitempty"`
 
@@ -353,6 +354,19 @@ func (p *PageInfo) Mutate(fn func(*PageInfo)) {
 	fn(p)
 }
 
+// updatePreferredTitle updates Title based on provenance precedence:
+// HTML title > OpenGraph title > Twitter title.
+// Assumes p.mu is held (e.g. within Mutate).
+func (p *PageInfo) updatePreferredTitle() {
+	if p.HTMLTitle != "" {
+		p.Title = p.HTMLTitle
+	} else if p.OGTitle != "" {
+		p.Title = p.OGTitle
+	} else if p.TwitterTitle != "" {
+		p.Title = p.TwitterTitle
+	}
+}
+
 // ProvenanceProperty represents a semantic property with associated source tags.
 type ProvenanceProperty struct {
 	Sources []string
@@ -426,8 +440,13 @@ func (p *PageInfo) GroupedTitles() []ProvenanceProperty {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	htmlTitle := p.HTMLTitle
+	if htmlTitle == "" && p.Title != "" && p.Title != p.OGTitle && p.Title != p.TwitterTitle && p.Title != p.JSONLDName {
+		htmlTitle = p.Title
+	}
+
 	items := []sourceValue{
-		{source: "HTML", value: p.Title},
+		{source: "HTML", value: htmlTitle},
 		{source: "OpenGraph", value: p.OGTitle},
 		{source: "Twitter", value: p.TwitterTitle},
 		{source: "JSON-LD", value: p.JSONLDName},
